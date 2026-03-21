@@ -1,0 +1,44 @@
+﻿ @inherits UmbracoViewPage
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+
+@{
+    Layout = null;
+}
+
+ 
+<!DOCTYPE html>
+<html lang="@(Model.GetCultureFromDomains())">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    @* RENDER SECTION *@
+    @RenderSection("styles", required: false)
+
+
+    @* SEO TOOLKIT *@
+    <meta-fields></meta-fields>
+    <render-script position="HeadBottom"></render-script>
+</head>
+<body>
+    <render-script position="BodyTop"></render-script>
+
+    @* HEADER *@
+    @(await Html.PartialAsync("/Views/Partials/Header.cshtml"))
+
+    @* MAIN *@
+    <main>
+        @RenderBody()
+    </main>
+
+    @* FOOTER *@
+    @(await Html.PartialAsync("/Views/Partials/Footer.cshtml"))
+
+    
+    @* RENDER SECTION *@
+    @RenderSection("scripts", required: false)
+
+    <render-script position="BodyBottom"></render-script>
+</body>
+</html>

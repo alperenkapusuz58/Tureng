@@ -1,0 +1,41 @@
+@layer components {
+    .site-header {
+        @apply bg-white shadow-md;
+
+        .header-nav {
+            @apply container mx-auto px-4 py-4;
+
+            .nav-container {
+                @apply flex items-center justify-between;
+
+                .logo-container {
+                    @apply flex items-center;
+
+                    .logo {
+                        @apply text-2xl font-bold text-gray-800;
+                    }
+                }
+
+                .nav-links {
+                    @apply hidden md:flex items-center space-x-8;
+
+                    .nav-link {
+                        @apply text-gray-600 hover:text-gray-900;
+                    }
+                }
+
+                .mobile-menu {
+                    @apply md:hidden;
+
+                    .menu-button {
+                        @apply text-gray-600 hover:text-gray-900 focus:outline-none;
+
+                        .menu-icon {
+                            @apply h-6 w-6;
+                        }
+                    }
+                }
+            }
+        }
+    }
+} 

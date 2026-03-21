@@ -1,0 +1,39 @@
+@layer components {
+    .site-footer {
+        @apply bg-gray-800 text-white;
+
+        .footer-container {
+            @apply container mx-auto px-4 py-8;
+
+            .footer-content {
+                @apply grid grid-cols-1 md:grid-cols-3 gap-8;
+
+                .footer-section {
+                    .section-title {
+                        @apply text-xl font-bold mb-4;
+                    }
+
+                    .section-text {
+                        @apply text-gray-300;
+                    }
+
+                    .quick-links {
+                        @apply space-y-2;
+
+                        .quick-link {
+                            @apply text-gray-300 hover:text-white;
+                        }
+                    }
+
+                    .contact-info {
+                        @apply space-y-2 text-gray-300;
+                    }
+                }
+            }
+
+            .footer-bottom {
+                @apply border-t border-gray-700 mt-8 pt-8 text-center text-gray-300;
+            }
+        }
+    }
+} 

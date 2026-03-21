@@ -1,0 +1,111 @@
+﻿@using System.Web
+@using ClockworkUmbraco.Helpers
+@using SeoToolkit.Umbraco.MetaFields.Core.Interfaces.Services
+@using SeoToolkit.Umbraco.MetaFields.Core.Models.SeoService
+@inherits UmbracoViewPage
+@inject IMetaFieldsService _seoService;
+
+@{
+    Layout = null;
+    var homepage = Model.GetMainPage();
+}
+
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+    @{
+        ListChildNodes(homepage, true);
+    }
+</urlset>
+
+@functions {
+
+    void ListChildNodes(IPublishedContent startNode, bool isIncludeRoot = false)
+    {
+        try
+        {
+            Context.Response.ContentType = "text/xml";
+            const int maxLevelForSiteMap = 100;
+            var nodes = startNode.Children;
+            MetaTagsModel metaTags = null;
+            var virtualNodes = ConfigurationManagerCustom.ClockworkSettings.VirtualNodes;
+
+            if (isIncludeRoot && (virtualNodes == null || !virtualNodes.Contains(startNode.ContentType.Alias)))
+            {
+                try
+                {
+                    metaTags = _seoService.Get(startNode, true);
+                }
+                catch (Exception)
+                {
+
+                }
+                if ((metaTags != null && (metaTags.Robots == null || !metaTags.Robots.Contains("noindex"))))
+                {
+                    var rootDynamicNode = startNode;
+
+                    // Dinamik base URL oluşturuluyor ve www ekleniyor
+                    var baseUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
+                    var url = new Uri(baseUrl).AbsoluteUri;
+                    url = !url.Contains("://www.") ? url.Replace("://", "://www.") : url;
+
+                    if (!url.Contains("not-found"))
+                    {
+                        <url>
+                            <loc>@HttpUtility.UrlEncode(url).Replace("%3a", ":").Replace("%2f", "/")</loc>
+                            <lastmod>@rootDynamicNode.UpdateDate.ToString("s")+00:00</lastmod>
+                        </url>
+                    }
+
+
+                }
+            }
+
+            foreach (var node in nodes)
+            {
+                if (node.TemplateId > 0 && (virtualNodes == null || !virtualNodes.Contains(node.ContentType.Alias)))
+                {
+                    try
+                    {
+                        try
+                        {
+                            metaTags = _seoService.Get(node, true);
+                        }
+                        catch (Exception)
+                        {
+
+                        }
+
+                        if ((metaTags != null && (metaTags.Robots == null || !metaTags.Robots.Contains("noindex"))))
+                        {
+                            var baseUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
+                            var url = new Uri(new Uri(baseUrl), node.Url(mode: UrlMode.Relative)).AbsoluteUri;
+                            url = !url.Contains("://www.") ? url.Replace("://", "://www.") : url;
+
+                            if (!url.Contains("not-found"))
+                            {
+                                <url>
+                                    <loc>@HttpUtility.UrlEncode(url).Replace("%3a", ":").Replace("%2f", "/")</loc>
+                                    <lastmod>@node.UpdateDate.ToString("s")+00:00</lastmod>
+                                </url>
+                            }
+
+
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+
+                        throw;
+                    }
+                }
+
+                if (node.Level <= maxLevelForSiteMap)
+                    ListChildNodes(node);
+            }
+        }
+        catch (Exception ex)
+        {
+
+            throw;
+        }
+    }
+}

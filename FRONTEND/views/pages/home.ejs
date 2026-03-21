@@ -1,0 +1,77 @@
+<section class="hero-slider">
+    <div class="swiper">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <picture>
+                    <source media="(min-width:1200px)" srcset="https://dummyimage.com/1440x500/000000/ffffff.jpg?format=webp&quality=85" loading="lazy" type="image/webp" width="1440" height="500">
+                    <source media="(min-width:1200px)" srcset="https://dummyimage.com/1440x500/000000/ffffff.jpg" loading="lazy" type="image/png" width="1440" height="500"> 
+                    <source media="(max-width:1199px)" srcset="https://dummyimage.com/375x400/000000/ffffff.jpg?format=webp&quality=75" loading="lazy" type="image/webp" width="375" height="400">
+                    <source media="(max-width:1199px)" srcset="https://dummyimage.com/375x400/000000/ffffff.jpg" loading="lazy" type="image/png" width="375" height="400"> 
+                    <img loading="lazy" src='https://dummyimage.com/1440x500/000000/ffffff.jpg' alt='Modern ve profesyonel çözümler için hero görsel' style="width:100%;height:100%;object-fit:cover;" width="1440" height="500" /> 
+                </picture>
+                <div class="slide-content">
+                    <div>
+                        <h2>Hoş Geldiniz</h2>
+                        <p>Modern ve profesyonel çözümler için doğru adres</p>
+                        <a href="#" class="btn-primary">Daha Fazla Bilgi</a>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-slide">
+                <picture>
+                    <source media="(min-width:1200px)" srcset="https://dummyimage.com/1440x500/000000/ffffff.jpg?format=webp&quality=85" loading="lazy" type="image/webp" width="1440" height="500">
+                    <source media="(min-width:1200px)" srcset="https://dummyimage.com/1440x500/000000/ffffff.jpg" loading="lazy" type="image/png" width="1440" height="500"> 
+                    <source media="(max-width:1199px)" srcset="https://dummyimage.com/375x400/000000/ffffff.jpg?format=webp&quality=75" loading="lazy" type="image/webp" width="375" height="400">
+                    <source media="(max-width:1199px)" srcset="https://dummyimage.com/375x400/000000/ffffff.jpg" loading="lazy" type="image/png" width="375" height="400"> 
+                    <img loading="lazy" src='https://dummyimage.com/1440x500/000000/ffffff.jpg' alt='Kaliteli hizmet için hero görsel' style="width:100%;height:100%;object-fit:cover;" width="1440" height="500" /> 
+                </picture>
+                <div class="slide-content">
+                    <div>
+                        <h2>Kaliteli Hizmet</h2>
+                        <p>Uzman ekibimizle yanınızdayız</p>
+                        <a href="#" class="btn-primary">Hizmetlerimiz</a>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-slide">
+                <picture>
+                    <source media="(min-width:1200px)" srcset="https://dummyimage.com/1440x500/000000/ffffff.jpg?format=webp&quality=85" loading="lazy" type="image/webp" width="1440" height="500">
+                    <source media="(min-width:1200px)" srcset="https://dummyimage.com/1440x500/000000/ffffff.jpg" loading="lazy" type="image/png" width="1440" height="500"> 
+                    <source media="(max-width:1199px)" srcset="https://dummyimage.com/375x400/000000/ffffff.jpg?format=webp&quality=75" loading="lazy" type="image/webp" width="375" height="400">
+                    <source media="(max-width:1199px)" srcset="https://dummyimage.com/375x400/000000/ffffff.jpg" loading="lazy" type="image/png" width="375" height="400"> 
+                    <img loading="lazy" src='https://dummyimage.com/1440x500/000000/ffffff.jpg' alt='İletişim için hero görsel' style="width:100%;height:100%;object-fit:cover;" width="1440" height="500" /> 
+                </picture>
+                <div class="slide-content">
+                    <div>
+                        <h2>İletişime Geçin</h2>
+                        <p>Size özel çözümler için buradayız</p>
+                        <a href="#" class="btn-primary">İletişim</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="swiper-pagination"></div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        new Swiper('.hero-slider .swiper', {
+            loop: true,
+            autoplay: {
+                delay: 5000,
+                disableOnInteraction: false,
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+        });
+    });
+</script>

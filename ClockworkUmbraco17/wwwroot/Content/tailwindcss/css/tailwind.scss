@@ -1,0 +1,41 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+
+/* Pages klasöründeki dosyaları components layer'dan önce içe aktarıyoruz */
+@import "./pages/header.scss";
+@import "./pages/footer.scss";
+@import "./pages/home.scss";
+@import "./pages/custom.scss";
+@import "tailwindcss/utilities";
+
+/* Özel stilleriniz buraya */
+@layer components {
+    /* Özel bileşen sınıflarınız buraya */
+}
+
+@layer utilities {
+    /* Özel utility sınıflarınız buraya */
+}
+
+.w-expand {
+    flex: 1;
+    min-width: 1px;
+}
+
+.btn {
+    @apply rounded-[6px] p-[16px_32px] font-[500] text-[14px];
+
+    &.btn-primary {
+        @apply bg-[#018997] text-[#fff];
+    }
+
+    &.btn-default {
+        @apply bg-[#fff] text-[#018997];
+    }
+}
+
+body{
+    font-family: "Montserrat", serif;
+    font-size: 14px;
+}
+

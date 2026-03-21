@@ -1,0 +1,24 @@
+{
+  "name": "clockwork.umbraco.client",
+  "version": "1.0.0",
+  "scripts": {
+    "css:build": "npm-run-all css:build:*",
+    "css:build:umbraco": "postcss css/tailwind.scss -o css/output.css --minify",
+    "css:build:html": "postcss css/tailwind.scss -o ../../../../FRONTEND/public/Content/tailwindcss/css/output.css --minify",
+    "css:watch": "npm-run-all --parallel css:watch:*",
+    "css:watch:umbraco": "postcss css/tailwind.scss -o css/output.css --watch",
+    "css:watch:html": "postcss css/tailwind.scss -o ../../../../FRONTEND/public/Content/tailwindcss/css/output.css --watch"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "npm-run-all": "^4.1.5",
+    "postcss": "^8.5.3",
+    "postcss-import": "^16.1.0",
+    "postcss-scss": "^4.0.9",
+    "sass": "^1.71.1",
+    "tailwindcss": "^3.x"
+  },
+  "dependencies": {
+    "daisyui": "^4.12.23"
+  }
+}
