@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%= site.site_name || 'Tureng Sözlük' %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy: #1e2f6e;
+            --navy-deep: #16245a;
+            --teal: #243b7a;
+            --teal-dark: #1d3166;
+            --pill: #b7d6e5;
+            --text: #18304d;
+            --shadow: 0 18px 45px rgba(15, 34, 79, 0.18);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Manrope", Arial, sans-serif;
+            background: #eef4f8;
+            color: var(--text);
+        }
+        .page {
+            max-width: 1160px;
+            margin: 0 auto;
+            padding: 0 18px 28px;
+        }
+        .hero {
+            position: relative;
+            min-height: 270px;
+            background: var(--teal);
+            box-shadow: var(--shadow);
+            width: 100%;
+        }
+        .hero-inner {
+            position: relative;
+            max-width: 1160px;
+            margin: 0 auto;
+            padding: 0 18px;
+            min-height: 270px;
+        }
+        .hero::before {
+            content: "";
+            position: absolute;
+            inset: auto auto -60px -60px;
+            width: 360px;
+            height: 360px;
+            border-radius: 50%;
+            background: transparent;
+        }
+        .brand-panel {
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 28%;
+            min-width: 250px;
+            padding: 42px 34px;
+            color: #fff;
+        }
+        .crest {
+            width: 54px;
+            height: 54px;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 10px 18px rgba(12, 28, 66, 0.18);
+            background: rgba(255,255,255,0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .crest img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        .brand-copy {
+            margin: 18px 0 0;
+            max-width: 210px;
+            color: rgba(255,255,255,0.82);
+            font-size: 14px;
+            line-height: 1.45;
+            font-weight: 400;
+        }
+        .search-card {
+            position: absolute;
+            top: 54px;
+            left: 31%;
+            right: 34px;
+        }
+        .search-shell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 8px 7px 14px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.98);
+            box-shadow: 0 10px 24px rgba(13, 31, 66, 0.12);
+        }
+        .search-shell input {
+            width: 100%;
+            border: 0;
+            outline: none;
+            background: transparent;
+            font-size: 16px;
+            color: #26374d;
+            font-family: inherit;
+            font-weight: 400;
+        }
+        .search-submit {
+            width: 38px;
+            height: 38px;
+            border: 0;
+            border-radius: 50%;
+            background: #ffcc1a;
+            color: #17304a;
+            cursor: pointer;
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .tabs button {
+            padding: 8px 16px;
+            border: 0;
+            border-radius: 999px;
+            background: rgba(205, 228, 238, 0.96);
+            color: #17304a;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .tabs .active {
+            background: #ffffff;
+            box-shadow: 0 4px 14px rgba(15, 34, 79, 0.16);
+        }
+        .search-wrap {
+            position: relative;
+        }
+        .suggestions {
+            list-style: none;
+            margin: 8px 0 0;
+            padding: 0;
+            border-radius: 16px;
+            overflow: hidden;
+            background: rgba(255,255,255,0.98);
+            box-shadow: 0 12px 28px rgba(15, 34, 79, 0.14);
+            position: relative;
+            z-index: 100;
+        }
+        .suggestions li + li {
+            border-top: 1px solid #e6edf3;
+        }
+        .suggestions li a {
+            display: block;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: #1a3550;
+        }
+        .suggestions li a:hover {
+            background: #eef6fb;
+        }
+        .meta {
+            margin: 18px 6px 0;
+            color: #55708d;
+            font-size: 14px;
+            font-weight: 400;
+        }
+        @media (max-width: 860px) {
+            .hero {
+                min-height: 360px;
+            }
+            .hero-inner {
+                min-height: 360px;
+            }
+            .brand-panel {
+                position: static;
+                width: auto;
+                min-width: 0;
+                padding: 28px 24px 14px;
+            }
+            .brand-copy {
+                max-width: none;
+            }
+            .search-card {
+                position: static;
+                padding: 0 18px 24px;
+            }
+        }
+        @media (max-width: 560px) {
+            .page {
+                margin: 14px auto;
+                padding: 0 10px 18px;
+            }
+            .hero {
+                min-height: 320px;
+            }
+            .hero-inner {
+                min-height: 320px;
+            }
+            .search-shell {
+                flex-wrap: wrap;
+                border-radius: 22px;
+            }
+            .search-submit {
+                position: absolute;
+                right: 14px;
+                top: 9px;
+            }
+            .tabs {
+                gap: 8px;
+            }
+            .tabs button {
+                font-size: 13px;
+                padding: 7px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <%- include('partials/announcement') %>
+    <section class="hero">
+        <div class="hero-inner">
+            <div class="brand-panel">
+                <div class="crest">
+                    <% if (site.logo_url) { %>
+                        <img src="<%= site.logo_url %>" alt="<%= site.site_name %>" onerror="this.style.display='none'">
+                    <% } else { %>
+                        <img src="./static/logo-placeholder.svg" alt="<%= site.site_name || 'Logo' %>" onerror="this.style.display='none'">
+                    <% } %>
+                </div>
+                <% if (site.brand_tagline) { %>
+                    <p class="brand-copy"><%= site.brand_tagline %></p>
+                <% } %>
+            </div>
+
+            <div class="search-card">
+                <!-- Statik önizleme: üretimde Django /search/ ve /api/autocomplete/ kullanın -->
+                <form method="get" action="not-found.html">
+                    <input type="hidden" name="direction" id="direction" value="en-tr">
+                    <div class="search-wrap">
+                        <div class="search-shell">
+                            <input type="text" id="query" name="q" autocomplete="off" placeholder="Search English" required>
+                            <button class="search-submit" type="submit" aria-label="Ara">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <ul class="suggestions" id="suggestions"></ul>
+                    </div>
+
+                    <div class="tabs">
+                        <button type="button" class="tab-btn active" data-direction="en-tr">English-Turkish</button>
+                        <button type="button" class="tab-btn" data-direction="tr-en">Turkish-English</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <div class="page">
+        <% if (site.footer_meta_text) { %>
+            <p class="meta"><%= site.footer_meta_text %></p>
+        <% } %>
+    </div>
+
+    <script>
+        const queryInput = document.getElementById('query');
+        const suggestionsEl = document.getElementById('suggestions');
+        const directionInput = document.getElementById('direction');
+        const tabButtons = document.querySelectorAll('.tab-btn');
+
+        function sampleAutocompleteUrl(direction) {
+            return direction === 'tr-en'
+                ? './api/autocomplete-tr-en-sample.json'
+                : './api/autocomplete-en-tr-sample.json';
+        }
+
+        tabButtons.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                tabButtons.forEach((b) => b.classList.remove('active'));
+                btn.classList.add('active');
+                directionInput.value = btn.dataset.direction;
+                queryInput.placeholder = btn.dataset.direction === 'en-tr' ? 'Search English' : 'Search Turkish';
+                suggestionsEl.innerHTML = '';
+                queryInput.focus();
+            });
+        });
+
+        queryInput.addEventListener('input', async () => {
+            const q = queryInput.value.trim();
+            const direction = directionInput.value;
+            if (q.length < 2) {
+                suggestionsEl.innerHTML = '';
+                return;
+            }
+
+            try {
+                const res = await fetch(sampleAutocompleteUrl(direction));
+                const data = await res.json();
+                suggestionsEl.innerHTML = '';
+
+                (data.results || []).forEach((item) => {
+                    const li = document.createElement('li');
+                    const label = item.translation
+                        ? item.lemma + ' — ' + item.translation
+                        : item.lemma;
+                    li.innerHTML = '<a href="' + item.url + '">' + label + '</a>';
+                    suggestionsEl.appendChild(li);
+                });
+            } catch (e) {
+                suggestionsEl.innerHTML = '';
+            }
+        });
+    </script>
+</body>
+</html>
