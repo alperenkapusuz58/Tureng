@@ -128,6 +128,8 @@
             font-weight: 600;
             font-size: 11px;
             color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.35px;
         }
         .dict-table a {
             color: var(--accent);
@@ -177,7 +179,7 @@
             <thead>
                 <tr>
                     <th class="col-num">#</th>
-                    <th class="col-cat">Kategori</th>
+                    <th class="col-cat">Part of speech</th>
                     <th>Türkçe</th>
                     <th>İngilizce</th>
                 </tr>
@@ -185,12 +187,12 @@
             <% resultGroups.forEach(function (group) { %>
             <tbody>
                 <tr class="group-header">
-                    <td colspan="4"><%= group.title %></td>
+                    <td colspan="4"><%= typeof partOfSpeechEnglish === 'function' ? partOfSpeechEnglish(group.pos_key || group.title) : (group.title || group.pos_key) %></td>
                 </tr>
                 <% group.rows.forEach(function (row) { %>
                 <tr>
                     <td class="col-num"><%= row.num %></td>
-                    <td class="col-cat"><%= row.pos_display %></td>
+                    <td class="col-cat"><%= typeof partOfSpeechEnglish === 'function' ? partOfSpeechEnglish(row.pos_key || row.pos_display) : (row.pos_display || row.pos_key) %></td>
                     <td class="tr-col">
                         <a href="en-tr-detail.html"><%= row.tr_link_text %></a>
                     </td>

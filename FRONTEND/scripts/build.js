@@ -12,6 +12,7 @@ const viewsDir = path.join(root, 'views');
 const publicDir = path.join(root, 'public');
 const distDir = path.join(root, 'dist');
 const dummy = require('./dummy-data');
+const { partOfSpeechEnglish } = require('./pos-labels');
 
 function ensureDir(p) {
   fs.mkdirSync(p, { recursive: true });
@@ -49,9 +50,15 @@ function main() {
   copyPublic();
 
   renderTo('index.ejs', 'index.html', dummy.home());
-  renderTo('en-tr-detail.ejs', 'en-tr-detail.html', dummy.enTrDetail());
+  renderTo('en-tr-detail.ejs', 'en-tr-detail.html', {
+    ...dummy.enTrDetail(),
+    partOfSpeechEnglish,
+  });
   renderTo('tr-en-detail.ejs', 'tr-en-detail.html', dummy.trEnDetail());
-  renderTo('tr-en-results.ejs', 'tr-en-results.html', dummy.trEnResults());
+  renderTo('tr-en-results.ejs', 'tr-en-results.html', {
+    ...dummy.trEnResults(),
+    partOfSpeechEnglish,
+  });
   renderTo('not-found.ejs', 'not-found.html', dummy.notFound());
   renderTo('not-found.ejs', 'not-found-tr.html', dummy.notFoundTr());
   renderTo('404.ejs', '404.html', dummy.page404());

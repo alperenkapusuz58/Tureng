@@ -1,12 +1,352 @@
-﻿@inherits UmbracoViewPage<MainPage>
+﻿@using System.Linq
+@using Umbraco.Cms.Web.Common.PublishedModels
+@using Umbraco.Extensions
+@inherits UmbracoViewPage<MainPage>
 @{
-	Layout = "_Layout.cshtml";
+    Layout = null;
+    var headwordsPage = Model.Children.FirstOrDefault(c => c.ContentType.Alias == Headwords.ModelTypeAlias);
+    var siteSettings = Model.Children.FirstOrDefault(c => c.ContentType.Alias == SiteSettings.ModelTypeAlias) as SiteSettings;
 }
+<!doctype html>
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@Model.Name</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy: #1e2f6e;
+            --navy-deep: #16245a;
+            --teal: #243b7a;
+            --teal-dark: #1d3166;
+            --pill: #b7d6e5;
+            --text: #18304d;
+            --shadow: 0 18px 45px rgba(15, 34, 79, 0.18);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Manrope", Arial, sans-serif;
+            background: #eef4f8;
+            color: var(--text);
+        }
+        .page {
+            max-width: 1160px;
+            margin: 0 auto;
+            padding: 0 18px 28px;
+        }
+        .hero {
+            position: relative;
+            min-height: 270px;
+            background: var(--teal);
+            box-shadow: var(--shadow);
+            width: 100%;
+            overflow: visible;
+        }
+        .hero-inner {
+            position: relative;
+            max-width: 1160px;
+            margin: 0 auto;
+            padding: 0 18px;
+            min-height: 270px;
+            overflow: visible;
+        }
+        .hero::before {
+            content: "";
+            position: absolute;
+            inset: auto auto -60px -60px;
+            width: 360px;
+            height: 360px;
+            border-radius: 50%;
+            background: transparent;
+        }
+        .brand-panel {
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 28%;
+            min-width: 250px;
+            padding: 42px 34px;
+            color: #fff;
+        }
+        .crest {
+            width: 54px;
+            height: 54px;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 10px 18px rgba(12, 28, 66, 0.18);
+            background: rgba(255,255,255,0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .crest img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        .brand-copy {
+            margin: 18px 0 0;
+            max-width: 210px;
+            color: rgba(255,255,255,0.82);
+            font-size: 14px;
+            line-height: 1.45;
+            font-weight: 400;
+        }
+        .search-card {
+            position: absolute;
+            top: 54px;
+            left: 31%;
+            right: 34px;
+            overflow: visible;
+            z-index: 2;
+        }
+        .search-shell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 8px 7px 14px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.98);
+            box-shadow: 0 10px 24px rgba(13, 31, 66, 0.12);
+        }
+        .search-shell input {
+            width: 100%;
+            border: 0;
+            outline: none;
+            background: transparent;
+            font-size: 16px;
+            color: #26374d;
+            font-family: inherit;
+            font-weight: 400;
+        }
+        .search-submit {
+            width: 38px;
+            height: 38px;
+            border: 0;
+            border-radius: 50%;
+            background: #ffcc1a;
+            color: #17304a;
+            cursor: pointer;
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+            position: relative;
+            z-index: 1;
+        }
+        .tabs button {
+            padding: 8px 16px;
+            border: 0;
+            border-radius: 999px;
+            background: rgba(205, 228, 238, 0.96);
+            color: #17304a;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .tabs .active {
+            background: #ffffff;
+            box-shadow: 0 4px 14px rgba(15, 34, 79, 0.16);
+        }
+        .search-wrap {
+            position: relative;
+            z-index: 10;
+            overflow: visible;
+        }
+        .suggestions {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.98);
+            box-shadow: 0 12px 28px rgba(15, 34, 79, 0.14);
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: calc(100% + 8px);
+            max-height: min(320px, 50vh);
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 1000;
+            display: block;
+        }
+        .suggestions li + li {
+            border-top: 1px solid #e6edf3;
+        }
+        .suggestions li a {
+            display: block;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: #1a3550;
+        }
+        .suggestions li a:hover {
+            background: #eef6fb;
+        }
+        .meta {
+            margin: 18px 6px 0;
+            color: #55708d;
+            font-size: 14px;
+            font-weight: 400;
+        }
+        @@media (max-width: 860px) {
+            .hero {
+                min-height: 360px;
+            }
+            .hero-inner {
+                min-height: 360px;
+            }
+            .brand-panel {
+                position: static;
+                width: auto;
+                min-width: 0;
+                padding: 28px 24px 14px;
+            }
+            .brand-copy {
+                max-width: none;
+            }
+            .search-card {
+                position: static;
+                padding: 0 18px 24px;
+            }
+        }
+        @@media (max-width: 560px) {
+            .page {
+                margin: 14px auto;
+                padding: 0 10px 18px;
+            }
+            .hero {
+                min-height: 320px;
+            }
+            .hero-inner {
+                min-height: 320px;
+            }
+            .search-shell {
+                flex-wrap: wrap;
+                border-radius: 22px;
+            }
+            .search-submit {
+                position: absolute;
+                right: 14px;
+                top: 9px;
+            }
+            .tabs {
+                gap: 8px;
+            }
+            .tabs button {
+                font-size: 13px;
+                padding: 7px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <div class="hero-inner">
+            <div class="brand-panel">
+                <div class="crest">
+                    @if (siteSettings?.FooterLogo != null)
+                    {
+                        <img src="@siteSettings.FooterLogo.Url()" alt="@Model.Name" width="54" height="54">
+                    }
+                </div>
+            </div>
 
+            <div class="search-card">
+                <form method="get" action="@(headwordsPage != null ? headwordsPage.Url() : "#")" id="dict-search-form">
+                    <input type="hidden" name="direction" id="direction" value="en-tr">
+                    <div class="search-wrap">
+                        <div class="search-shell">
+                            <input type="text" id="query" name="q" autocomplete="off" placeholder="Search English" required>
+                            <button class="search-submit" type="submit" aria-label="Ara">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <ul class="suggestions" id="suggestions" role="listbox" aria-label="Arama önerileri" hidden></ul>
+                    </div>
 
-<section>
-    <h2>Anasayfa</h2>
-    <p>
-        Lorem Ipsum
-    </p>
-</section>
+                    <div class="tabs">
+                        <button type="button" class="tab-btn active" data-direction="en-tr">English-Turkish</button>
+                        <button type="button" class="tab-btn" data-direction="tr-en">Turkish-English</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <div class="page">
+    </div>
+
+    <script>
+        const autocompleteUrl = '@Url.Content("~/api/dictionary/autocomplete")';
+        const queryInput = document.getElementById('query');
+        const suggestionsEl = document.getElementById('suggestions');
+        const directionInput = document.getElementById('direction');
+        const tabButtons = document.querySelectorAll('.tab-btn');
+
+        function setSuggestionsVisible(show) {
+            if (!suggestionsEl) return;
+            if (show) {
+                suggestionsEl.removeAttribute('hidden');
+            } else {
+                suggestionsEl.setAttribute('hidden', 'hidden');
+            }
+        }
+
+        tabButtons.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                tabButtons.forEach((b) => b.classList.remove('active'));
+                btn.classList.add('active');
+                if (directionInput) directionInput.value = btn.dataset.direction;
+                if (queryInput) queryInput.placeholder = btn.dataset.direction === 'en-tr' ? 'Search English' : 'Search Turkish';
+                if (suggestionsEl) suggestionsEl.innerHTML = '';
+                setSuggestionsVisible(false);
+                if (queryInput) queryInput.focus();
+            });
+        });
+
+        if (queryInput) queryInput.addEventListener('input', async () => {
+            const q = queryInput.value.trim();
+            const direction = directionInput ? directionInput.value : 'en-tr';
+            if (q.length < 2) {
+                if (suggestionsEl) suggestionsEl.innerHTML = '';
+                setSuggestionsVisible(false);
+                return;
+            }
+
+            try {
+                const res = await fetch(autocompleteUrl + '?q=' + encodeURIComponent(q) + '&direction=' + encodeURIComponent(direction));
+                const data = await res.json();
+                if (!suggestionsEl) return;
+                suggestionsEl.innerHTML = '';
+
+                const rows = data.results || [];
+                rows.forEach((item) => {
+                    const li = document.createElement('li');
+                    const label = item.translation
+                        ? item.lemma + ' — ' + item.translation
+                        : item.lemma;
+                    li.innerHTML = '<a href="' + item.url + '">' + label + '</a>';
+                    suggestionsEl.appendChild(li);
+                });
+                setSuggestionsVisible(rows.length > 0);
+            } catch (e) {
+                if (suggestionsEl) suggestionsEl.innerHTML = '';
+                setSuggestionsVisible(false);
+            }
+        });
+    </script>
+</body>
+</html>

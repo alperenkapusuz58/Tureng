@@ -1,0 +1,337 @@
+﻿@using System.Linq
+@using Examine
+@using Umbraco.Cms.Core.Models.PublishedContent
+@using Umbraco.Cms.Web.Common
+@using Umbraco.Cms.Web.Common.PublishedModels
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels
+@using ClockworkUmbraco.Helpers
+@using ClockworkUmbraco.Services.Interfaces
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.Headwords>
+@inject IPublishedValueFallback PublishedValueFallback
+@inject ISearchService SearchService
+@inject UmbracoHelper UmbracoHelper
+@{
+    Layout = null;
+    var siteName = Model.Root().Name;
+    var searchQ = Context.Request.Query["q"].FirstOrDefault() ?? string.Empty;
+    var hasSearch = !string.IsNullOrWhiteSpace(searchQ);
+
+    List<Headword> headwordPages;
+    if (hasSearch)
+    {
+        var search = SearchService.SearchHeadwords(searchQ.Trim(), 200);
+        headwordPages = [];
+        foreach (var hit in search.SearchResults ?? Enumerable.Empty<ISearchResult>())
+        {
+            IPublishedContent? c = null;
+            if (int.TryParse(hit.Id, out var nodeId))
+            {
+                c = UmbracoHelper.Content(nodeId);
+            }
+            else if (Guid.TryParse(hit.Id, out var nodeKey))
+            {
+                c = UmbracoHelper.Content(nodeKey);
+            }
+
+            if (c == null)
+            {
+                continue;
+            }
+
+            if (c.ContentType.Alias != Headword.ModelTypeAlias)
+            {
+                continue;
+            }
+
+            if (c.TemplateId == null)
+            {
+                continue;
+            }
+
+            if (c.Parent?.Key != Model.Key)
+            {
+                continue;
+            }
+
+            headwordPages.Add(new Headword(c, PublishedValueFallback));
+        }
+    }
+    else
+    {
+        headwordPages = Model.Children
+            .Where(c => c.ContentType.Alias == Headword.ModelTypeAlias)
+            .Select(c => new Headword(c, PublishedValueFallback))
+            .ToList();
+    }
+
+    string? FirstPartOfSpeech(Headword hw)
+    {
+        if (hw.Senses == null || !hw.Senses.Any())
+        {
+            return null;
+        }
+
+        foreach (var block in hw.Senses)
+        {
+            if (block.Content is SenseItem s && !string.IsNullOrWhiteSpace(s.PartOfSpeech))
+            {
+                return s.PartOfSpeech;
+            }
+        }
+
+        return null;
+    }
+
+    var resultGroups = headwordPages
+        .Select(hw => new
+        {
+            Headword = hw,
+            PosKey = FirstPartOfSpeech(hw) ?? string.Empty,
+        })
+        .GroupBy(x => x.PosKey)
+        .Select(g => new { PosKey = g.Key, Rows = g.ToList() })
+        .ToList();
+
+    var pageTitle = hasSearch ? searchQ.Trim() + " — " + Model.Name + " - TR → EN | " + siteName : Model.Name + " - TR → EN | " + siteName;
+}
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@pageTitle</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy: #243b7a;
+            --navy-deep: #1d3166;
+            --bg: #eef4f8;
+            --text: #1c2d44;
+            --muted: #60748b;
+            --soft: #d8e4ef;
+            --card: #ffffff;
+            --accent: #2d5dd4;
+            --row-alt: #f6f9fc;
+            --row-hover: #e8f0fa;
+            --border: #dde5ed;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "Manrope", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .page {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 16px 16px 32px;
+        }
+
+        .hero {
+            padding: 16px 20px 18px;
+            border-radius: 14px;
+            background: var(--navy);
+            color: #fff;
+            margin-bottom: 12px;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.14);
+            color: #fff;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .entry-header {
+            margin: 10px 0 0;
+            font-size: 26px;
+            font-weight: 700;
+        }
+        .direction-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.18);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            vertical-align: middle;
+            margin-left: 8px;
+        }
+        .hero-subtitle {
+            margin: 6px 0 0;
+            color: rgba(255,255,255,0.75);
+            font-size: 12px;
+        }
+
+        .dict-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            margin-bottom: 14px;
+        }
+        .group-header td {
+            background: var(--navy-deep);
+            color: #fff;
+            font-weight: 700;
+            font-size: 12px;
+            padding: 8px 14px;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+        .dict-table th {
+            background: var(--navy);
+            color: rgba(255,255,255,0.9);
+            font-weight: 600;
+            font-size: 11px;
+            text-align: left;
+            padding: 8px 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .dict-table th.col-num { width: 44px; text-align: center; }
+        .dict-table th.col-cat { width: 100px; }
+        .dict-table td {
+            padding: 7px 14px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+            vertical-align: middle;
+        }
+        .dict-table tbody tr:nth-child(even) td {
+            background: var(--row-alt);
+        }
+        .dict-table tbody tr:hover td {
+            background: var(--row-hover);
+        }
+        .col-num {
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .col-cat {
+            font-weight: 600;
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.35px;
+        }
+        .dict-table a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .dict-table a:hover {
+            text-decoration: underline;
+        }
+        .tr-col a { color: var(--text); }
+        .tr-col a:hover { color: var(--accent); }
+        .en-col a { font-weight: 600; }
+
+        .empty-state {
+            padding: 24px 0;
+            color: var(--muted);
+            text-align: center;
+            font-size: 14px;
+        }
+
+        @@media (max-width: 560px) {
+            .page { padding: 10px 10px 20px; }
+            .hero { padding: 14px; }
+            .entry-header { font-size: 20px; }
+            .dict-table th, .dict-table td { padding: 6px 8px; font-size: 12px; }
+            .dict-table th.col-num { width: 32px; }
+            .dict-table th.col-cat { width: 70px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <section class="hero">
+            @if (Model.Parent != null)
+            {
+                <a class="back-link" href="@Model.Parent.Url()">← @Model.Parent.Name</a>
+            }
+            <h1 class="entry-header">
+                @if (hasSearch)
+                {
+                    @searchQ.Trim()
+                }
+                else
+                {
+                    @Model.Name
+                }
+                <span class="direction-badge">TR → EN</span>
+            </h1>
+            <p class="hero-subtitle">
+                @if (hasSearch)
+                {
+                    @($"\"{searchQ.Trim()}\" için {headwordPages.Count} sonuç")
+                }
+                else
+                {
+                    @($"{headwordPages.Count} sonuç")
+                }
+            </p>
+        </section>
+
+        @if (resultGroups.Any())
+        {
+            <table class="dict-table">
+                <thead>
+                    <tr>
+                        <th class="col-num">#</th>
+                        <th class="col-cat">Part of speech</th>
+                        <th>Türkçe</th>
+                        <th>İngilizce</th>
+                    </tr>
+                </thead>
+                @foreach (var group in resultGroups)
+                {
+                    <tbody>
+                        <tr class="group-header">
+                            <td colspan="4">@PartOfSpeechLabels.ToEnglishSlug(group.PosKey)</td>
+                        </tr>
+                        @{
+                            var n = 0;
+                        }
+                        @foreach (var row in group.Rows)
+                        {
+                            n++;
+                            var en = HeadwordDisplay.FirstTranslation(row.Headword);
+                            <tr>
+                                <td class="col-num">@n</td>
+                                <td class="col-cat">@PartOfSpeechLabels.ToEnglishSlug(row.PosKey)</td>
+                                <td class="tr-col">
+                                    <a href="@row.Headword.Url()">@row.Headword.Lemma</a>
+                                </td>
+                                <td class="en-col">
+                                    @if (!string.IsNullOrWhiteSpace(en))
+                                    {
+                                        <a href="@row.Headword.Url()">@en</a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                }
+            </table>
+        }
+        else
+        {
+            <div class="empty-state">Sonuç bulunamadı.</div>
+        }
+    </div>
+</body>
+</html>

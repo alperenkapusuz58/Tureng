@@ -1,9 +1,32 @@
+﻿@using System.Linq
+@using Umbraco.Cms.Core.Models.PublishedContent
+@using Umbraco.Cms.Web.Common.PublishedModels
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels
+@using ClockworkUmbraco.Helpers
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.Headword>
+@{
+    Layout = null;
+    var siteName = Model.Root().Name;
+    var senseGroups = new List<(string PosKey, List<SenseItem> Senses)>();
+    if (Model.Senses != null && Model.Senses.Any())
+    {
+        var list = Model.Senses
+            .Select(b => b.Content as SenseItem)
+            .Where(s => s != null)
+            .Cast<SenseItem>()
+            .ToList();
+        foreach (var g in list.GroupBy(s => s.PartOfSpeech ?? string.Empty))
+        {
+            senseGroups.Add((g.Key, g.ToList()));
+        }
+    }
+}
 <!doctype html>
 <html lang="tr">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>example - EN → TR | Tureng Sözlük (önizleme)</title>
+    <title>@Model.Lemma - EN → TR | @siteName</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -255,155 +278,95 @@
             text-align: center;
         }
 
-        @media (max-width: 600px) {
+        @@media (max-width: 600px) {
             .topbar-inner { gap: 10px; }
             .entry-title { font-size: 17px; }
         }
     </style>
 </head>
 <body>
-
-    
-<div class="announcement-bar">
-    <div class="announcement-inner">
-        
-            <span>Örnek duyuru: Bu bir statik önizlemedir.</span>
-        
-    </div>
-</div>
-<style>
-.announcement-bar {
-    background: #ffcc1a;
-    color: #17304a;
-    font-family: "Manrope", Arial, sans-serif;
-    font-weight: 600;
-    font-size: 12.5px;
-    padding: 7px 12px;
-    text-align: center;
-    border-bottom: 1px solid #e6b800;
-}
-.announcement-inner { max-width: 1160px; margin: 0 auto; }
-.announcement-bar a { color: #17304a; text-decoration: underline; }
-.announcement-bar a:hover { opacity: 0.75; }
-</style>
-
-
     <div class="topbar">
         <div class="topbar-inner">
-            <a class="back-link" href="index.html">← Ana sayfa</a>
+            @if (Model.Parent != null)
+            {
+                <a class="back-link" href="@Model.Parent.Url()">← @Model.Parent.Name</a>
+            }
             <div>
-                <span class="entry-title">example</span>
-                
-                    <span class="entry-pron">/ɪɡˈzɑːmpəl/</span>
-                
+                <span class="entry-title">@Model.Lemma</span>
             </div>
-            
-            <button class="listen-btn" type="button" data-text="example" data-lang="en-US">▶ Seslendir</button>
+            <button class="listen-btn" type="button" data-text="@Model.Lemma" data-lang="en-US">▶ Seslendir</button>
         </div>
     </div>
 
     <div class="page">
         <section>
-            
+            @foreach (var group in senseGroups)
+            {
                 <div class="pos-group">
                     <div class="pos-group-header">
-                        <span class="pos-lemma">example</span>
-                        
-                            <span class="pos-pron">/ɪɡˈzɑːmpəl/</span>
-                        
-                        <span class="pos-tag">noun</span>
+                        <span class="pos-lemma">@Model.Lemma</span>
+                        <span class="pos-tag">@PartOfSpeechLabels.ToEnglishSlug(group.PosKey)</span>
                     </div>
-                    
                     <ol class="sense-list">
-                        
+                        @{
+                            var idx = 0;
+                        }
+                        @foreach (var sense in group.Senses)
+                        {
+                            idx++;
                             <li class="sense-item">
-                                <span class="sense-num">1</span>
+                                <span class="sense-num">@idx</span>
                                 <div class="sense-body">
-                                    <span class="grammar-code">[C]</span>
-                                    <span class="definition">Something that is typical of its kind or illustrates a general rule.</span>
-                                    <div class="translation-line">örnek, misal</div>
-                                    
-                                        <div class="example-block">
-                                            This is a good <strong>example</strong> of cooperation.
-                                            <button type="button" class="ex-btn listen-btn" data-text="This is a good example of cooperation." data-lang="en-US" aria-label="Dinle">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
-                                                </svg>
-                                            </button>
-                                            <div class="example-tr">Bu, iş birliğinin iyi bir örneğidir.</div>
-                                        </div>
-                                    
+                                    @if (!string.IsNullOrWhiteSpace(sense.GrammarCode))
+                                    {
+                                        <span class="grammar-code">@sense.GrammarCode</span>
+                                    }
+                                    @if (sense.Sentence != null && !string.IsNullOrWhiteSpace(sense.Sentence.ToString()))
+                                    {
+                                        <span class="definition">@Html.Raw(sense.Sentence)</span>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(sense.Translation))
+                                    {
+                                        <div class="translation-line">@sense.Translation</div>
+                                    }
                                 </div>
                             </li>
-                        
-                            <li class="sense-item">
-                                <span class="sense-num">2</span>
-                                <div class="sense-body">
-                                    <span class="grammar-code">[U]</span>
-                                    <span class="definition">The act of illustrating or serving as a pattern.</span>
-                                    <div class="translation-line">örnek teşkil etme</div>
-                                    
-                                </div>
-                            </li>
-                        
+                        }
                     </ol>
                 </div>
-            
-                <div class="pos-group">
-                    <div class="pos-group-header">
-                        <span class="pos-lemma">example</span>
-                        
-                            <span class="pos-pron">/ɪɡˈzɑːmpəl/</span>
-                        
-                        <span class="pos-tag">verb</span>
-                    </div>
-                    
-                    <ol class="sense-list">
-                        
-                            <li class="sense-item">
-                                <span class="sense-num">1</span>
-                                <div class="sense-body">
-                                    <span class="grammar-code">[T]</span>
-                                    <span class="definition">To show or illustrate by example.</span>
-                                    <div class="translation-line">örneklemek</div>
-                                    
-                                        <div class="example-block">
-                                            She <em>exampled</em> the rule with a short story.
-                                            <button type="button" class="ex-btn listen-btn" data-text="She exampled the rule with a short story." data-lang="en-US" aria-label="Dinle">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
-                                                </svg>
-                                            </button>
-                                            <div class="example-tr">Kuralı kısa bir hikâyle örnekledi.</div>
-                                        </div>
-                                    
-                                </div>
-                            </li>
-                        
-                    </ol>
-                </div>
-            
+            }
 
-            
+            @if (senseGroups.Count == 0)
+            {
+                <div class="empty-state">Bu kelime için henüz anlam eklenmedi.</div>
+            }
 
-            
+            @if (Model.Phrases != null && Model.Phrases.Any())
+            {
                 <div class="phrases-section">
                     <div class="phrases-title">Deyimler &amp; Kalıplar</div>
-                    
-                        <div class="phrase-item">
-                            <span class="phrase-text">for example</span>
-                            <div class="phrase-def">Used when giving an example.</div>
-                            <div class="phrase-tr">örneğin</div>
-                            
-                                <div class="phrase-example">
-                                    Many fruits are rich in vitamin C; <strong>for example</strong>, oranges.
-                                    <div class="example-tr">Birçok meyve C vitamini açısından zengindir; örneğin portakal.</div>
-                                </div>
-                            
-                        </div>
-                    
+                    @foreach (var block in Model.Phrases)
+                    {
+                        @if (block.Content is IdiomsAndProverbsItem phraseItem)
+                        {
+                            <div class="phrase-item">
+                                @if (!string.IsNullOrWhiteSpace(phraseItem.Phrase))
+                                {
+                                    <span class="phrase-text">@phraseItem.Phrase</span>
+                                }
+                                @if (phraseItem.Sentence != null && !string.IsNullOrWhiteSpace(phraseItem.Sentence.ToString()))
+                                {
+                                    <div class="phrase-def">@Html.Raw(phraseItem.Sentence)</div>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(phraseItem.Translation))
+                                {
+                                    <div class="phrase-tr">@phraseItem.Translation</div>
+                                }
+                            </div>
+                        }
+                    }
                 </div>
-            
+            }
         </section>
     </div>
 

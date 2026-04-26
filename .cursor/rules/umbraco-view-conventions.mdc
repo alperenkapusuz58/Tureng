@@ -1,0 +1,250 @@
+---
+description: Umbraco cshtml view dosyalarında model binding kuralları
+globs: "**/*.cshtml"
+alwaysApply: false
+---
+
+# Umbraco View Binding Kuralları
+
+- HTML, CSS ve JS yapısına dokunma. Sadece statik değerleri model property'leriyle değiştir.
+- Null kontrollerinde ternary operatör kullanma. `@if` bloğu kullan.
+- Property'leri `?? ""` gibi fallback ile sarma, direkt kullan.
+- **Null kontrolünde `else` ile statik/fallback HTML yazma.** Panelden veri gelmezse o alan hiç render edilmemeli. `@if (Model.Property != null) { ... }` yeterlidir, `else { <statik fallback> }` yasaktır. Veri yoksa boş kalmalı, hardcode alternatif konulmamalı.
+- **Property'lere her zaman strongly-typed (Model.PropertyName) olarak eriş.** `Model.Value<T>("alias")` veya `siteSettings?.Value<T>("alias")` kullanma. Model veya değişken üzerinden direkt `Model.ContentTop`, `siteSettings?.FooterNavColumn3`, `siteSettings?.HeaderNavLinks` gibi eriş. Bu kural `Model`, `siteSettings`, `content`, `item` gibi tüm strongly-typed değişkenler için geçerlidir.
+- **Media property'lerinde (Image, MediaWithCrops) URL almak için `.MediaUrl()` değil `.Url()` kullan.** `@content.Image.MediaUrl()` yasaktır, doğrusu `@content.Image.Url()`.
+- RichText (IHtmlEncodedString) alanlarını `@Html.Raw()` ile bas, null kontrolünü `!string.IsNullOrWhiteSpace(Model.PropertyName.ToString())` ile yap.
+- Nested blok (BlockListModel) property'si varsa: önce null + `Any()` kontrolü yap, `for` ile döngüye al, her item'ı `.Content as ModelType` ile cast et ve item üzerinden property'lere eriş.
+- **Single URL Picker** (Single URL Picker data type) property'lerinde `.Any()` ve `.First()` kullanma. Single URL Picker tek bir `Link` nesnesi döner, koleksiyon değildir. Direkt `content.Url.Url` ve `content.Url.Name` şeklinde eriş.
+- **Single URL Picker `<a>` tag'lerinde `target` attribute'u her zaman dinamik olmalı.** Asla `target="_blank"` hardcode etme. Umbraco URL Picker'da editör target seçimi yapabilir, bu değer `Link.Target` property'sinde saklanır. Her zaman `target="@xxx.Url.Target"` kullan. Bu kural `.Url.Url` ile erişilen tüm single URL picker property'leri için geçerlidir (`content.Url`, `slide.Url`, `tab.Url`, `card.Url`, `item.Url`, `siteSettings.HeaderButton` vb.).
+- **Block list view'larında `Model.Content` cast'ı her zaman concrete class ile yapılmalı.** `as IPageBanner` değil `as PageBanner` kullan. Interface (`IPageBanner`) yalnızca `IPublishedContent` üzerinden composition property'lerine erişmek gerektiğinde kullanılır (ör: document type'ın composition'ına cast). Block list item content'i zaten doğru tipte gelir, concrete class yeterlidir.
+- **Composition cast işlemlerinde** (document type üzerinden composition property'lerine erişirken) interface kullan. `as CardProperties` yerine `as ICardProperties` yaz. Bu kural yalnızca `IPublishedContent` üzerinden cast yapılırken geçerlidir, block list content cast'ları için geçerli değildir.
+- Razor view'larda `section` kelimesini **değişken adı olarak kullanma**. Razor `@section` direktifini ayrıştırma hatası verir. Bunun yerine bağlama uygun alternatif isimler kullan (ör. `accordionItem`, `featureItem`, `cardItem`).
+- Satır satır metin listesi gereken yerlerde **Textarea + Split kullanma**, bunun yerine **Multiple Text String** data type kullan. Multiple Text String `IEnumerable<string>` döner, doğrudan döngü ile erişilir.
+- **Türkçe string'leri URL-safe formata dönüştürürken** inline `.ToLower().Replace("ı","i").Replace("ö","o")...` zinciri kullanma. Bunun yerine projede mevcut olan `StringExtensions.ToUrl()` extension metodunu kullan: `tag.ToUrl()`. Bu metod Türkçe karakterleri dönüştürür, boşlukları tire yapar ve geçersiz karakterleri temizler.
+
+## Breadcrumb Kuralları
+
+- Breadcrumb her zaman `Umbraco.AssignedContentItem.Ancestors()` ile dinamik olarak oluşturulmalıdır.
+- Manuel breadcrumb yazılmamalı (statik link, dictionary value veya `Model.Parent` ile oluşturulmamalı).
+- `MainPage` ancestor listesinden hariç tutulmalıdır: `parent.ContentType.Alias != MainPage.ModelTypeAlias`
+- Ancestor'lar `Level` sırasına göre listelenmeli: `selection.OrderBy(p => p.Level)`
+- En sonda mevcut sayfa adı gösterilmeli: `@Umbraco.AssignedContentItem.Name`
+- Referans yapı:
+  ```csharp
+  @{
+      var selection = Umbraco.AssignedContentItem.Ancestors();
+      <div class="Common-Breadcrumb ...">
+          @foreach (var parent in selection.OrderBy(p => p.Level))
+          {
+              @if (parent.ContentType.Alias != MainPage.ModelTypeAlias)
+              {
+                  <a href="@parent.Url()" class="shrink-0">@parent.Name</a>
+                  <div class="shrink-0">/</div>
+              }
+          }
+          <a href="#" class="shrink-0">@Umbraco.AssignedContentItem.Name</a>
+      </div>
+  }
+  ```
+
+## Dictionary Kuralları
+
+- `@Umbraco.GetDictionaryValue()` kullanırken asla fallback (ikinci parametre) verme. Sadece key kullan: `@Umbraco.GetDictionaryValue("Common.GERI")`.
+- Fallback'li kullanım (`@Umbraco.GetDictionaryValue("Common.GERI", "GERİ")`) yasaktır.
+- Yeni dictionary item oluştururken tüm dillerdeki (tr, en) çeviri değerleri, dictionary key ile birebir aynı olmalıdır. Asla çeviri değerlerini kendin doldurmaya çalışma.
+
+## Composition Property Sıralama Kuralları
+
+Mevcut composition'ların `sortOrder` değerleri paneldeki sıralamayı belirler. Yeni element type oluştururken composition'ları HTML'deki görünüm sırasına uygun olarak ekle. Mevcut sortOrder referansı:
+- Title Property: sortOrder **5**
+- Subtitle Property: sortOrder **6**
+- Description Property: sortOrder **10**
+- Url Property: sortOrder **15**
+
+## Umbraco Document Type / Element Type Oluşturma Kuralları
+
+- Panelde property oluştururken veya güncellerken `description` alanını **asla boş bırakma**. Her property'e, panelde editörün ne gireceğini anlatan kısa ve açıklayıcı bir Türkçe açıklama yaz.
+- Açıklama formatı: Alanın sayfada nerede/nasıl kullanıldığını belirt. Örnek: "Görselin üzerinde görüntülenecek zengin metin içeriği", "Banner alanında gösterilecek başlık", "Kart üzerinde görünecek kısa açıklama metni".
+- `create-document-type`, `create-element-type` veya `update-document-type` çağrılarında her property nesnesinde `description` key'i mutlaka dolu olmalı.
+- **`create-element-type` aracı property description'ları `null` olarak kaydedebilir.** Bu yüzden `create-element-type` ile yeni element type oluşturulduktan sonra, property description'larının doğru kaydedildiğini `get-document-type-by-id` ile kontrol et. Eğer `null` ise hemen ardından `update-document-type` ile description'ları düzelt. Bu adım atlanmamalı.
+- **Seçenekli property'lerde (Dropdown, Toggle vb.)** her seçeneğin ne yaptığı açıklamada tek tek belirtilmeli. İçerik ekibi teknik değerleri (CSS sınıfı, alias vb.) bilmez; açıklama **kullanıcının göreceği görsel sonucu** anlatmalı. Bu kural Dropdown, Toggle ve benzeri tüm seçenekli property'ler için geçerlidir.
+  - BAD: "Section arka plan rengi sinifi"
+  - GOOD: "Bölümün arka plan rengini belirler. 'bg-[#ffffff]' beyaz arka plan, 'bg-[#F8F7F4]' açık bej/krem arka plan uygular."
+  - BAD: "Padding tema sinifi"
+  - GOOD: "Bölümün üst ve alt boşluk davranışını belirler. 'padding-remove-default' seçildiğinde varsayılan dış boşluklar kaldırılır. 'padding-remove-top' seçildiğinde yalnızca üst boşluk kaldırılır. Boş bırakılırsa standart boşluk uygulanır."
+  - BAD: "Toggle alanı"
+  - GOOD: "Aktif olursa bölümde görsel sola, metin sağa geçer. Pasif olursa görsel sağda, metin solda kalır."
+
+## Element Type Klasör Organizasyonu (Components)
+
+`Components` klasörü altında element type'lar işlevlerine göre alt klasörlere yerleştirilmeli:
+
+- **Sections**: Sayfa düzeyinde tam genişlikte bölüm blokları. `[Blocklist] Main Content`'e eklenen, sayfanın ana yapısını oluşturan section'lar buraya konulur (ör: Short Banner Section, Hero Section, Absolute Breadcrumb).
+- **Items**: Section'ların içinde kullanılan küçük, tekrar eden nested blok öğeleri. Bir section'ın kendi blocklist'inde döngüyle basılan alt item'lar buraya konulur (ör: Url Multi Url Item, Accordion Item, Slider Item).
+- **Settings**: Block settings element type'ları (ör: BgColor + PaddingTheme settings).
+
+Yeni element type oluştururken doğru klasörü seç:
+- Sayfaya doğrudan eklenen bir section/bölüm mü? → **Sections**
+- Bir section'ın içindeki tekrar eden öğe mi? → **Items**
+- Block görünüm ayarı mı? → **Settings**
+
+## Data Type Klasör Organizasyonu
+
+- Yeni oluşturulan data type'lar **asla root seviyede bırakılmamalı**, mutlaka ilgili klasöre taşınmalı.
+- Klasör isimlendirmesi `[EditorTypeName]` formatında olmalı (ör: `[Blocklist]`, `[Dropdown]`, `[Tags]`, `[Content Picker]`).
+- Yeni bir data type oluşturulduktan sonra `get-data-type-root` ile mevcut klasörleri kontrol et. Uygun klasör varsa `move-data-type` ile taşı, yoksa `create-data-type-folder` ile oluşturup taşı.
+- Bu kural tüm projeler için geçerlidir. Her projenin klasör yapısı farklı olabilir, bu yüzden oluşturmadan önce daima mevcut yapıyı kontrol et.
+
+## İçerik Oluşturma Kuralları
+
+- Umbraco'da doküman/sayfa oluşturulurken blok içerikleri (başlık, açıklama, maddeler vb.) **asla uydurulmamalı**. İçerik her zaman ilgili EJS dosyasındaki statik metinlerden birebir alınmalı.
+- EJS'deki Türkçe karakterler (ş, ğ, ü, ö, ç, ı, İ) korunmalı, ASCII'ye dönüştürülmemeli.
+- Görseller için panelde gerçek medya yoksa dummy klasöründen görsel seçilebilir, ancak metin içerikleri için EJS kaynaktır.
+- Nested blok içerikleri (accordion item'ları, FAQ soruları, slider öğeleri vb.) için de EJS'deki tüm öğeler eksiksiz aktarılmalı, kısaltılmamalı veya azaltılmamalı.
+
+## Blocklist Label İsimlendirme Kuralları
+
+- Blocklist data type'ına block eklerken `label` alanı **köşeli parantez** formatında yazılmalı: `[Element Type Name]`.
+- Property değeri gösterilecekse köşeli parantezden sonra `=>` ile eklenir: `[Element Type Name] => ${propertyAlias}`.
+- Örnekler:
+  - `[Absolute Breadcrumb]`
+  - `[Url Multi Url Item] => ${url}`
+  - `[Hero Section] => ${title}`
+- Bu format panelde blok listesini düzenlerken hangi bloğun ne olduğunu hızlıca ayırt etmeyi sağlar.
+
+## Blocklist Data Type Güncelleme Kuralları
+
+- Herhangi bir Blocklist data type'ına yeni block eklerken, güncelleme işleminden **hemen önce** `get-data-type` ile en güncel `blocks` array'ini çek. **Önceki çağrılardan kalan eski veriyi asla kullanma.** Her güncelleme öncesinde mutlaka taze veri çekilmeli.
+- Çekilen array'deki mevcut block'ların tüm alanlarını (özellikle `thumbnail`, `label`, `contentElementTypeKey`, `settingsElementTypeKey` ve varsa diğer özellikler) **olduğu gibi koru**.
+- Yeni block'u array'in sonuna ekle, mevcut block'ların hiçbir alanını silme veya değiştirme.
+- Kullanıcının panelden eklediği `thumbnail` path'leri dahil hiçbir veri kaybolmamalı.
+- Kullanıcının panelden **sildiği** block'lar da geri eklenmemeli. Fetch edilen güncel veride olmayan bir block, güncelleme payload'ına dahil edilmemeli.
+
+## EJS Parametreleri ve Block Settings Kuralları
+
+- Bir EJS partial'ı `include` ile çağırılırken parametre alıyorsa (ör: `bgColor`, `mode`, `paddingTheme`), bu parametreler cshtml'de **asla hardcode edilmemeli**.
+- Bu tür sunum/görünüm parametreleri **block settings** olarak eklenmeli, **content property olarak değil**.
+- Umbraco'da block settings için ayrı bir **Settings element type** oluşturulur ve blocklist tanımında `settingsElementTypeKey` olarak bağlanır.
+- cshtml view'da settings tipi `@inherits` satırında ikinci generic parametre olarak belirtilir: `@inherits UmbracoViewPage<BlockListItem<ContentType, SettingsType>>`. Settings property'lerine `Model.Settings.PropertyName` ile erişilir. Cast (`as`) kullanılmaz.
+- Settings property'leri **composition pattern** ile oluşturulmalı. Her ayar ayrı bir composition element type olarak tanımlanır, settings element type'ları ihtiyaca göre bu composition'ları birleştirir. Örneğin: `BgColor Setting`, `PaddingTheme Setting`, `Mode Setting` gibi ayrı composition'lar oluşturulup, settings type'larında birleştirilir.
+- Bloğun ihtiyacına göre doğru settings type seçilmeli. Gereksiz ayar alanı editöre gösterilmemeli. Örneğin mode ayarı gerektirmeyen bir blok için sadece BgColor + PaddingTheme composition'larını içeren bir settings type kullanılmalı.
+- Sunum parametreleri için **Textstring değil Dropdown** data type kullanılmalı. Editör kullanıcıya hazır seçenekler sunulmalı, serbest metin girilmemeli.
+- Yeni bir dropdown değer gerekirse mevcut dropdown data type'ına eklenmeli, yeni data type oluşturulmamalı. Önce `find-data-type` ile mevcut dropdown'ları kontrol et.
+- Tek seçimli Dropdown (`multiple: false`) property'si `string` döner. `.Any()` / `.First()` kullanılmamalı çünkü `string` üzerinde `char` döner.
+- **Settings property'lerine erişmeden önce `Model.Settings != null` kontrolü yapılmalı.** Panelde settings doldurulmadan blok eklenebilir, bu durumda `Model.Settings` null gelir ve NullReferenceException oluşur. Doğru pattern: `Model.Settings != null && !string.IsNullOrEmpty(Model.Settings.PropertyName) ? Model.Settings.PropertyName : "fallback"`
+- **Yeni section bağlarken EJS include satırını kontrol et**: Parametre geçiliyorsa, mevcut settings type'ları incele ve uygun olanı kullan veya gerekirse yeni composition'lardan oluştur.
+
+## Template ve View Kuralları
+
+- Kendi başına render edilmeyen, sadece parent document type'ın children'ı olarak kullanılan document type'lara **template oluşturma ve atama**. Örneğin bir kategori, detay listesi gibi child-only document type'lar template'siz olmalı.
+- Template sadece tarayıcıda doğrudan URL ile erişilebilen sayfalara oluştur.
+- Gereksiz boş cshtml dosyası oluşturma. Template yoksa view dosyası da olmamalı.
+- **Document type oluştururken önce template gerekip gerekmediğine karar ver:**
+  - **Template GEREKEN durumlar:** Tarayıcıda doğrudan URL ile erişilebilen sayfalar (ör: Ana Sayfa, Hakkımızda, İletişim, Proje Detay). Bu sayfaların `allowedTemplates`, `defaultTemplate` ve fiziksel `.cshtml` dosyası olmalı.
+  - **Template GEREKMEyen durumlar:** Kendi başına render edilmeyen, sadece parent'ın children'ı olarak yapısal/organizasyonel amaçla kullanılan document type'lar (ör: klasör/container node'lar, settings node'ları, child-only gruplayıcılar). Bunlara template atanmamalı ve cshtml dosyası oluşturulmamalı.
+- **Template gereken sayfalar için tam akış (hiçbir adım atlanmamalı):**
+  1. `create-template` ile Umbraco'da template kaydı oluştur.
+  2. `Views/` klasöründe fiziksel `.cshtml` dosyasını oluştur (`create-template` API'si bunu otomatik yapmaz).
+  3. `update-document-type` ile template'i document type'a `allowedTemplates` ve `defaultTemplate` olarak ata.
+  - Template API kaydı yapılıp cshtml dosyası unutulursa sayfa 500 hatası verir. cshtml oluşturulup template atanmazsa sayfa boş render edilir.
+
+```html
+<!-- BAD: Model.Value<T>("alias") ile erişim -->
+@{
+	var contentTop = Model.Value<Umbraco.Cms.Core.Strings.IHtmlEncodedString>("contentTop");
+	var contentImage = Model.Value<Umbraco.Cms.Core.Models.MediaWithCrops>("contentImage");
+}
+@if (contentTop != null)
+{
+	<div>@Html.Raw(contentTop)</div>
+}
+
+<!-- GOOD: Strongly-typed Model.PropertyName ile erişim -->
+@if (Model.ContentTop != null && !string.IsNullOrWhiteSpace(Model.ContentTop.ToString()))
+{
+	<div>@Html.Raw(Model.ContentTop)</div>
+}
+@if (Model.ContentImage != null)
+{
+	<img src="@Model.ContentImage.Url()" alt="@Model.ContentImage.Name" />
+}
+
+<!-- BAD: .MediaUrl() kullanımı -->
+<img src="@Model.Image.MediaUrl()" />
+
+<!-- GOOD: .Url() kullanımı -->
+<img src="@Model.Image.Url()" />
+
+<!-- BAD: Ternary operatör -->
+<img src="@(Model.Image != null ? Model.Image.Url() : "")" />
+
+<!-- GOOD: @if bloğu -->
+@if (Model.Image != null)
+{
+	<img src="@Model.Image.Url()" />
+}
+
+<!-- BAD: Null fallback -->
+<h1>@(Model.Title ?? "")</h1>
+
+<!-- GOOD: Direkt property -->
+<h1>@Model.Title</h1>
+
+<!-- BAD: RichText direkt basım -->
+<div>@Model.Description</div>
+
+<!-- GOOD: RichText Html.Raw ile -->
+@if (Model.Description != null && !string.IsNullOrWhiteSpace(Model.Description.ToString()))
+{
+	<div>@Html.Raw(Model.Description)</div>
+}
+
+<!-- BAD: Single URL Picker'da Any()/First() kullanımı -->
+@if (Model.Url != null && Model.Url.Any())
+{
+	<a href="@Model.Url.First().Url">@Model.Url.First().Name</a>
+}
+
+<!-- GOOD: Single URL Picker direkt erişim -->
+@if (Model.Url != null)
+{
+	<a href="@Model.Url.Url" target="@Model.Url.Target">@Model.Url.Name</a>
+}
+
+<!-- BAD: Single URL Picker'da hardcoded target="_blank" -->
+@if (content?.Url != null)
+{
+	<a href="@content.Url.Url" target="_blank">@content.Url.Name</a>
+}
+
+<!-- GOOD: Single URL Picker'da dinamik target -->
+@if (content?.Url != null)
+{
+	<a href="@content.Url.Url" target="@content.Url.Target">@content.Url.Name</a>
+}
+
+<!-- BAD: Composition cast'ında concrete class -->
+var child = children[i] as CardProperties;
+
+<!-- GOOD: Composition cast'ında interface -->
+var child = children[i] as ICardProperties;
+
+<!-- Nested BlockListModel binding -->
+@if (Model.Items != null && Model.Items.Any())
+{
+	@for (var i = 0; i < Model.Items.Count(); i++)
+	{
+		var item = Model.Items.ElementAt(i).Content as TitleDescriptionImageItem;
+
+		@if (!string.IsNullOrEmpty(item.Title))
+		{
+			<span>@item.Title</span>
+		}
+		@if (item.Image != null)
+		{
+			<img src="@item.Image.Url()" alt="@item.Title" />
+		}
+	}
+}
+```
+

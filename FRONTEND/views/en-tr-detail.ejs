@@ -173,7 +173,12 @@
             color: #4a5e72;
             line-height: 1.4;
         }
-        .example-tr { color: #555; }
+        .example-tr {
+            display: block;
+            margin-top: 3px;
+            color: #555;
+            font-style: normal;
+        }
         .ex-btn {
             display: inline-flex;
             align-items: center;
@@ -284,7 +289,7 @@
                         <% if (headword.pronunciation_text) { %>
                             <span class="pos-pron">/<%= headword.pronunciation_text %>/</span>
                         <% } %>
-                        <span class="pos-tag"><%= group.pos_key %></span>
+                        <span class="pos-tag"><%= typeof partOfSpeechEnglish === 'function' ? partOfSpeechEnglish(group.pos_key || group.title) : group.pos_key %></span>
                     </div>
                     <% if (group.irregular_forms) { %>
                         <div class="irregular-forms">(<%= group.irregular_forms %>)</div>
@@ -300,12 +305,12 @@
                                     <% sense.examples.forEach(function (ex) { %>
                                         <div class="example-block">
                                             <%- ex.sentence_source_html %>
-                                            <span class="example-tr">(<%- ex.sentence_target_html %>)</span>
                                             <button type="button" class="ex-btn listen-btn" data-text="<%= ex.sentence_source_plain || '' %>" data-lang="en-US" aria-label="Dinle">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
                                                 </svg>
                                             </button>
+                                            <div class="example-tr"><%- ex.sentence_target_html %></div>
                                         </div>
                                     <% }); %>
                                 </div>
@@ -330,7 +335,7 @@
                             <% if (phrase.example_source_html) { %>
                                 <div class="phrase-example">
                                     <%- phrase.example_source_html %>
-                                    <% if (phrase.example_target_html) { %><span class="example-tr">(<%- phrase.example_target_html %>)</span><% } %>
+                                    <% if (phrase.example_target_html) { %><div class="example-tr"><%- phrase.example_target_html %></div><% } %>
                                 </div>
                             <% } %>
                         </div>

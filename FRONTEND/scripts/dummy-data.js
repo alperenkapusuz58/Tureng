@@ -110,18 +110,18 @@ module.exports = {
       total: 3,
       resultGroups: [
         {
-          title: 'İsim',
+          pos_key: 'noun',
           rows: [
             {
               num: 1,
-              pos_display: 'İsim',
+              pos_key: 'noun',
               tr_link_text: 'örnek',
               en_lemma: 'example',
               en_slug: 'example',
             },
             {
               num: 2,
-              pos_display: 'İsim',
+              pos_key: 'noun',
               tr_link_text: 'numune',
               en_lemma: 'sample',
               en_slug: 'sample',
@@ -129,11 +129,11 @@ module.exports = {
           ],
         },
         {
-          title: 'Fiil',
+          pos_key: 'verb',
           rows: [
             {
               num: 1,
-              pos_display: 'Fiil',
+              pos_key: 'verb',
               tr_link_text: 'örnek göstermek',
               en_lemma: 'exemplify',
               en_slug: 'exemplify',
