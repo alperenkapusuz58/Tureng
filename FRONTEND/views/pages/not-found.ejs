@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
-    <title>"nosuchwordtr" - Sonuç bulunamadı</title>
+    <title><% if (query) { %>"<%= query %>" - Sonuç bulunamadı<% } else { %>Sonuç bulunamadı<% } %></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -28,7 +28,7 @@
             font-family: "Manrope", Arial, sans-serif;
             background: var(--bg);
             color: var(--text);
-            font-size: 14px;
+            font-size: 13px;
             line-height: 1.5;
         }
 
@@ -61,7 +61,7 @@
         .topbar-brand {
             color: #fff;
             font-weight: 700;
-            font-size: 14px;
+            font-size: 13px;
             letter-spacing: 0.3px;
             text-decoration: none;
             opacity: 0.9;
@@ -93,14 +93,14 @@
             color: var(--navy);
         }
         .hero-card h1 {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 700;
             color: var(--navy-deep);
             margin-bottom: 8px;
         }
         .hero-card p.lead {
             color: var(--muted);
-            font-size: 14px;
+            font-size: 13px;
             margin-bottom: 4px;
         }
         .query-highlight {
@@ -148,7 +148,7 @@
             color: var(--muted);
             font-family: inherit;
             font-weight: 600;
-            font-size: 12px;
+            font-size: 11px;
             letter-spacing: 0.3px;
             border-radius: 8px;
             cursor: pointer;
@@ -183,7 +183,7 @@
             border: 0;
             outline: none;
             font-family: inherit;
-            font-size: 14px;
+            font-size: 13px;
             color: var(--text);
             padding: 8px 0;
             background: transparent;
@@ -222,14 +222,14 @@
             padding: 8px 14px;
             color: var(--text);
             text-decoration: none;
-            font-size: 13px;
+            font-size: 12px;
             border-bottom: 1px solid var(--border);
         }
         .suggestions-dropdown a:last-child { border-bottom: 0; }
         .suggestions-dropdown a:hover { background: var(--row-hover); }
         .suggestion-translation {
             color: var(--muted);
-            font-size: 12px;
+            font-size: 11px;
             margin-left: 6px;
         }
 
@@ -245,7 +245,7 @@
             background: var(--soft);
             border-bottom: 1px solid var(--border);
             font-weight: 700;
-            font-size: 11px;
+            font-size: 10px;
             color: var(--muted);
             text-transform: uppercase;
             letter-spacing: 0.6px;
@@ -266,7 +266,7 @@
             border: 1px solid var(--border);
             border-radius: 999px;
             text-decoration: none;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             transition: all 0.15s;
         }
@@ -279,7 +279,7 @@
         .chip-term {
             color: var(--muted);
             font-weight: 500;
-            font-size: 11px;
+            font-size: 10px;
             margin-left: 2px;
         }
         .chip:hover .chip-term { color: rgba(255,255,255,0.75); }
@@ -296,7 +296,7 @@
             padding: 9px 16px;
             color: var(--accent);
             text-decoration: none;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
         }
         .link-list a:hover {
@@ -305,7 +305,7 @@
         .link-list .sub {
             color: var(--muted);
             font-weight: 400;
-            font-size: 12px;
+            font-size: 11px;
             margin-left: 6px;
         }
 
@@ -316,7 +316,7 @@
             border: 1px solid #fde7a1;
             border-radius: 10px;
             color: #6c5810;
-            font-size: 12.5px;
+            font-size: 12px;
             line-height: 1.55;
         }
         .tip strong { color: #3e3104; }
@@ -324,42 +324,18 @@
         @media (max-width: 560px) {
             .page { padding: 18px 12px 30px; }
             .hero-card { padding: 22px 18px 20px; }
-            .hero-card h1 { font-size: 19px; }
+            .hero-card h1 { font-size: 17px; }
             .icon-wrap { width: 58px; height: 58px; }
         }
     </style>
 </head>
 <body>
 
-    
-<div class="announcement-bar">
-    <div class="announcement-inner">
-        
-            <span>Örnek duyuru: Bu bir statik önizlemedir.</span>
-        
-    </div>
-</div>
-<style>
-.announcement-bar {
-    background: #ffcc1a;
-    color: #17304a;
-    font-family: "Manrope", Arial, sans-serif;
-    font-weight: 600;
-    font-size: 12.5px;
-    padding: 7px 12px;
-    text-align: center;
-    border-bottom: 1px solid #e6b800;
-}
-.announcement-inner { max-width: 1160px; margin: 0 auto; }
-.announcement-bar a { color: #17304a; text-decoration: underline; }
-.announcement-bar a:hover { opacity: 0.75; }
-</style>
-
-
+    <%- include('partials/announcement') %>
     <div class="topbar">
         <div class="topbar-inner">
             <a class="back-link" href="index.html">← Ana sayfa</a>
-            <a class="topbar-brand" href="index.html">Tureng Sözlük (önizleme)</a>
+            <a class="topbar-brand" href="index.html"><%= site.site_name || 'Tureng Sözlük' %></a>
         </div>
     </div>
 
@@ -372,33 +348,36 @@
                     <line x1="8" y1="11" x2="14" y2="11"/>
                 </svg>
             </div>
-            
+            <% if (query) { %>
                 <h1>Sonuç bulunamadı</h1>
                 <p class="lead">
-                    <span class="query-highlight">nosuchwordtr</span>
-                    için Türkçe-İngilizce sözlükte
+                    <span class="query-highlight"><%= query %></span>
+                    <% if (direction === 'tr-en') { %>için Türkçe-İngilizce sözlükte<% } else { %>için İngilizce-Türkçe sözlükte<% } %>
                     bir eşleşme yok.
                 </p>
                 <span class="direction-badge">
-                    TR → EN
+                    <% if (direction === 'tr-en') { %>TR → EN<% } else { %>EN → TR<% } %>
                 </span>
-            
+            <% } else { %>
+                <h1>Aramak istediğiniz kelimeyi yazın</h1>
+                <p class="lead">Boş bir sorgu gönderildi. Aşağıdan arama yapabilirsiniz.</p>
+            <% } %>
         </div>
 
         <div class="search-section">
             <!-- Statik önizleme: üretimde action="/search/" -->
             <form method="get" action="not-found.html" class="search-form" autocomplete="off">
                 <div class="dir-tabs" role="tablist">
-                    <button type="button" class="dir-tab" data-direction="en-tr" role="tab">İngilizce → Türkçe</button>
-                    <button type="button" class="dir-tab active" data-direction="tr-en" role="tab">Türkçe → İngilizce</button>
+                    <button type="button" class="dir-tab<% if (direction !== 'tr-en') { %> active<% } %>" data-direction="en-tr" role="tab">İngilizce → Türkçe</button>
+                    <button type="button" class="dir-tab<% if (direction === 'tr-en') { %> active<% } %>" data-direction="tr-en" role="tab">Türkçe → İngilizce</button>
                 </div>
-                <input type="hidden" name="direction" id="direction-input" value="tr-en">
+                <input type="hidden" name="direction" id="direction-input" value="<%= direction === 'tr-en' ? 'tr-en' : 'en-tr' %>">
                 <div class="search-shell">
                     <input type="text"
                            id="query-input"
                            name="q"
-                           value="nosuchwordtr"
-                           placeholder="Türkçe kelime…"
+                           value="<%= query %>"
+                           placeholder="<%= direction === 'tr-en' ? 'Türkçe kelime…' : 'İngilizce kelime…' %>"
                            autofocus
                            required>
                     <button class="search-submit" type="submit" aria-label="Ara">
@@ -412,47 +391,59 @@
             </form>
         </div>
 
-        
+        <% if (did_you_mean && did_you_mean.length) { %>
+            <div class="section-card">
+                <div class="section-title">Şunu mu demek istediniz?</div>
+                <div class="chip-list">
+                    <% did_you_mean.forEach(function (item) { %>
+                        <a class="chip" href="<%= item.url %>">
+                            <%= item.lemma %>
+                            <% if (item.term) { %><span class="chip-term">— <%= item.term %></span><% } %>
+                        </a>
+                    <% }); %>
+                </div>
+            </div>
+        <% } %>
 
-        
+        <% if (suggestions && suggestions.length) { %>
             <div class="section-card">
                 <div class="section-title">
-                    Yakın sonuçlar
+                    <%= direction === 'tr-en' ? 'Yakın sonuçlar' : 'Benzer kelimeler' %>
                 </div>
                 <ul class="link-list">
-                    
+                    <% suggestions.forEach(function (item) { %>
                         <li>
-                            <a href="en-tr-detail.html">
-                                örnek
-                                <span class="sub">— example</span>
+                            <a href="<%= item.url %>">
+                                <%= item.lemma %>
+                                <% if (item.translation) { %><span class="sub">— <%= item.translation %></span><% } %>
                             </a>
                         </li>
-                    
+                    <% }); %>
                 </ul>
             </div>
-        
+        <% } %>
 
-        
+        <% if (sample_words && sample_words.length) { %>
             <div class="section-card">
                 <div class="section-title">Sözlükten keşfet</div>
                 <div class="chip-list">
-                    
-                        <a class="chip" href="en-tr-detail.html">su</a>
-                    
-                        <a class="chip" href="en-tr-detail.html">ışık</a>
-                    
+                    <% sample_words.forEach(function (item) { %>
+                        <a class="chip" href="<%= item.url %>"><%= item.lemma %></a>
+                    <% }); %>
                 </div>
             </div>
-        
+        <% } %>
 
-        
+        <% if (query) { %>
             <div class="tip">
                 <strong>İpucu:</strong>
-                
+                <% if (direction === 'tr-en') { %>
                     Türkçe karakterleri değiştirmeyi deneyin (ör. <em>ucmak</em> / <em>uçmak</em>), sorguyu kısaltın veya yazım hatalarını kontrol edin. Yön butonundan İngilizce aramasına da geçebilirsiniz.
-                
+                <% } else { %>
+                    Yazımı kontrol edin, kelimeyi kısaltmayı deneyin veya yön butonundan Türkçe aramaya geçin.
+                <% } %>
             </div>
-        
+        <% } %>
     </div>
 
     <script>

@@ -1,0 +1,33 @@
+<section class="Search-Content relative py-[80px] md:py-[80px] md:h-[calc(100vh-150px)]" data-search-section>
+    <div class="container mx-auto max-w-[660px] px-[20px]">
+        <div class="grid gap-[24px]">
+            <div class="grid gap-[24px]">
+                <form id="home-search-form" action="#" method="get">
+                    <div class="relative w-full border-[0.5px] border-[#EBEBEB] rounded-4 bg-[#F4F2EE]">
+                        <div class="flex items-center gap-[10px] md:gap-[12px] px-[12px] md:px-[16px] py-[10px] md:py-[12px]">
+                            <div class="w-[20px] h-[20px]" aria-hidden="true">
+                                <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M15.2598 15.2598L11.8332 11.8332M13.6665 7.50016C13.6665 10.9054 10.9051 13.6668 7.49984 13.6668C4.09461 13.6668 1.33317 10.9054 1.33317 7.50016C1.33317 4.09493 4.09461 1.3335 7.49984 1.3335C10.9051 1.3335 13.6665 4.09493 13.6665 7.50016Z" stroke="#DEDDDC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <input id="search-input" name="q" type="search" placeholder="Ara" autocomplete="off" enterkeyhint="search" aria-label="Arama" class="w-full text-14 font-normal leading-[1.5em] text-gray outline-none bg-transparent placeholder:text-gray" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="flex flex-wrap gap-[8px] md:gap-[12px]">
+                <button type="button" class="flex items-center justify-center px-[16px] py-[8px] border border-[#EBEBEB] rounded-[99px] bg-transparent cursor-pointer" data-search-dir="tr-en">
+                    <span class="text-[12px] md:text-[14px] font-normal leading-[1.5em] text-gray">Türkçe - İngilizce</span>
+                </button>
+                <button type="button" class="flex items-center justify-center px-[16px] py-[8px] border border-[#EBEBEB] rounded-[99px] bg-transparent cursor-pointer" data-search-dir="en-tr">
+                    <span class="text-[12px] md:text-[14px] font-normal leading-[1.5em] text-gray">İngilizce - Türkçe</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="search-results-block" class="grid gap-[12px] mt-[24px]" hidden aria-live="polite">
+            <div id="search-results-heading" class="text-12 md:text-14 font-medium leading-[1.5em] text-dark"></div>
+            <div id="search-results-list" class="grid [&>a:nth-child(even)]:bg-[#F4F2EE]" role="list"></div>
+        </div>
+    </div>
+</section>

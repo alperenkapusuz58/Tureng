@@ -1,0 +1,76 @@
+<header class="sticky top-0 z-[50] w-full bg-white border-b border-[#E5E5E5] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-[0.3s] md:bg-transparent md:border-none">
+    <div class="flex flex-row items-center justify-between mx-auto w-full relative px-20 py-12 md:px-48 md:py-20 max-w-[1900px] transition-[0.3s]">
+        <div class="flex items-center flex-shrink-0">
+            <a href="/" class="flex items-center">
+                <img src="https://placehold.co/72x72/222/fff" width="72" height="72" alt="İzi İletişim Logo" class="w-[48px] h-[48px] md:w-[72px] md:h-[72px]" />
+            </a>
+        </div>
+
+        <div class="hidden md:flex flex-col items-end ml-auto gap-16 lg:gap-24">
+            <ul class="flex flex-col w-full gap-8 ml-0 sm:flex-row sm:items-center sm:w-auto sm:gap-32 sm:ml-32">
+                <li class="flex items-center"><a href="/kariyer" class="text-aqua text-12 font-600 leading-[1.5] hover:opacity-70 uppercase transition-[0.2s] flex items-center whitespace-nowrap tracking-[0.48px]">KARİYER</a></li>
+                <li class="flex items-center"><a href="/haberler" class="text-aqua text-12 font-600 leading-[1.5] hover:opacity-70 uppercase transition-[0.2s] flex items-center whitespace-nowrap tracking-[0.48px]">BİZDEN HABERLER</a></li>
+                <li class="flex items-center"><a href="/iletisim" class="text-aqua text-12 font-600 leading-[1.5] hover:opacity-70 uppercase transition-[0.2s] flex items-center whitespace-nowrap tracking-[0.48px]">İLETİŞİM</a></li>
+                <li class="flex flex-row items-center gap-16">
+                    <div class="relative inline-flex items-center" data-dropdown-container>
+                        <button type="button" tabindex="0" data-dropdown-trigger class="inline-flex items-center gap-[6px] text-aqua text-12 font-600 leading-[1.5] hover:opacity-70 uppercase transition-[0.2s] cursor-pointer tracking-[0.48px] bg-transparent border-0 p-0 font-inherit" aria-haspopup="true" aria-expanded="false" aria-label="Dil seçin">
+                            <i class="fa-solid fa-globe text-14" aria-hidden="true"></i>
+                            <span>TR</span>
+                        </button>
+                        <div tabindex="0" class="min-w-fit fixed md:absolute top-30 md:top-35 right-[-10px] md:right-[-15px] flex justify-center z-[120] bg-white rounded-4 shadow-[0_4px_16px_rgba(0,0,0,0.08)] opacity-0 invisible pointer-events-none origin-top-left translate-y-[-10px] scale-[0.95] transition-[opacity,visibility,transform] duration-[0.2s]" data-dropdown data-lang-dropdown>
+                            <div class="flex flex-col items-start gap-8 p-[5px_10px] max-w-fit">
+                                <a href="/tr" class="w-full text-left text-charcoal text-12 md:text-14 font-400 leading-[1.5] transition-[0.2s]" data-dropdown-item>TR</a>
+                                <a href="/en" class="w-full text-left text-charcoal text-12 md:text-14 font-400 leading-[1.5] transition-[0.2s]" data-dropdown-item>EN</a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+            <!--<ul class="flex flex-col w-full gap-12 sm:flex-row sm:w-auto sm:gap-32 md:flex-row md:gap-32">
+                <li class="relative inline-flex items-center" data-dropdown-container>
+                    <label tabindex="0" class="text-charcoal text-16 sm:text-18 font-400 leading-[1.5] transition-[0.2s] hover:text-aqua cursor-pointer flex items-center" data-dropdown-trigger>Biz</label>
+                    <div tabindex="0" class="absolute top-40 left-[-75px] bg-white rounded-[50%] min-w-[200px] shadow-[0_4px_16px_rgba(0,0,0,0.08)] z-[100] opacity-0 invisible pointer-events-none origin-top-left translate-y-[-10px] scale-[0.95] transition-[opacity,visibility,transform] duration-[0.2s]" data-dropdown>
+                        <div class="flex flex-col items-start gap-8 py-12 px-16 md:py-24 md:px-12">
+                            <a href="/isimiz" class="w-full text-left text-charcoal text-14 md:text-16 font-400 leading-[1.5] transition-[0.2s] hover:text-gray" data-dropdown-item>İşimiz</a>
+                            <a href="/yolculugumuz" class="w-full text-left text-charcoal text-14 md:text-16 font-400 leading-[1.5] transition-[0.2s] hover:text-gray" data-dropdown-item>Yolculuğumuz</a>
+                        </div>
+                    </div>
+                </li>
+                <li class="flex items-center">
+                    <a href="/kurumsal" class="text-charcoal text-16 sm:text-18 font-400 leading-[1.5] transition-[0.2s] hover:text-aqua whitespace-nowrap" data-menu-link>Yönetim Ekibimiz</a>
+                </li>
+                <li class="flex items-center">
+                    <a href="/referanslar" class="text-charcoal text-16 sm:text-18 font-400 leading-[1.5] transition-[0.2s] hover:text-aqua whitespace-nowrap" data-menu-link>Markalarımız</a>
+                </li>
+            </ul>-->
+        </div>
+        <div class="flex flex-row items-center gap-16 md:hidden flex-shrink-0">
+            <ul class="flex flex-row items-center gap-16">
+                <li class="relative inline-flex items-center" data-dropdown-container>
+                    <span class="hax hao fs14 ib ib-chev ibw ib11 fon hp inline-flex items-center text-charcoal" on="tap:sidebarLang.open" role="button" data-dropdown-trigger aria-label="Dil seçin" tabindex="0">
+                        <i class="i i-globe iw hv-2" aria-hidden="true"></i>
+                        <span class="hdn hdi-m lpl-2">English (UK)</span>
+                    </span>
+                    <div tabindex="0" class="absolute min-w-fit fixed md:absolute top-30 md:top-35 right-[-10px] md:right-[-15px] flex justify-center z-[120] bg-white rounded-[50%] shadow-[0_4px_16px_rgba(0,0,0,0.08)] opacity-0 invisible pointer-events-none origin-top-left translate-y-[-10px] scale-[0.95] transition-[opacity,visibility,transform] duration-[0.2s]" data-dropdown>
+                        <div class="flex flex-col items-start gap-8 p-[5px_10px] max-w-fit" data-dropdown-content>
+                            <a href="/tr" class="w-full text-left text-charcoal text-12 md:text-14 font-400 leading-[1.5] transition-[0.2s] hover:text-gray" data-dropdown-item>TR</a>
+                            <a href="/en" class="w-full text-left text-gray text-12 md:text-14 font-400 leading-[1.5] transition-[0.2s] hover:text-gray" data-dropdown-item>EN</a>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <a href="/arama" class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M15.0252 13.8486L18.5941 17.4176L17.4156 18.5961L13.8467 15.0271C12.5634 16.0538 10.936 16.668 9.16601 16.668C5.02602 16.668 1.66602 13.308 1.66602 9.16797C1.66602 5.02797 5.02602 1.66797 9.16601 1.66797C13.306 1.66797 16.666 5.02797 16.666 9.16797C16.666 10.938 16.0518 12.5654 15.0252 13.8486ZM13.3533 13.2303C14.3723 12.1801 14.9993 10.7476 14.9993 9.16797C14.9993 5.94505 12.3889 3.33464 9.16601 3.33464C5.9431 3.33464 3.33268 5.94505 3.33268 9.16797C3.33268 12.3909 5.9431 15.0013 9.16601 15.0013C10.7457 15.0013 12.1782 14.3742 13.2283 13.3552L13.3533 13.2303Z" fill="#7A7A7A" />
+                        </svg>
+                    </a>
+                </li>
+            </ul>
+            <button class="flex flex-col justify-center items-center w-[17px] h-[13px] gap-[3px] bg-transparent border-0 cursor-pointer md:hidden" aria-label="Menü" data-burger>
+                <span class="block w-full h-[3px] bg-charcoal rounded-[50%] transition-[0.2s] md:w-24 md:h-[3px]"></span>
+                <span class="block w-full h-[3px] bg-charcoal rounded-[50%] transition-[0.2s] md:w-24 md:h-[3px]"></span>
+                <span class="block w-full h-[3px] bg-charcoal rounded-[50%] transition-[0.2s] md:w-24 md:h-[3px]"></span>
+            </button>
+        </div>
+    </div>
+</header>

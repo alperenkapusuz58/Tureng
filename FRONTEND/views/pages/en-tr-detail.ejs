@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>example - EN → TR | Tureng Sözlük (önizleme)</title>
+    <title><%= headword.lemma %> - EN → TR | <%= site.site_name || 'Tureng Sözlük' %></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -23,7 +23,7 @@
             font-family: "Manrope", Arial, sans-serif;
             background: var(--bg);
             color: var(--text);
-            font-size: 13px;
+            font-size: 12px;
             line-height: 1.5;
         }
 
@@ -54,13 +54,13 @@
         }
         .entry-title {
             color: #fff;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
             line-height: 1.1;
         }
         .entry-pron {
             color: rgba(255,255,255,0.72);
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 400;
             margin-left: 6px;
         }
@@ -102,12 +102,12 @@
         }
         .pos-lemma {
             font-weight: 700;
-            font-size: 15px;
+            font-size: 14px;
             color: var(--navy-deep);
         }
         .pos-pron {
             color: var(--muted);
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 400;
         }
         .pos-tag {
@@ -122,7 +122,7 @@
         }
         .irregular-forms {
             color: var(--muted);
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 500;
             padding: 3px 14px 6px;
             background: #f5f8fb;
@@ -144,7 +144,7 @@
         .sense-num {
             flex: 0 0 18px;
             font-weight: 700;
-            font-size: 12px;
+            font-size: 11px;
             color: var(--muted);
             padding-top: 1px;
         }
@@ -157,19 +157,19 @@
         }
         .definition {
             color: #3a526a;
-            font-size: 12px;
+            font-size: 11px;
             display: block;
             margin-bottom: 2px;
         }
         .translation-line {
             color: var(--navy-deep);
             font-weight: 700;
-            font-size: 13px;
+            font-size: 12px;
         }
         .example-block {
             margin-top: 4px;
             font-style: italic;
-            font-size: 12px;
+            font-size: 11px;
             color: #4a5e72;
             line-height: 1.4;
         }
@@ -228,25 +228,25 @@
         .phrase-item:last-child { border-bottom: 0; }
         .phrase-text {
             font-weight: 700;
-            font-size: 13px;
+            font-size: 12px;
             color: var(--navy-deep);
         }
         .phrase-def {
             color: #3a526a;
-            font-size: 12px;
+            font-size: 11px;
             margin-top: 2px;
         }
         .phrase-tr {
             color: var(--navy-deep);
             font-weight: 700;
-            font-size: 12px;
+            font-size: 11px;
             margin-top: 2px;
         }
         .phrase-example {
             margin-top: 3px;
             font-style: italic;
             color: #4a5e72;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .empty-state {
@@ -257,153 +257,91 @@
 
         @media (max-width: 600px) {
             .topbar-inner { gap: 10px; }
-            .entry-title { font-size: 17px; }
+            .entry-title { font-size: 16px; }
         }
     </style>
 </head>
 <body>
 
-    
-<div class="announcement-bar">
-    <div class="announcement-inner">
-        
-            <span>Örnek duyuru: Bu bir statik önizlemedir.</span>
-        
-    </div>
-</div>
-<style>
-.announcement-bar {
-    background: #ffcc1a;
-    color: #17304a;
-    font-family: "Manrope", Arial, sans-serif;
-    font-weight: 600;
-    font-size: 12.5px;
-    padding: 7px 12px;
-    text-align: center;
-    border-bottom: 1px solid #e6b800;
-}
-.announcement-inner { max-width: 1160px; margin: 0 auto; }
-.announcement-bar a { color: #17304a; text-decoration: underline; }
-.announcement-bar a:hover { opacity: 0.75; }
-</style>
-
-
+    <%- include('partials/announcement') %>
     <div class="topbar">
         <div class="topbar-inner">
             <a class="back-link" href="index.html">← Ana sayfa</a>
             <div>
-                <span class="entry-title">example</span>
-                
-                    <span class="entry-pron">/ɪɡˈzɑːmpəl/</span>
-                
+                <span class="entry-title"><%= headword.lemma %></span>
+                <% if (headword.pronunciation_text) { %>
+                    <span class="entry-pron">/<%= headword.pronunciation_text %>/</span>
+                <% } %>
             </div>
-            
-            <button class="listen-btn" type="button" data-text="example" data-lang="en-US">▶ Seslendir</button>
+            <% if (headword.pronunciation_audio_url) { %>
+                <audio id="audio" preload="none" src="<%= headword.pronunciation_audio_url %>"></audio>
+            <% } %>
+            <button class="listen-btn" type="button" data-text="<%= headword.lemma %>" data-lang="en-US">▶ Seslendir</button>
         </div>
     </div>
 
     <div class="page">
         <section>
-            
+            <% senseGroups.forEach(function (group) { %>
                 <div class="pos-group">
                     <div class="pos-group-header">
-                        <span class="pos-lemma">example</span>
-                        
-                            <span class="pos-pron">/ɪɡˈzɑːmpəl/</span>
-                        
-                        <span class="pos-tag">noun</span>
+                        <span class="pos-lemma"><%= headword.lemma %></span>
+                        <% if (headword.pronunciation_text) { %>
+                            <span class="pos-pron">/<%= headword.pronunciation_text %>/</span>
+                        <% } %>
+                        <span class="pos-tag"><%= typeof partOfSpeechEnglish === 'function' ? partOfSpeechEnglish(group.pos_key || group.title) : group.pos_key %></span>
                     </div>
-                    
+                    <% if (group.irregular_forms) { %>
+                        <div class="irregular-forms">(<%= group.irregular_forms %>)</div>
+                    <% } %>
                     <ol class="sense-list">
-                        
+                        <% group.senses.forEach(function (sense, idx) { %>
                             <li class="sense-item">
-                                <span class="sense-num">1</span>
+                                <span class="sense-num"><%= idx + 1 %></span>
                                 <div class="sense-body">
-                                    <span class="grammar-code">[C]</span>
-                                    <span class="definition">Something that is typical of its kind or illustrates a general rule.</span>
-                                    <div class="translation-line">örnek, misal</div>
-                                    
+                                    <% if (sense.grammar_code) { %><span class="grammar-code"><%= sense.grammar_code %></span><% } %>
+                                    <% if (sense.definition_html) { %><span class="definition"><%- sense.definition_html %></span><% } %>
+                                    <div class="translation-line"><%= sense.translation %></div>
+                                    <% sense.examples.forEach(function (ex) { %>
                                         <div class="example-block">
-                                            This is a good <strong>example</strong> of cooperation.
-                                            <button type="button" class="ex-btn listen-btn" data-text="This is a good example of cooperation." data-lang="en-US" aria-label="Dinle">
+                                            <%- ex.sentence_source_html %>
+                                            <button type="button" class="ex-btn listen-btn" data-text="<%= ex.sentence_source_plain || '' %>" data-lang="en-US" aria-label="Dinle">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
                                                 </svg>
                                             </button>
-                                            <div class="example-tr">Bu, iş birliğinin iyi bir örneğidir.</div>
+                                            <div class="example-tr"><%- ex.sentence_target_html %></div>
                                         </div>
-                                    
+                                    <% }); %>
                                 </div>
                             </li>
-                        
-                            <li class="sense-item">
-                                <span class="sense-num">2</span>
-                                <div class="sense-body">
-                                    <span class="grammar-code">[U]</span>
-                                    <span class="definition">The act of illustrating or serving as a pattern.</span>
-                                    <div class="translation-line">örnek teşkil etme</div>
-                                    
-                                </div>
-                            </li>
-                        
+                        <% }); %>
                     </ol>
                 </div>
-            
-                <div class="pos-group">
-                    <div class="pos-group-header">
-                        <span class="pos-lemma">example</span>
-                        
-                            <span class="pos-pron">/ɪɡˈzɑːmpəl/</span>
-                        
-                        <span class="pos-tag">verb</span>
-                    </div>
-                    
-                    <ol class="sense-list">
-                        
-                            <li class="sense-item">
-                                <span class="sense-num">1</span>
-                                <div class="sense-body">
-                                    <span class="grammar-code">[T]</span>
-                                    <span class="definition">To show or illustrate by example.</span>
-                                    <div class="translation-line">örneklemek</div>
-                                    
-                                        <div class="example-block">
-                                            She <em>exampled</em> the rule with a short story.
-                                            <button type="button" class="ex-btn listen-btn" data-text="She exampled the rule with a short story." data-lang="en-US" aria-label="Dinle">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
-                                                </svg>
-                                            </button>
-                                            <div class="example-tr">Kuralı kısa bir hikâyle örnekledi.</div>
-                                        </div>
-                                    
-                                </div>
-                            </li>
-                        
-                    </ol>
-                </div>
-            
+            <% }); %>
 
-            
+            <% if (senseGroups.length === 0) { %>
+                <div class="empty-state">Bu kelime için henüz anlam eklenmedi.</div>
+            <% } %>
 
-            
+            <% if (phrases && phrases.length) { %>
                 <div class="phrases-section">
                     <div class="phrases-title">Deyimler &amp; Kalıplar</div>
-                    
+                    <% phrases.forEach(function (phrase) { %>
                         <div class="phrase-item">
-                            <span class="phrase-text">for example</span>
-                            <div class="phrase-def">Used when giving an example.</div>
-                            <div class="phrase-tr">örneğin</div>
-                            
+                            <span class="phrase-text"><%= phrase.phrase_text %></span>
+                            <% if (phrase.definition_html) { %><div class="phrase-def"><%- phrase.definition_html %></div><% } %>
+                            <% if (phrase.translation) { %><div class="phrase-tr"><%= phrase.translation %></div><% } %>
+                            <% if (phrase.example_source_html) { %>
                                 <div class="phrase-example">
-                                    Many fruits are rich in vitamin C; <strong>for example</strong>, oranges.
-                                    <div class="example-tr">Birçok meyve C vitamini açısından zengindir; örneğin portakal.</div>
+                                    <%- phrase.example_source_html %>
+                                    <% if (phrase.example_target_html) { %><div class="example-tr"><%- phrase.example_target_html %></div><% } %>
                                 </div>
-                            
+                            <% } %>
                         </div>
-                    
+                    <% }); %>
                 </div>
-            
+            <% } %>
         </section>
     </div>
 
