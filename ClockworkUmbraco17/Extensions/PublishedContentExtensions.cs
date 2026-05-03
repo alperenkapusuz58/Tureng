@@ -12,10 +12,10 @@ namespace ClockworkUmbraco.Extensions
         /// <summary>
         /// Bu Panelde oluşturulan anasayfayı döner.
         /// </summary>
-        //public static MainPage GetMainPage(this IPublishedContent publishedContent)
-        //{
-        //    return publishedContent.AncestorOrSelf<MainPage>();
-        //}
+        public static MainPage GetMainPage(this IPublishedContent publishedContent)
+        {
+            return publishedContent?.AncestorOrSelf<MainPage>();
+        }
 
 
         /// <summary>
@@ -25,11 +25,11 @@ namespace ClockworkUmbraco.Extensions
 
         // NOT => Şimdilik yoruma alınmıştır. Panelde oluşturduğunuz takdirde açabilirsiniz.
 
-        //public static SiteSettings GetSiteSettings(this IPublishedContent publishedContent)
-        //{
-        //    var mainPage = GetMainPage(publishedContent);
-        //    return mainPage?.FirstChild<SiteSettings>();
-        //}
+        public static SiteSettings GetSiteSettings(this IPublishedContent publishedContent)
+        {
+            var mainPage = GetMainPage(publishedContent);
+            return mainPage?.FirstChild<SiteSettings>();
+        }
 
 
         /// <summary>

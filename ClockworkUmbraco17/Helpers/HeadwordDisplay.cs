@@ -7,12 +7,12 @@ public static class HeadwordDisplay
 {
     public static string? FirstTranslation(Headword hw)
     {
-        if (hw.Senses == null || !hw.Senses.Any())
+        if (hw.PartofSpeech == null || !hw.PartofSpeech.Any())
         {
             return null;
         }
 
-        foreach (var block in hw.Senses)
+        foreach (var block in hw.PartofSpeech)
         {
             if (block.Content is SenseItem s && !string.IsNullOrWhiteSpace(s.Translation))
             {

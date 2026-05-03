@@ -1,375 +1,153 @@
-﻿@using System.Linq
-@using Umbraco.Cms.Core.Models.PublishedContent
-@using Umbraco.Cms.Web.Common.PublishedModels
-@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels
-@using ClockworkUmbraco.Helpers
-@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.Headword>
+﻿@inherits UmbracoViewPage<Headword>
 @{
-    Layout = null;
-    var siteName = Model.Root().Name;
-    var senseGroups = new List<(string PosKey, List<SenseItem> Senses)>();
-    if (Model.Senses != null && Model.Senses.Any())
-    {
-        var list = Model.Senses
-            .Select(b => b.Content as SenseItem)
-            .Where(s => s != null)
-            .Cast<SenseItem>()
-            .ToList();
-        foreach (var g in list.GroupBy(s => s.PartOfSpeech ?? string.Empty))
-        {
-            senseGroups.Add((g.Key, g.ToList()));
-        }
-    }
+    Layout = "Layout.cshtml";
 }
-<!doctype html>
-<html lang="tr">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@Model.Lemma - EN → TR | @siteName</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --navy: #243b7a;
-            --navy-deep: #1d3166;
-            --bg: #eef4f8;
-            --text: #1c2d44;
-            --muted: #60748b;
-            --card: #ffffff;
-            --yellow: #ffcc1a;
-            --border: #dde5ed;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: "Manrope", Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            font-size: 13px;
-            line-height: 1.5;
-        }
 
-        .topbar {
-            background: var(--navy);
-            padding: 10px 0;
-        }
-        .topbar-inner {
-            max-width: 100%;
-            margin: 0 auto;
-            padding: 0 24px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            border-radius: 999px;
-            background: rgba(255,255,255,0.14);
-            color: #fff;
-            text-decoration: none;
-            font-size: 11px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-        .entry-title {
-            color: #fff;
-            font-size: 20px;
-            font-weight: 700;
-            line-height: 1.1;
-        }
-        .entry-pron {
-            color: rgba(255,255,255,0.72);
-            font-size: 13px;
-            font-weight: 400;
-            margin-left: 6px;
-        }
-        .listen-btn {
-            padding: 4px 10px;
-            font-size: 11px;
-            cursor: pointer;
-            border: 0;
-            border-radius: 999px;
-            background: var(--yellow);
-            color: #17304a;
-            font-family: inherit;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .page {
-            max-width: 860px;
-            margin: 0 auto;
-            padding: 14px 16px 28px;
-        }
-
-        .pos-group {
-            margin-bottom: 14px;
-            background: var(--card);
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            overflow: hidden;
-        }
-        .pos-group:last-child { margin-bottom: 0; }
-
-        .pos-group-header {
-            display: flex;
-            align-items: baseline;
-            gap: 8px;
-            padding: 9px 14px 8px;
-            border-bottom: 1px solid var(--border);
-            background: #f5f8fb;
-        }
-        .pos-lemma {
-            font-weight: 700;
-            font-size: 15px;
-            color: var(--navy-deep);
-        }
-        .pos-pron {
-            color: var(--muted);
-            font-size: 12px;
-            font-weight: 400;
-        }
-        .pos-tag {
-            padding: 1px 7px;
-            border-radius: 999px;
-            background: #dce8f0;
-            color: var(--navy-deep);
-            font-weight: 700;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-        .irregular-forms {
-            color: var(--muted);
-            font-size: 12px;
-            font-weight: 500;
-            padding: 3px 14px 6px;
-            background: #f5f8fb;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .sense-list {
-            list-style: none;
-            counter-reset: sense-counter;
-        }
-        .sense-item {
-            counter-increment: sense-counter;
-            display: flex;
-            gap: 10px;
-            padding: 8px 14px;
-            border-bottom: 1px solid var(--border);
-        }
-        .sense-item:last-child { border-bottom: 0; }
-        .sense-num {
-            flex: 0 0 18px;
-            font-weight: 700;
-            font-size: 12px;
-            color: var(--muted);
-            padding-top: 1px;
-        }
-        .sense-body { flex: 1; min-width: 0; }
-        .grammar-code {
-            color: var(--muted);
-            font-size: 11px;
-            font-weight: 600;
-            margin-right: 4px;
-        }
-        .definition {
-            color: #3a526a;
-            font-size: 12px;
-            display: block;
-            margin-bottom: 2px;
-        }
-        .translation-line {
-            color: var(--navy-deep);
-            font-weight: 700;
-            font-size: 13px;
-        }
-        .example-block {
-            margin-top: 4px;
-            font-style: italic;
-            font-size: 12px;
-            color: #4a5e72;
-            line-height: 1.4;
-        }
-        .example-tr {
-            display: block;
-            margin-top: 3px;
-            color: #555;
-            font-style: normal;
-        }
-        .ex-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 22px;
-            height: 22px;
-            cursor: pointer;
-            border: 1.5px solid var(--muted);
-            border-radius: 50%;
-            background: transparent;
-            color: var(--muted);
-            vertical-align: middle;
-            margin-left: 5px;
-            padding: 0;
-            transition: border-color 0.15s, color 0.15s, opacity 0.15s;
-            opacity: 0;
-        }
-        .sense-item:hover .ex-btn {
-            opacity: 1;
-        }
-        .ex-btn:hover {
-            border-color: var(--navy);
-            color: var(--navy);
-        }
-
-        .phrases-section {
-            margin-top: 14px;
-            background: var(--card);
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            overflow: hidden;
-        }
-        .phrases-title {
-            font-weight: 700;
-            font-size: 10px;
-            color: var(--muted);
-            padding: 8px 14px;
-            background: #f5f8fb;
-            border-bottom: 1px solid var(--border);
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-        }
-        .phrase-item {
-            padding: 8px 14px;
-            border-bottom: 1px solid var(--border);
-        }
-        .phrase-item:last-child { border-bottom: 0; }
-        .phrase-text {
-            font-weight: 700;
-            font-size: 13px;
-            color: var(--navy-deep);
-        }
-        .phrase-def {
-            color: #3a526a;
-            font-size: 12px;
-            margin-top: 2px;
-        }
-        .phrase-tr {
-            color: var(--navy-deep);
-            font-weight: 700;
-            font-size: 12px;
-            margin-top: 2px;
-        }
-        .phrase-example {
-            margin-top: 3px;
-            font-style: italic;
-            color: #4a5e72;
-            font-size: 12px;
-        }
-
-        .empty-state {
-            padding: 20px 0;
-            color: var(--muted);
-            text-align: center;
-        }
-
-        @@media (max-width: 600px) {
-            .topbar-inner { gap: 10px; }
-            .entry-title { font-size: 17px; }
-        }
-    </style>
-</head>
-<body>
+<div class="dictionary-page">
     <div class="topbar">
         <div class="topbar-inner">
-            @if (Model.Parent != null)
+            @if (Model?.Parent() != null)
             {
-                <a class="back-link" href="@Model.Parent.Url()">← @Model.Parent.Name</a>
+                <a class="back-link" href="@Model?.Parent()?.Parent()?.Url()">← @Model.Parent().Name</a> @*IKON Eklenecek*@
             }
             <div>
-                <span class="entry-title">@Model.Lemma</span>
+                <span class="entry-title">@Model?.Word</span>
             </div>
-            <button class="listen-btn" type="button" data-text="@Model.Lemma" data-lang="en-US">▶ Seslendir</button>
+            <button class="listen-btn" type="button" data-text="@Model?.Word" data-lang="en-US">@Umbraco.GetDictionaryValue("Common.Seslendir")</button>
         </div>
     </div>
-
     <div class="page">
         <section>
-            @foreach (var group in senseGroups)
+
+            @if (Model?.PartofSpeech != null && Model.PartofSpeech.Any())
             {
-                <div class="pos-group">
-                    <div class="pos-group-header">
-                        <span class="pos-lemma">@Model.Lemma</span>
-                        <span class="pos-tag">@PartOfSpeechLabels.ToEnglishSlug(group.PosKey)</span>
-                    </div>
-                    <ol class="sense-list">
-                        @{
-                            var idx = 0;
-                        }
-                        @foreach (var sense in group.Senses)
+                @for (var i = 0; i < Model.PartofSpeech.Count(); i++)
+                {
+
+                    var category = Model.PartofSpeech.ElementAt(i).Content as SenseCategoryItem;
+
+                    <div class="pos-group">
+                        <div class="pos-group-header">
+                            <span class="pos-lemma">@Model.Word</span>
+
+                            <span class="pos-tag">@category?.PartOfSpeech</span>
+                        </div>
+
+                        <div class="irregular-forms">@category?.IrregularForms</div>
+
+                        @if(category?.Items != null && category.Items.Any())
                         {
-                            idx++;
-                            <li class="sense-item">
-                                <span class="sense-num">@idx</span>
-                                <div class="sense-body">
-                                    @if (!string.IsNullOrWhiteSpace(sense.GrammarCode))
-                                    {
-                                        <span class="grammar-code">@sense.GrammarCode</span>
-                                    }
-                                    @if (sense.Sentence != null && !string.IsNullOrWhiteSpace(sense.Sentence.ToString()))
-                                    {
-                                        <span class="definition">@Html.Raw(sense.Sentence)</span>
-                                    }
-                                    @if (!string.IsNullOrWhiteSpace(sense.Translation))
-                                    {
-                                        <div class="translation-line">@sense.Translation</div>
-                                    }
-                                </div>
-                            </li>
+                            <ol class="sense-list">
+
+                                @for(var j = 0; j < category.Items.Count(); j++)
+                                {
+                                    var item = category.Items.ElementAt(j).Content as SenseItem;
+                                    var sentenceHtml = item?.Sentence?.ToString() ?? string.Empty;
+                                    var sentenceText = System.Text.RegularExpressions.Regex.Replace(sentenceHtml, "<.*?>", " ").Trim();
+
+                                    <li class="sense-item">
+                                        <span class="sense-num">@(j + 1)</span>
+                                        <div class="sense-body">
+                                            <div class="translation-line">@item?.Translation</div>
+
+                                            <div class="example-block">
+                                                @Html.Raw(item?.Sentence)
+
+                                                <button class="ex-btn listen-btn" type="button" data-text="@sentenceText" data-lang="en-US" aria-label="Dinle">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                                                    </svg>
+                                                </button>
+
+                                            </div>
+
+                                        </div>
+                                    </li>
+                                }
+                            </ol>
                         }
-                    </ol>
-                </div>
+                    </div>
+                }
             }
 
-            @if (senseGroups.Count == 0)
-            {
-                <div class="empty-state">Bu kelime için henüz anlam eklenmedi.</div>
-            }
 
-            @if (Model.Phrases != null && Model.Phrases.Any())
+            @if(Model?.Idioms != null && Model.Idioms.Any())
             {
                 <div class="phrases-section">
-                    <div class="phrases-title">Deyimler &amp; Kalıplar</div>
-                    @foreach (var block in Model.Phrases)
+
+                    <div class="phrases-title">@Umbraco.GetDictionaryValue("Common.DeyimlerVeAtasozleri")</div>
+
+                    @for (var i = 0; i < Model?.Idioms.Count(); i++)
                     {
-                        @if (block.Content is IdiomsAndProverbsItem phraseItem)
-                        {
-                            <div class="phrase-item">
-                                @if (!string.IsNullOrWhiteSpace(phraseItem.Phrase))
-                                {
-                                    <span class="phrase-text">@phraseItem.Phrase</span>
-                                }
-                                @if (phraseItem.Sentence != null && !string.IsNullOrWhiteSpace(phraseItem.Sentence.ToString()))
-                                {
-                                    <div class="phrase-def">@Html.Raw(phraseItem.Sentence)</div>
-                                }
-                                @if (!string.IsNullOrWhiteSpace(phraseItem.Translation))
-                                {
-                                    <div class="phrase-tr">@phraseItem.Translation</div>
-                                }
+                        var item = Model?.Idioms.ElementAt(i).Content as IdiomsAndProverbsItem;
+                        var phraseSentenceHtml = item?.Sentence?.ToString() ?? string.Empty;
+                        var phraseSentenceText = System.Text.RegularExpressions.Regex.Replace(phraseSentenceHtml, "<.*?>", " ").Trim();
+
+                        <div class="phrase-item">
+                            <span class="phrase-text">@item?.Phrase</span>
+
+                            <div class="phrase-tr">@item?.Translation</div>
+
+                            <div class="phrase-example">
+                                @Html.Raw(item?.Sentence)
+
+                                <button class="ex-btn listen-btn" type="button" data-text="@phraseSentenceText" data-lang="en-US" aria-label="Dinle">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                                    </svg>
+                                </button>
                             </div>
-                        }
+
+                        </div>
                     }
                 </div>
             }
+
+
+            @if (Model?.PhrasalVerbs != null && Model.PhrasalVerbs.Any())
+            {
+                <div class="phrases-section">
+
+                    <div class="phrases-title">@Umbraco.GetDictionaryValue("Common.PhrasalVerbs")</div>
+
+                    @for (var i = 0; i < Model?.PhrasalVerbs.Count(); i++)
+                    {
+                        var item = Model?.PhrasalVerbs.ElementAt(i).Content as IdiomsAndProverbsItem;
+                        var phraseSentenceHtml = item?.Sentence?.ToString() ?? string.Empty;
+                        var phraseSentenceText = System.Text.RegularExpressions.Regex.Replace(phraseSentenceHtml, "<.*?>", " ").Trim();
+
+                        <div class="phrase-item">
+                            <span class="phrase-text">@item?.Phrase</span>
+
+                            <div class="phrase-tr">@item?.Translation</div>
+
+                            <div class="phrase-example">
+                                @Html.Raw(item?.Sentence)
+
+                                <button class="ex-btn listen-btn" type="button" data-text="@phraseSentenceText" data-lang="en-US" aria-label="Dinle">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                                    </svg>
+                                </button>
+                            </div>
+
+                        </div>
+                    }
+                </div>
+            }
+
+
         </section>
     </div>
+</div>
 
+@section scripts {
     <script>
         function speakText(text, lang) {
             if (!('speechSynthesis' in window)) return;
@@ -385,5 +163,4 @@
             });
         });
     </script>
-</body>
-</html>
+}

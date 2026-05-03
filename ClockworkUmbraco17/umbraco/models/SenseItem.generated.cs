@@ -50,29 +50,6 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		// properties
 
 		///<summary>
-		/// Grammar Code: Grammar kodu, ör: [C/U], [T], [I], [singular/U]
-		///</summary>
-		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
-		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("grammarCode")]
-		public virtual string GrammarCode => this.Value<string>(_publishedValueFallback, "grammarCode");
-
-		///<summary>
-		/// Is Primary
-		///</summary>
-		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
-		[ImplementPropertyType("isPrimary")]
-		public virtual bool IsPrimary => this.Value<bool>(_publishedValueFallback, "isPrimary");
-
-		///<summary>
-		/// Part Of Speech
-		///</summary>
-		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
-		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("partOfSpeech")]
-		public virtual string PartOfSpeech => this.Value<string>(_publishedValueFallback, "partOfSpeech");
-
-		///<summary>
 		/// Sentence
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]

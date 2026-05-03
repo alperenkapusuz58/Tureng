@@ -1,4 +1,4 @@
-﻿ @inherits UmbracoViewPage
+﻿@inherits UmbracoViewPage
 @using Microsoft.Extensions.Configuration
 @inject IConfiguration Configuration
 
@@ -6,37 +6,28 @@
     Layout = null;
 }
 
- 
 <!DOCTYPE html>
 <html lang="@(Model.GetCultureFromDomains())">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
-    @* RENDER SECTION *@
     @RenderSection("styles", required: false)
 
-
-    @* SEO TOOLKIT *@
     <meta-fields></meta-fields>
     <render-script position="HeadBottom"></render-script>
 </head>
 <body>
     <render-script position="BodyTop"></render-script>
 
-    @* HEADER *@
-    @(await Html.PartialAsync("/Views/Partials/Header.cshtml"))
-
-    @* MAIN *@
     <main>
         @RenderBody()
     </main>
 
-    @* FOOTER *@
-    @(await Html.PartialAsync("/Views/Partials/Footer.cshtml"))
-
-    
-    @* RENDER SECTION *@
     @RenderSection("scripts", required: false)
 
     <render-script position="BodyBottom"></render-script>
