@@ -90,10 +90,8 @@ document.querySelectorAll('[data-dropdown-item]').forEach(item => {
                 dropdown.classList.remove('opacity-100', 'visible', 'pointer-events-auto', 'translate-y-0', 'scale-100');
                 dropdown.classList.add('opacity-0', 'invisible', 'pointer-events-none', 'translate-y-[-10px]', 'scale-[0.95]');
                 const label = this.closest('[data-dropdown-container]').querySelector('[data-dropdown-trigger]');
-                if (label) {
-                    label.classList.remove('text-charcoal');
-                    label.classList.add('text-orange');
-                }
+                label.classList.remove('text-charcoal');
+                label.classList.add('text-orange');
             }, 100);
         }
     });

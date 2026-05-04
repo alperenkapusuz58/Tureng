@@ -1563,6 +1563,9 @@
   .h-\[48px\] {
     height: 48px;
   }
+  .h-\[36px\] {
+    height: 36px;
+  }
   .max-h-\[150px\] {
     max-height: 150px;
   }
@@ -1587,6 +1590,9 @@
   }
   .w-\[20px\] {
     width: 20px;
+  }
+  .w-\[36px\] {
+    width: 36px;
   }
   .w-\[285px\] {
     width: 285px;
@@ -2836,13 +2842,25 @@
     .md\:h-\[81px\] {
       height: 81px;
     }
+
+    .md\:h-\[40px\] {
+      height: 40px;
+    }
   
     .md\:min-h-\[440px\] {
       min-height: 440px;
     }
+
+    .md\:min-h-\[calc\(100vh-150px\)\] {
+      min-height: calc(100vh - 150px);
+    }
   
     .md\:w-24 {
       width: 24px;
+    }
+
+    .md\:w-\[40px\] {
+      width: 40px;
     }
   
     .md\:w-\[239px\] {
@@ -3439,7 +3457,6 @@
   }
   .\[\&\>a\:nth-child\(even\)\]\:bg-\[\#F4F2EE\]>a:nth-child(even) {
     --tw-bg-opacity: 1;
-    background-color: rgb(244 242 238 / var(--tw-bg-opacity, 1));
   }
   .\[\&\>a\]\:text-orange>a {
     --tw-text-opacity: 1;
