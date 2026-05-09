@@ -1,6 +1,39 @@
 ﻿<footer class="site-footer">
-    <div class="site-footer__inner page">
-        <p class="site-footer__copy">© @DateTime.UtcNow.Year Tureng</p>
-        <a class="site-footer__link" href="/">Ana sayfa</a>
+    <div class="site-footer__top page">
+        <a class="site-footer__logo" href="/">
+            <img src="~/images/logo.png" alt="Logo" height="52" />
+        </a>
+
+        <nav class="site-footer__groups" aria-label="Alt bağlantılar">
+            <section class="site-footer__group" aria-labelledby="footer-heading-yasal">
+                <h2 id="footer-heading-yasal" class="site-footer__heading">Yasal</h2>
+                <ul class="site-footer__list">
+                    <li><a class="site-footer__link" href="#">Gizlilik politikası</a></li>
+                    <li><a class="site-footer__link" href="#">Kullanım şartları</a></li>
+                    <li><a class="site-footer__link" href="#">Çerez ayarları</a></li>
+                </ul>
+            </section>
+
+            <section class="site-footer__group" aria-labelledby="footer-heading-site">
+                <h2 id="footer-heading-site" class="site-footer__heading">Site</h2>
+                <ul class="site-footer__list">
+                    <li><a class="site-footer__link" href="/">Ana sayfa</a></li>
+                    <li><a class="site-footer__link" href="#">Yardım</a></li>
+                </ul>
+            </section>
+
+            <section class="site-footer__group" aria-labelledby="footer-heading-destek">
+                <h2 id="footer-heading-destek" class="site-footer__heading">Destek</h2>
+                <ul class="site-footer__list">
+                    <li><a class="site-footer__link" href="#">Sık sorulanlar</a></li>
+                    <li><a class="site-footer__link" href="#">İletişim</a></li>
+                </ul>
+            </section>
+        </nav>
+    </div>
+    <div class="site-footer__copy-bar">
+        <div class="page">
+            <p class="site-footer__copy">© @DateTime.UtcNow.Year Tureng</p>
+        </div>
     </div>
 </footer>

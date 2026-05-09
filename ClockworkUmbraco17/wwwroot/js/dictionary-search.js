@@ -10,8 +10,30 @@
     var list = document.getElementById('suggestions');
     var tpl = document.getElementById('dictionary-suggestion-item-template');
     var directionInput = document.getElementById('direction');
+    var clearBtn = document.getElementById('dict-search-clear');
 
     if (!input || !list || !tpl) return;
+
+    function updateClearBtn() {
+        if (!clearBtn) return;
+        var hasText = (input.value || '').length > 0;
+        if (hasText) {
+            clearBtn.removeAttribute('hidden');
+        } else {
+            clearBtn.setAttribute('hidden', '');
+        }
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function () {
+            input.value = '';
+            updateClearBtn();
+            input.focus();
+            hideSuggestions();
+        });
+    }
+
+    updateClearBtn();
 
     var debounceMs = 280;
     var minChars = 1;
@@ -23,13 +45,46 @@
         list.innerHTML = '';
     }
 
+    /** API bazen url dolu iken lemma/word göndermeyebilir — gösterim için yedekler */
+    function pickDisplayLemma(item, href) {
+        var lemma =
+            item.lemma ||
+            item.Lemma ||
+            item.word ||
+            item.Word ||
+            item.name ||
+            item.Name ||
+            '';
+        if (lemma) return lemma;
+
+        if (href && href !== '#') {
+            try {
+                var path = href.replace(/\/+$/, '').split('/').filter(Boolean);
+                var last = path[path.length - 1];
+                if (last) {
+                    return decodeURIComponent(last).replace(/\+/g, ' ').replace(/-/g, ' ');
+                }
+            } catch (e1) {
+                /* ignore */
+            }
+        }
+
+        var translation = item.translation != null ? item.translation : item.Translation;
+        if (translation) return translation;
+
+        return '';
+    }
+
     function renderItems(results) {
         list.innerHTML = '';
         for (var i = 0; i < results.length; i++) {
             var item = results[i];
-            var lemma = item.lemma || item.Lemma || '';
             var href = item.url || item.Url || '';
             if (!href || href === '#') continue;
+
+            var lemma = pickDisplayLemma(item, href);
+            if (!lemma) lemma = href;
+
             var translation = item.translation != null ? item.translation : item.Translation;
             var node = tpl.content.cloneNode(true);
             var li = node.querySelector('li');
@@ -42,6 +97,13 @@
             main.className = 'suggestion-main';
             main.textContent = lemma;
             a.appendChild(main);
+
+            if (translation && translation !== lemma) {
+                var meta = document.createElement('span');
+                meta.className = 'suggestion-meta';
+                meta.textContent = translation;
+                a.appendChild(meta);
+            }
 
             list.appendChild(node);
         }
@@ -87,7 +149,10 @@
         }, debounceMs);
     }
 
-    input.addEventListener('input', scheduleFetch);
+    input.addEventListener('input', function () {
+        updateClearBtn();
+        scheduleFetch();
+    });
     input.addEventListener('focus', function () {
         if ((input.value || '').trim().length >= minChars && list.children.length) {
             list.hidden = false;
@@ -119,14 +184,12 @@
         })
             .then(function (res) {
                 if (!res.ok) throw new Error('search failed');
-                debugger;
                 return res.json();
             })
             .then(function (data) {
                 var results = (data && (data.results || data.Results)) || [];
                 var first = results[0];
                 var u = first && (first.url || first.Url);
-                console.log("data", data)
                 if (u) {
                     window.location.href = u;
                     return;
@@ -147,9 +210,9 @@
                 b.classList.toggle('active', b === btn);
             });
             if (dir === 'tr-en') {
-                input.placeholder = 'Türkçe ara';
+                input.placeholder = 'Search Turkish - English';
             } else {
-                input.placeholder = 'Search English';
+                input.placeholder = 'Search English - Turkish';
             }
         });
     });

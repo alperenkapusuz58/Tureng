@@ -63,9 +63,15 @@ public class SearchController : ControllerBase
 
             var headword = new Headword(c, _publishedValueFallback);
             var translation = HeadwordDisplay.FirstTranslation(headword);
+            var lemmaText = headword.Word?.Trim();
+            if (string.IsNullOrEmpty(lemmaText))
+            {
+                lemmaText = c.Name ?? string.Empty;
+            }
+
             results.Add(new AutocompleteItemDto
             {
-                Lemma = headword.Word ?? string.Empty,
+                Lemma = lemmaText,
                 Url = headword.Url() ?? string.Empty,
                 Translation = translation,
             });
