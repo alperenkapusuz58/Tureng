@@ -1,0 +1,67 @@
+﻿@inherits UmbracoViewPage<IPublishedContent>
+@using System.Net
+@using ClockworkUmbraco.Models.Dtos
+@using ClockworkUmbraco.Services.Interfaces
+@inject ISearchService SearchService
+@inject HeadwordSearchMapper HeadwordSearchMapper
+@{
+    Layout = "Layout.cshtml";
+    var rawQ = Context.Request.Query["q"].FirstOrDefault() ?? string.Empty;
+    var direction = Context.Request.Query["direction"].FirstOrDefault() ?? "en-tr";
+    var displayQ = WebUtility.HtmlEncode(rawQ.Trim());
+
+    List<AutocompleteItemDto> suggestions = [];
+    if (!string.IsNullOrWhiteSpace(rawQ))
+    {
+        var similar = SearchService.SearchSimilar(rawQ.Trim(), direction, 12);
+        suggestions = HeadwordSearchMapper.MapSearchHitsToAutocompleteItems(similar.SearchResults, rawQ.Trim());
+    }
+}
+
+<div class="dictionary-page dictionary-no-results">
+    <div class="page">
+        <section>
+            @if (suggestions.Count > 0)
+            {
+                <div class="pos-group dictionary-no-results__pos-group">
+                    <div class="pos-group-header dictionary-no-results__pos-header">
+                        <h1 class="pos-lemma dictionary-no-results__lemma-heading">
+                            @if (!string.IsNullOrEmpty(displayQ))
+                            {
+                                <span class="dictionary-no-results__title-prefix">Search suggestions for </span><strong class="dictionary-no-results__query-em">@displayQ</strong>
+                            }
+                            else
+                            {
+                                <text>Search suggestions</text>
+                            }
+                        </h1>
+                    </div>
+
+                    <ol class="sense-list">
+                        @for (var i = 0; i < suggestions.Count; i++)
+                        {
+                            var item = suggestions[i];
+                            <li class="sense-item dictionary-no-results__sense-item">
+                                <div class="sense-body">
+                                    <div class="translation-line">
+                                        <a href="@item.Url" class="dictionary-no-results__entry-link">@item.Lemma</a>
+                                    </div>
+                                    @if (!string.IsNullOrWhiteSpace(item.Translation) && !string.Equals(item.Translation, item.Lemma, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <div class="example-block">@item.Translation</div>
+                                    }
+                                </div>
+                            </li>
+                        }
+                    </ol>
+                </div>
+            }
+            else if (!string.IsNullOrWhiteSpace(rawQ))
+            {
+                <div class="dictionary-no-results__empty-panel" role="status">
+                    <p class="dictionary-no-results__empty-text">Bu arama için otomatik öneri üretilemedi. Terimi kısaltarak veya farklı yazımla tekrar deneyebilirsiniz.</p>
+                </div>
+            }
+        </section>
+    </div>
+</div>

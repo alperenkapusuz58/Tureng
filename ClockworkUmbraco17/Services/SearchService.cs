@@ -3,9 +3,9 @@ using ClockworkUmbraco.Models.Dtos;
 using ClockworkUmbraco.Services.Interfaces;
 using Examine;
 using Examine.Search;
-using Lucene.Net.Analysis.Core;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Infrastructure.Examine;
+using Umbraco.Cms.Web.Common.PublishedModels;
 
 namespace ClockworkUmbraco.Services
 {
@@ -67,6 +67,73 @@ namespace ClockworkUmbraco.Services
             });
 
             return new SearchResponseModel(q, filteredResults.Count(), filteredResults);
+        }
+
+        /// <inheritdoc />
+        public SearchResponseModel SearchSimilar(string q, string direction = "en-tr", int maxResults = 15)
+        {
+            _variationContextAccessor.VariationContext = new VariationContext(direction == "en-tr" ? "en" : "tr");
+            if (string.IsNullOrWhiteSpace(q) || !_examineManager.TryGetIndex(UmbracoConstants.UmbracoIndexes.ExternalIndexName, out IIndex? index))
+            {
+                return new SearchResponseModel();
+            }
+
+            var token = (q.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? string.Empty).Trim();
+            if (string.IsNullOrEmpty(token))
+            {
+                return new SearchResponseModel();
+            }
+
+            maxResults = Math.Clamp(maxResults, 1, 50);
+            const float fuzzySimilarity = 0.72f;
+
+            IBooleanOperation? boolQuery = index.Searcher.CreateQuery(IndexTypes.Content)
+                .GroupedNot(["hide"], ["1"])
+                .And().GroupedNot(["__NodeTypeAlias"], _docTypesToExclude);
+
+            string[] full = [token];
+            boolQuery!.And().Group(
+                inner =>
+                {
+                    var branch = inner
+                        .GroupedOr(["lemma"], full.Fuzzy(fuzzySimilarity))
+                        .Or()
+                        .GroupedOr(["nodeName"], full.Fuzzy(fuzzySimilarity))
+                        .Or()
+                        .GroupedOr(["lemma"], full.MultipleCharacterWildcard())
+                        .Or()
+                        .GroupedOr(["nodeName"], full.MultipleCharacterWildcard());
+
+                    if (token.Length >= 3)
+                    {
+                        var prefixLen = Math.Min(4, token.Length);
+                        string[] prefixTerms = [token.Substring(0, prefixLen)];
+                        branch = branch
+                            .Or()
+                            .GroupedOr(["lemma"], prefixTerms.MultipleCharacterWildcard())
+                            .Or()
+                            .GroupedOr(["nodeName"], prefixTerms.MultipleCharacterWildcard());
+                    }
+
+                    return branch;
+                },
+                BooleanOperation.Or);
+
+            ISearchResults pageOfResults = boolQuery.Execute();
+
+            const int examineCap = 400;
+            var filteredResults = pageOfResults
+                .Take(examineCap)
+                .Where(result =>
+                {
+                    var contentItem = _publishedContentQuery.Content(result.Id);
+                    return contentItem?.TemplateId != null
+                        && string.Equals(contentItem.ContentType.Alias, Headword.ModelTypeAlias, StringComparison.OrdinalIgnoreCase);
+                })
+                .Take(maxResults * 5)
+                .ToList();
+
+            return new SearchResponseModel(q.Trim(), filteredResults.Count, filteredResults);
         }
     }
 }

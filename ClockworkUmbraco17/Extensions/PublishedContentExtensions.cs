@@ -31,6 +31,12 @@ namespace ClockworkUmbraco.Extensions
             return mainPage?.FirstChild<SiteSettings>();
         }
 
+        public static DictionaryNoResults GetDictionaryNoResults(this IPublishedContent publishedContent)
+        {
+            var mainPage = GetMainPage(publishedContent);
+            return mainPage?.FirstChild<DictionaryNoResults>();
+        }
+
 
         /// <summary>
         ///  Contact Form Id ve Mail adresini döner.

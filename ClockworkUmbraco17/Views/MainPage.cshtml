@@ -1,9 +1,14 @@
 ﻿@inherits UmbracoViewPage<MainPage>
 @using ClockworkUmbraco.Controllers
+@using Umbraco.Cms.Core.Models.PublishedContent
 @{
     Layout = "Layout.cshtml";
-    var dictionarySearchUrl = Url.Action(nameof(SearchController.Search), nameof(SearchController).Replace("Controller", "", StringComparison.Ordinal)) ?? "/api/dictionary/search";
+
+    var dictionarySearchUrl = Url.Action(nameof(SearchController.Search), nameof(SearchController).Replace("Controller", "", StringComparison.Ordinal));
+    var dictionaryNoResults = Model.GetDictionaryNoResults();
+    var dictionaryNoResultsUrl = dictionaryNoResults?.Url();
 }
+
 
 <div class="home-page">
     <section class="hero">
@@ -13,11 +18,11 @@
             </div>
 
             <div class="search-card">
-                <form method="get" action="#" id="dict-search-form" data-dictionary-search-url="@dictionarySearchUrl" autocomplete="off">
+                <form method="get" action="#" id="dict-search-form" data-dictionary-search-url="@dictionarySearchUrl" data-dictionary-no-results-url="@dictionaryNoResultsUrl" autocomplete="off">
                     <input type="hidden" name="direction" id="direction" value="en-tr">
                     <div class="search-wrap">
                         <div class="search-shell">
-                            <input type="text" id="query" name="q" autocomplete="off" placeholder="Search English" required>
+                            <input type="text" id="query" name="q" autocomplete="off" placeholder="Search English - Turkish" required>
                             <div class="search-shell__actions">
                                 <button type="button" class="search-clear" id="dict-search-clear" hidden aria-label="Metni temizle">
                                     <span aria-hidden="true">&times;</span>

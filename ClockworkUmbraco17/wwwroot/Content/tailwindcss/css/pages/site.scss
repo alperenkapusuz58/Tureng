@@ -1145,6 +1145,72 @@ body.site-menu--open {
     }
 }
 
+/* Sonuç bulunamadı — Headword ile aynı pos-group / sense-list yapısı */
+.dictionary-page.dictionary-no-results .page {
+    max-width: 960px;
+    padding-top: 20px;
+}
+
+.dictionary-no-results .pos-group.dictionary-no-results__pos-group {
+    box-shadow: none;
+}
+
+.dictionary-no-results .dictionary-no-results__lemma-heading {
+    margin: 0;
+    font-size: clamp(1.25rem, 2.6vw, 1.75rem);
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--navy);
+}
+
+.dictionary-no-results .dictionary-no-results__title-prefix {
+    font-weight: 600;
+}
+
+.dictionary-no-results .dictionary-no-results__query-em {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.dictionary-no-results .dictionary-no-results__pos-header {
+    flex-wrap: wrap;
+}
+
+.dictionary-no-results .dictionary-no-results__pos-header .dictionary-no-results__lemma-heading {
+    flex: 1 1 100%;
+    min-width: 0;
+    word-break: break-word;
+}
+
+.dictionary-no-results .dictionary-no-results__sense-item {
+    gap: 0;
+}
+
+.dictionary-no-results__entry-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.dictionary-no-results__entry-link:hover {
+    text-decoration: underline;
+}
+
+.dictionary-no-results__empty-panel {
+    margin: 8px 0 16px;
+    padding: 16px 18px;
+    border-radius: var(--radius);
+    background: rgba(238, 244, 248, 0.85);
+    border: 1px dashed rgba(96, 116, 139, 0.35);
+}
+
+.dictionary-no-results__empty-text {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--muted);
+    font-weight: 500;
+}
+
 .meta {
     margin: 18px 6px 0;
     color: #55708d;

@@ -6,6 +6,8 @@
     if (!form) return;
 
     var apiUrl = form.getAttribute('data-dictionary-search-url') || '/api/dictionary/search';
+    var rawNoResults = form.getAttribute('data-dictionary-no-results-url');
+    var noResultsBaseUrl = rawNoResults && rawNoResults.trim();
     var input = document.getElementById('query');
     var list = document.getElementById('suggestions');
     var tpl = document.getElementById('dictionary-suggestion-item-template');
@@ -194,7 +196,21 @@
                     window.location.href = u;
                     return;
                 }
-                hideSuggestions();
+                try {
+                    var target = new URL(noResultsBaseUrl, window.location.href);
+                    target.searchParams.set('q', q);
+                    target.searchParams.set('direction', direction);
+                    window.location.href = target.pathname + target.search;
+                } catch (e2) {
+                    var sep = noResultsBaseUrl.indexOf('?') >= 0 ? '&' : '?';
+                    window.location.href =
+                        noResultsBaseUrl +
+                        sep +
+                        'q=' +
+                        encodeURIComponent(q) +
+                        '&direction=' +
+                        encodeURIComponent(direction);
+                }
             })
             .catch(function () {
                 hideSuggestions();
