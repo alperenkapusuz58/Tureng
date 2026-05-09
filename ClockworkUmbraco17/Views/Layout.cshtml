@@ -14,7 +14,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Content/tailwindcss/css/output.css" asp-append-version="true" />
 
     @RenderSection("styles", required: false)
 
@@ -24,9 +24,15 @@
 <body>
     <render-script position="BodyTop"></render-script>
 
-    <main>
-        @RenderBody()
-    </main>
+    <div class="app-shell">
+        @await Html.PartialAsync("Partials/Header")
+
+        <main class="app-main" role="main">
+            @RenderBody()
+        </main>
+
+        @await Html.PartialAsync("Partials/Footer")
+    </div>
 
     @RenderSection("scripts", required: false)
 
