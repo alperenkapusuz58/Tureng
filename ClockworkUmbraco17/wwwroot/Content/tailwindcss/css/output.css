@@ -2873,6 +2873,10 @@ body.site-menu--open {
 }
 .dict-direction-tabs button,
 .dict-direction-tabs .tab-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     padding: 8px 16px;
     border: 0;
     border-radius: 999px;
@@ -2882,11 +2886,27 @@ body.site-menu--open {
     font-weight: 600;
     cursor: pointer;
     font-family: inherit;
+    transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease,
+        transform 0.18s ease;
 }
 .dict-direction-tabs .active,
 .dict-direction-tabs .tab-btn.active {
     background: #ffffff;
-    box-shadow: 0 4px 14px rgba(15, 34, 79, 0.16);
+    color: var(--navy-deep);
+    font-weight: 800;
+    box-shadow: 0 6px 18px rgba(15, 34, 79, 0.28),
+        inset 0 0 0 1.5px rgba(36, 59, 122, 0.25);
+    padding-right: 14px;
+}
+.dict-direction-tabs .tab-btn.active::after {
+    content: "";
+    flex-shrink: 0;
+    width: 13px;
+    height: 13px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d3166' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
 }
 /* Madde topbar — EN↔TR tek satır, yükseklik düşük */
 .dict-direction-tabs--topbar-inline {
@@ -2901,11 +2921,21 @@ body.site-menu--open {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 5px;
     padding: 6px 12px;
     font-size: 11px;
     font-weight: 600;
     line-height: 1.2;
     white-space: nowrap;
+}
+.dict-direction-tabs--topbar-inline .tab-btn.active {
+    padding-right: 10px;
+    box-shadow: 0 4px 14px rgba(15, 34, 79, 0.32),
+        inset 0 0 0 1.5px rgba(36, 59, 122, 0.28);
+}
+.dict-direction-tabs--topbar-inline .tab-btn.active::after {
+    width: 11px;
+    height: 11px;
 }
 .search-wrap {
     position: relative;
@@ -3073,12 +3103,13 @@ body.site-menu--open {
     white-space: nowrap;
 }
 .topbar-inner--with-search {
-    flex-wrap: nowrap;
-    gap: 10px;
+    flex-wrap: wrap;
+    gap: 8px 12px;
     align-items: center;
+    justify-content: space-between;
 }
 .topbar-search {
-    flex: 1 1 auto;
+    flex: 1 1 320px;
     min-width: 0;
     display: flex;
 }
@@ -3137,28 +3168,67 @@ body.site-menu--open {
 .topbar:has(.dict-search-form--compact) {
     padding: 5px 0;
 }
-@media (max-width: 520px) {
+@media (max-width: 900px) {
     .topbar-inner--with-search {
-        gap: 8px;
+        gap: 8px 10px;
     }
 
-    .dict-search-form--compact .topbar-search-inline {
-        gap: 8px;
+    .topbar-inner--with-search .back-link {
+        order: 1;
     }
 
-    .dict-search-form--compact .search-wrap {
-        flex: 0 1 auto;
-        max-width: min(280px, calc(100vw - 200px));
+    .topbar-search {
+        flex: 1 1 100%;
+        order: 3;
     }
 
     .dict-search-form--compact .topbar-search-inline {
         flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 8px;
+    }
+
+    .dict-search-form--compact .search-wrap {
+        flex: 1 1 220px;
+        max-width: 100%;
+    }
+
+    .dict-direction-tabs--topbar-inline {
+        flex-wrap: wrap;
+    }
+}
+@media (max-width: 520px) {
+    .topbar-inner--with-search {
+        gap: 6px 8px;
+    }
+
+    .topbar-inner--with-search .back-link {
+        flex: 0 1 auto;
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .dict-search-form--compact .topbar-search-inline {
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: stretch;
+    }
+
+    .dict-search-form--compact .search-wrap {
+        flex: 1 1 100%;
+        max-width: 100%;
+    }
+
+    .dict-direction-tabs--topbar-inline {
+        flex: 1 1 100%;
         justify-content: center;
     }
 
     .dict-direction-tabs--topbar-inline .tab-btn {
-        padding: 5px 8px;
-        font-size: 10px;
+        padding: 5px 10px;
+        font-size: 11px;
     }
 
     .dict-search-form--compact .search-shell {
