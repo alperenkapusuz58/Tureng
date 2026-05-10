@@ -14,7 +14,7 @@
     <section class="hero">
         <div class="hero-inner">
             <div class="brand-panel">
-                <h1 class="brand-copy">Lorem Ipsum Dolor</h1>
+                <h1 class="brand-copy">@Model.Title</h1>
             </div>
 
             <div class="search-card">
@@ -22,9 +22,9 @@
                     <input type="hidden" name="direction" value="en-tr">
                     <div class="search-wrap">
                         <div class="search-shell">
-                            <input type="text" name="q" autocomplete="off" placeholder="Search English - Turkish" required>
+                            <input type="text" name="q" autocomplete="off" placeholder="@Umbraco.GetDictionaryValue("Common.English-Turkish")" required>
                             <div class="search-shell__actions">
-                                <button type="button" class="search-clear dict-search-clear" hidden aria-label="Metni temizle">
+                                <button type="button" class="search-clear dict-search-clear" hidden aria-label="@Umbraco.GetDictionaryValue("Common.MetniTemizle")">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                                 <span class="search-shell__divider" aria-hidden="true"></span>
@@ -36,7 +36,7 @@
                                 </button>
                             </div>
                         </div>
-                        <ul class="dict-search-suggestions suggestions" role="listbox" aria-label="Arama önerileri" hidden></ul>
+                        <ul class="dict-search-suggestions suggestions" role="listbox" aria-label="@Umbraco.GetDictionaryValue("Common.AramaOnerileri")" hidden></ul>
                         <template class="dictionary-suggestion-item-template">
                             <li role="option"><a href="#"></a></li>
                         </template>

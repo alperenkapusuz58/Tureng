@@ -19,7 +19,7 @@ public class SearchController : ControllerBase
         _headwordSearchMapper = headwordSearchMapper;
     }
 
-    /// <summary>Madde başı (headword) araması. Examine <c>__NodeTypeAlias = headword</c>.</summary>
+    /// <summary>Madde başı (headword) araması. <c>ISearchService.Search</c>: External Index, <c>__NodeTypeAlias = headword</c>, alanlar <c>word</c>/<c>lemma</c> ve <c>nodeName</c>; terimler 3+ karakter.</summary>
     [HttpGet("search")]
     [Produces("application/json")]
     public ActionResult<HeadwordSearchResponseDto> Search(
@@ -43,7 +43,7 @@ public class SearchController : ControllerBase
         });
     }
 
-    /// <summary>Yakın madde başları — gevşetilmiş Examine sorgusu (<c>ISearchService.SearchSimilar</c>).</summary>
+    /// <summary>Yakın madde başları — <c>ISearchService.SearchSimilar</c>: ilk token için fuzzy/prefix; Examine’da <c>headword</c> ile sınırlı.</summary>
     [HttpGet("similar")]
     [Produces("application/json")]
     public ActionResult<HeadwordSearchResponseDto> Similar(

@@ -48,5 +48,13 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		}
 
 		// properties
+
+		///<summary>
+		/// Title: Search'un yanında bulunan başlık
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("title")]
+		public virtual string Title => this.Value<string>(_publishedValueFallback, "title");
 	}
 }

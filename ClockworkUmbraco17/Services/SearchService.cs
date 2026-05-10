@@ -9,13 +9,23 @@ using Umbraco.Cms.Web.Common.PublishedModels;
 
 namespace ClockworkUmbraco.Services
 {
+    /// <summary>External Examine indeksi üzerinden headword (madde başı) araması.</summary>
     public class SearchService : ISearchService
     {
+        /// <summary>
+        /// Umbraco External Index’te madde metni için beklenen alanlar: yayında <c>word</c>; geçmiş uyumluluk için <c>lemma</c>.
+        /// </summary>
+        private static readonly string[] HeadwordTextFields = ["word", "lemma"];
+
+        private const int ExamineMaxHits = 400;
+
         private readonly IExamineManager _examineManager;
         private readonly IPublishedContentQuery _publishedContentQuery;
         private readonly IVariationContextAccessor _variationContextAccessor;
+
+        /// <summary>Yönlendirme dışı içerik tipleri (headword hariç — madde araması headword ile pozitif filtrelenir).</summary>
         private readonly string[] _docTypesToExclude =
-            [];
+            [DictionaryNoResults.ModelTypeAlias, MainPage.ModelTypeAlias, SiteSettings.ModelTypeAlias];
 
         public SearchService(IExamineManager examineManager, IPublishedContentQuery publishedContentQuery, IVariationContextAccessor variationContextAccessor)
         {
@@ -23,53 +33,64 @@ namespace ClockworkUmbraco.Services
             _publishedContentQuery = publishedContentQuery ?? throw new ArgumentNullException(nameof(publishedContentQuery));
             _variationContextAccessor = variationContextAccessor;
         }
+
+        /// <inheritdoc />
+        /// <remarks>
+        /// Yalnızca 3+ karakterlik tokenlarla arama yapılır; aksi halde geniş indeks taraması yapılmaz.
+        /// Examine: <c>__NodeTypeAlias = headword</c>, <see cref="HeadwordTextFields"/> ve <c>nodeName</c>.
+        /// </remarks>
         public SearchResponseModel Search(string q, string direction = "en-tr")
         {
             _variationContextAccessor.VariationContext = new VariationContext(direction == "en-tr" ? "en" : "tr");
-            if (string.IsNullOrWhiteSpace(q) || !_examineManager.TryGetIndex(UmbracoConstants.UmbracoIndexes.ExternalIndexName, out IIndex? index))
+            var trimmed = q.Trim();
+            if (string.IsNullOrWhiteSpace(trimmed) || !_examineManager.TryGetIndex(UmbracoConstants.UmbracoIndexes.ExternalIndexName, out IIndex? index))
             {
                 return new SearchResponseModel();
             }
 
-            IBooleanOperation? query = index.Searcher.CreateQuery(IndexTypes.Content)
-                .GroupedNot(["hide"], ["1"])
-                .And().GroupedNot(["__NodeTypeAlias"], _docTypesToExclude);
+            string[] terms = trimmed.Split(" ", StringSplitOptions.RemoveEmptyEntries)
+                .Where(x => x.Length > 2).ToArray();
 
-            string[]? terms = !string.IsNullOrWhiteSpace(q)
-           ? q.Split(" ", StringSplitOptions.RemoveEmptyEntries)
-           .Where(x => x.Length > 2).ToArray() : null;
-
-
-            if (terms != null && terms.Length > 0)
+            if (terms.Length == 0)
             {
-                query!.And().Group(q => q
-                    .GroupedOr(["lemma"], terms.Boost(80))
+                return new SearchResponseModel(trimmed, 0, Array.Empty<ISearchResult>());
+            }
+
+            IBooleanOperation query = index.Searcher.CreateQuery(IndexTypes.Content)
+                .GroupedNot(["hide"], ["1"])
+                .And().GroupedNot(["__NodeTypeAlias"], _docTypesToExclude)
+                .And().Field("__NodeTypeAlias", Headword.ModelTypeAlias);
+
+            query.And().Group(
+                inner => inner
+                    .GroupedOr(HeadwordTextFields, terms.Boost(80))
                     .Or()
                     .GroupedOr(["nodeName"], terms.Boost(70))
                     .Or()
-                    .GroupedOr(["lemma"], terms.Fuzzy())
+                    .GroupedOr(HeadwordTextFields, terms.Fuzzy())
                     .Or()
-                    .GroupedOr(["lemma"], terms.MultipleCharacterWildcard())
+                    .GroupedOr(HeadwordTextFields, terms.MultipleCharacterWildcard())
                     .Or()
                     .GroupedOr(["nodeName"], terms.Fuzzy())
                     .Or()
-                    .GroupedOr(["nodeName"], terms.MultipleCharacterWildcard()
+                    .GroupedOr(["nodeName"], terms.MultipleCharacterWildcard()),
+                BooleanOperation.Or);
 
-                    ), BooleanOperation.Or);
-            }
+            ISearchResults pageOfResults = query.Execute();
 
-            ISearchResults? pageOfResults = query.Execute();
+            var filteredResults = pageOfResults
+                .Take(ExamineMaxHits)
+                .Where(result =>
+                {
+                    var contentItem = _publishedContentQuery.Content(result.Id);
+                    return contentItem?.TemplateId != null;
+                });
 
-            var filteredResults = pageOfResults.Where(result =>
-            {
-                var contentItem = _publishedContentQuery.Content(result.Id);
-                return contentItem?.TemplateId != null;
-            });
-
-            return new SearchResponseModel(q, filteredResults.Count(), filteredResults);
+            return new SearchResponseModel(trimmed, filteredResults.Count(), filteredResults);
         }
 
         /// <inheritdoc />
+        /// <remarks>Examine: <c>__NodeTypeAlias = headword</c>; İlk anlamlı token fuzzy/prefix ile eşleştirilir.</remarks>
         public SearchResponseModel SearchSimilar(string q, string direction = "en-tr", int maxResults = 15)
         {
             _variationContextAccessor.VariationContext = new VariationContext(direction == "en-tr" ? "en" : "tr");
@@ -87,20 +108,21 @@ namespace ClockworkUmbraco.Services
             maxResults = Math.Clamp(maxResults, 1, 50);
             const float fuzzySimilarity = 0.72f;
 
-            IBooleanOperation? boolQuery = index.Searcher.CreateQuery(IndexTypes.Content)
+            IBooleanOperation boolQuery = index.Searcher.CreateQuery(IndexTypes.Content)
                 .GroupedNot(["hide"], ["1"])
-                .And().GroupedNot(["__NodeTypeAlias"], _docTypesToExclude);
+                .And().GroupedNot(["__NodeTypeAlias"], _docTypesToExclude)
+                .And().Field("__NodeTypeAlias", Headword.ModelTypeAlias);
 
             string[] full = [token];
-            boolQuery!.And().Group(
+            boolQuery.And().Group(
                 inner =>
                 {
                     var branch = inner
-                        .GroupedOr(["lemma"], full.Fuzzy(fuzzySimilarity))
+                        .GroupedOr(HeadwordTextFields, full.Fuzzy(fuzzySimilarity))
                         .Or()
                         .GroupedOr(["nodeName"], full.Fuzzy(fuzzySimilarity))
                         .Or()
-                        .GroupedOr(["lemma"], full.MultipleCharacterWildcard())
+                        .GroupedOr(HeadwordTextFields, full.MultipleCharacterWildcard())
                         .Or()
                         .GroupedOr(["nodeName"], full.MultipleCharacterWildcard());
 
@@ -110,7 +132,7 @@ namespace ClockworkUmbraco.Services
                         string[] prefixTerms = [token.Substring(0, prefixLen)];
                         branch = branch
                             .Or()
-                            .GroupedOr(["lemma"], prefixTerms.MultipleCharacterWildcard())
+                            .GroupedOr(HeadwordTextFields, prefixTerms.MultipleCharacterWildcard())
                             .Or()
                             .GroupedOr(["nodeName"], prefixTerms.MultipleCharacterWildcard());
                     }
@@ -121,14 +143,12 @@ namespace ClockworkUmbraco.Services
 
             ISearchResults pageOfResults = boolQuery.Execute();
 
-            const int examineCap = 400;
             var filteredResults = pageOfResults
-                .Take(examineCap)
+                .Take(ExamineMaxHits)
                 .Where(result =>
                 {
                     var contentItem = _publishedContentQuery.Content(result.Id);
-                    return contentItem?.TemplateId != null
-                        && string.Equals(contentItem.ContentType.Alias, Headword.ModelTypeAlias, StringComparison.OrdinalIgnoreCase);
+                    return contentItem?.TemplateId != null;
                 })
                 .Take(maxResults * 5)
                 .ToList();
@@ -137,4 +157,3 @@ namespace ClockworkUmbraco.Services
         }
     }
 }
-
