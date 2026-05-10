@@ -56,5 +56,45 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
 		[ImplementPropertyType("footerLogo")]
 		public virtual global::Umbraco.Cms.Core.Models.MediaWithCrops FooterLogo => global::Umbraco.Cms.Web.Common.PublishedModels.FooterProperties.GetFooterLogo(this, _publishedValueFallback);
+
+		///<summary>
+		/// Footer Nav Links
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("footerNavLinks")]
+		public virtual global::Umbraco.Cms.Core.Models.Blocks.BlockListModel FooterNavLinks => global::Umbraco.Cms.Web.Common.PublishedModels.FooterProperties.GetFooterNavLinks(this, _publishedValueFallback);
+
+		///<summary>
+		/// Footer Title
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("footerTitle")]
+		public virtual string FooterTitle => global::Umbraco.Cms.Web.Common.PublishedModels.FooterProperties.GetFooterTitle(this, _publishedValueFallback);
+
+		///<summary>
+		/// Header Logo
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("headerLogo")]
+		public virtual global::Umbraco.Cms.Core.Models.MediaWithCrops HeaderLogo => global::Umbraco.Cms.Web.Common.PublishedModels.HeaderProperties.GetHeaderLogo(this, _publishedValueFallback);
+
+		///<summary>
+		/// Header Nav Links
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("headerNavLinks")]
+		public virtual global::System.Collections.Generic.IEnumerable<global::Umbraco.Cms.Core.Models.Link> HeaderNavLinks => global::Umbraco.Cms.Web.Common.PublishedModels.HeaderProperties.GetHeaderNavLinks(this, _publishedValueFallback);
+
+		///<summary>
+		/// Header Social Links
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("headerSocialLinks")]
+		public virtual global::System.Collections.Generic.IEnumerable<global::Umbraco.Cms.Core.Models.PublishedContent.SocialLink> HeaderSocialLinks => global::Umbraco.Cms.Web.Common.PublishedModels.HeaderProperties.GetHeaderSocialLinks(this, _publishedValueFallback);
 	}
 }

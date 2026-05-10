@@ -26,6 +26,16 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
 		global::Umbraco.Cms.Core.Models.MediaWithCrops FooterLogo { get; }
+
+		/// <summary>Footer Nav Links</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		global::Umbraco.Cms.Core.Models.Blocks.BlockListModel FooterNavLinks { get; }
+
+		/// <summary>Footer Title</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		string FooterTitle { get; }
 	}
 
 	/// <summary>Footer Properties</summary>
@@ -71,5 +81,31 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
 		[return: global::System.Diagnostics.CodeAnalysis.MaybeNull]
 		public static global::Umbraco.Cms.Core.Models.MediaWithCrops GetFooterLogo(IFooterProperties that, IPublishedValueFallback publishedValueFallback) => that.Value<global::Umbraco.Cms.Core.Models.MediaWithCrops>(publishedValueFallback, "footerLogo");
+
+		///<summary>
+		/// Footer Nav Links
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("footerNavLinks")]
+		public virtual global::Umbraco.Cms.Core.Models.Blocks.BlockListModel FooterNavLinks => GetFooterNavLinks(this, _publishedValueFallback);
+
+		/// <summary>Static getter for Footer Nav Links</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
+		[return: global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		public static global::Umbraco.Cms.Core.Models.Blocks.BlockListModel GetFooterNavLinks(IFooterProperties that, IPublishedValueFallback publishedValueFallback) => that.Value<global::Umbraco.Cms.Core.Models.Blocks.BlockListModel>(publishedValueFallback, "footerNavLinks");
+
+		///<summary>
+		/// Footer Title
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("footerTitle")]
+		public virtual string FooterTitle => GetFooterTitle(this, _publishedValueFallback);
+
+		/// <summary>Static getter for Footer Title</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
+		[return: global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		public static string GetFooterTitle(IFooterProperties that, IPublishedValueFallback publishedValueFallback) => that.Value<string>(publishedValueFallback, "footerTitle");
 	}
 }

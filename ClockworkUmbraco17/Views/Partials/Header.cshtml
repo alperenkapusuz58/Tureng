@@ -1,8 +1,23 @@
-﻿<header class="site-header">
+﻿@using Umbraco.Cms.Core.Services
+@inherits UmbracoViewPage
+@inject ILanguageService LanguageService
+
+@{
+    var siteSettings = Model.GetSiteSettings();
+    var home = Model.GetMainPage();
+}
+
+<header class="site-header">
     <div class="site-header__inner page">
-        <a class="site-header__logo" href="/">
-            <img src="~/images/logo.png" alt="Logo" height="48" />
-        </a>
+        @if (home != null)  {
+            <a class="site-header__logo" href="@home.Url()">
+                @if(siteSettings.HeaderLogo != null) {
+                <img src="@siteSettings.HeaderLogo.Url()" alt="@siteSettings.HeaderLogo.Name" height="48" />
+
+                }
+            </a>
+        }
+
 
         <div class="site-header__end">
             <button type="button"
@@ -19,27 +34,44 @@
             </button>
 
             <div class="site-header__tools site-header__tools--desktop">
-                <nav class="site-header__nav" aria-label="Kısa bağlantılar">
-                    <a class="site-header__nav-link" href="#">Yardım</a>
+                @if(siteSettings.HeaderNavLinks != null) {
+                    <nav class="site-header__nav" aria-label="Kısa bağlantılar">
+                        @foreach(var link in siteSettings.HeaderNavLinks) {
+                            <a class="site-header__nav-link" href="@link.Url" target="@link.Target">@link.Name</a>
+                        }
                 </nav>
+                }
+                
 
-                <div class="site-social" aria-label="Sosyal medya">
-                    <a class="site-social__link" href="#" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-                        <img class="site-social__icon" src="~/images/facebook-white.svg" alt="" width="16" height="16" />
-                    </a>
-                    <a class="site-social__link" href="#" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                        <img class="site-social__icon" src="~/images/instagram-white.svg" alt="" width="16" height="16" />
-                    </a>
-                </div>
+                @if(siteSettings.HeaderSocialLinks != null) {
+                    <div class="site-social" aria-label="Sosyal medya">
+                        @foreach(var link in siteSettings.HeaderSocialLinks) {
+                            <a class="site-social__link" href="@link.Url" target="_blank" rel="noopener noreferrer" aria-label="@link.Name">
+                                <img class="site-social__icon" src="~/images/@link.Network" alt="@link.Name" width="16" height="16" />
+                            </a>
+                        }
+                    </div>
+                }
 
                 <details class="site-lang">
                     <summary class="site-lang__toggle" aria-label="Dil seçin">
-                        <span class="site-lang__current">TR</span>
+                        <span class="site-lang__current">@System.Threading.Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName.ToUpper()</span>
                         <span class="site-lang__caret" aria-hidden="true"></span>
                     </summary>
                     <div class="site-lang__panel" role="group" aria-label="Diller">
-                        <a class="site-lang__option site-lang__option--active" href="#" aria-current="true">TR</a>
-                        <a class="site-lang__option" href="#">EN</a>
+                        <a class="site-lang__option site-lang__option--active"
+                           href="@Model.Url(System.Threading.Thread.CurrentThread.CurrentCulture.Name)"
+                           aria-current="true">
+                            @System.Threading.Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName.ToUpper()
+                        </a>
+
+                        @foreach (var language in LanguageService.GetAllAsync().Result)
+                        {
+                            @if (language?.CultureInfo?.Name != System.Threading.Thread.CurrentThread.CurrentCulture.Name)
+                            {
+                                <a class="site-lang__option" href="@Model.Url(language?.CultureInfo?.Name)">@language?.CultureInfo?.TwoLetterISOLanguageName.ToUpper()</a>
+                            }
+                        }
                     </div>
                 </details>
             </div>
@@ -57,22 +89,38 @@
             </div>
             <div class="site-menu__body">
                 <div class="site-menu__lang">
-                    <a class="site-menu__lang-btn site-menu__lang-btn--active" href="#" aria-current="true">TR</a>
-                    <a class="site-menu__lang-btn" href="#">EN</a>
+                    <a class="site-menu__lang-btn site-menu__lang-btn--active"
+                       href="@Model.Url(System.Threading.Thread.CurrentThread.CurrentCulture.Name)"
+                       aria-current="true">
+                        @System.Threading.Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName.ToUpper()
+                    </a>
+
+                    @foreach (var language in LanguageService.GetAllAsync().Result)
+                    {
+                        @if (language?.CultureInfo?.Name != System.Threading.Thread.CurrentThread.CurrentCulture.Name)
+                        {
+                            <a class="site-menu__lang-btn" href="@Model.Url(language?.CultureInfo?.Name)">@language?.CultureInfo?.TwoLetterISOLanguageName.ToUpper()</a>
+                        }
+                    }
                 </div>
 
-                <nav class="site-menu__nav" aria-label="Kısa bağlantılar">
-                    <a class="site-menu__link" href="#">Yardım</a>
-                </nav>
+                @if(siteSettings.HeaderNavLinks != null) {
+                    <nav class="site-menu__nav" aria-label="Kısa bağlantılar">
+                        @foreach(var link in siteSettings.HeaderNavLinks) {
+                            <a class="site-menu__link" href="@link.Url" target="@link.Target">@link.Name</a>
+                        }
+                    </nav>
+                }
 
-                <div class="site-menu__social">
-                    <a class="site-menu__social-link" href="#" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-                        <img src="~/images/facebook-white.svg" alt="" width="22" height="22" />
-                    </a>
-                    <a class="site-menu__social-link" href="#" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                        <img src="~/images/instagram-white.svg" alt="" width="22" height="22" />
-                    </a>
-                </div>
+                @if(siteSettings.HeaderSocialLinks != null) {
+                    <div class="site-menu__social">
+                        @foreach(var link in siteSettings.HeaderSocialLinks) {
+                            <a class="site-menu__social-link" href="@link.Url" target="_blank" rel="noopener noreferrer" aria-label="@link.Name">
+                                <img src="~/images/@link.Network" alt="@link.Name" width="22" height="22" />
+                            </a>
+                        }
+                    </div>
+                }
             </div>
         </aside>
     </div>
