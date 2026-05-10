@@ -774,7 +774,7 @@ body.site-menu--open {
 /* Madde sayfası — en-tr-detail ile aynı sütun genişliği */
 .dictionary-page .page {
     max-width: 860px;
-    padding: 14px 16px 28px;
+    padding: 8px 16px 28px;
 }
 
 /* Ana sayfa — main’i gereksiz uzatma; footer viewport altına yapışsın */
@@ -998,8 +998,12 @@ body.site-menu--open {
         box-shadow: var(--ring);
     }
 
+    /* Alanı koru — gizliyken layout kayması olmasın (submit/clear hizası) */
     &[hidden] {
-        display: none !important;
+        display: inline-flex !important;
+        visibility: hidden;
+        pointer-events: none;
+        opacity: 0;
     }
 }
 
@@ -1060,6 +1064,27 @@ body.site-menu--open {
 .dict-direction-tabs .tab-btn.active {
     background: #ffffff;
     box-shadow: 0 4px 14px rgba(15, 34, 79, 0.16);
+}
+
+/* Madde topbar — EN↔TR tek satır, yükseklik düşük */
+.dict-direction-tabs--topbar-inline {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.dict-direction-tabs--topbar-inline .tab-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
 }
 
 .search-wrap {
@@ -1219,7 +1244,7 @@ body.site-menu--open {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Madde başlığı — topbar (en-tr-detail)                                      */
+/* Madde — geri linki (topbar)                                                */
 /* -------------------------------------------------------------------------- */
 .topbar {
     background: var(--navy);
@@ -1236,11 +1261,6 @@ body.site-menu--open {
     gap: 16px;
 }
 
-.topbar-inner > div:has(.entry-title) {
-    min-width: 0;
-    flex: 1 1 200px;
-}
-
 .back-link {
     display: inline-flex;
     align-items: center;
@@ -1255,36 +1275,223 @@ body.site-menu--open {
     white-space: nowrap;
 }
 
+.topbar-inner--with-search {
+    flex-wrap: nowrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.topbar-search {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+}
+
+.dict-search-form--compact {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    align-items: center;
+}
+
+.dict-search-form--compact .topbar-search-inline {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.dict-search-form--compact .search-wrap {
+    flex: 0 1 420px;
+    max-width: min(420px, 100%);
+    width: 100%;
+    min-width: 0;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.dict-search-form--compact .dict-search-suggestions {
+    z-index: 6000;
+}
+
+.dict-search-form--compact .search-shell {
+    padding: 3px 6px 3px 10px;
+    gap: 6px;
+    max-width: 100%;
+}
+
+.dict-search-form--compact .search-shell input {
+    font-size: 13px;
+    line-height: 1.25;
+}
+
+.dict-search-form--compact .search-submit {
+    width: 28px;
+    height: 28px;
+}
+
+.dict-search-form--compact .search-submit svg {
+    width: 13px;
+    height: 13px;
+}
+
+.dict-search-form--compact .search-clear {
+    width: 26px;
+    height: 26px;
+    font-size: 18px;
+}
+
+.dict-search-form--compact .search-shell__divider {
+    height: 16px;
+}
+
+.topbar:has(.dict-search-form--compact) {
+    padding: 5px 0;
+}
+
+@media (max-width: 520px) {
+    .topbar-inner--with-search {
+        gap: 8px;
+    }
+
+    .dict-search-form--compact .topbar-search-inline {
+        gap: 8px;
+    }
+
+    .dict-search-form--compact .search-wrap {
+        flex: 0 1 auto;
+        max-width: min(280px, calc(100vw - 200px));
+    }
+
+    .dict-search-form--compact .topbar-search-inline {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .dict-direction-tabs--topbar-inline .tab-btn {
+        padding: 5px 8px;
+        font-size: 10px;
+    }
+
+    .dict-search-form--compact .search-shell {
+        padding: 2px 5px 2px 8px;
+    }
+
+    .dict-search-form--compact .search-submit {
+        width: 26px;
+        height: 26px;
+    }
+
+    .dict-search-form--compact .search-submit svg {
+        width: 12px;
+        height: 12px;
+    }
+}
+
+/* Madde başlığı + seslendirme — .page üstü kart                                             */
+.dict-entry-head {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 860px;
+    margin: 0 auto 14px;
+    padding: 0 16px;
+}
+
+.dictionary-page > .dict-entry-head:first-child {
+    margin-top: 14px;
+}
+
+.topbar + .dict-entry-head {
+    margin-top: 12px;
+}
+
+.dict-entry-head__ad {
+    width: 100%;
+    min-width: 0;
+}
+
+.dict-page-ad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px dashed rgba(96, 116, 139, 0.4);
+    background: rgba(255, 255, 255, 0.55);
+    box-sizing: border-box;
+}
+
+.dict-page-ad__slot {
+    width: 100%;
+    max-width: 728px;
+    min-height: 90px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.dict-page-ad__slot:empty {
+    /* Yer tutucu — gerçek reklam yüklenene kadar tipik leaderboard (728×90) yüksekliği */
+    background: rgba(238, 244, 248, 0.6);
+    border-radius: 8px;
+}
+
+.dict-entry-head__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 18px;
+    min-width: 0;
+    padding: 16px 18px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: linear-gradient(135deg, #ffffff 0%, #f3f7fb 100%);
+    box-shadow: 0 10px 26px rgba(15, 34, 79, 0.07);
+}
+
 .entry-title {
     display: block;
-    color: #fff;
-    font-size: 20px;
-    font-weight: 700;
-    line-height: 1.1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    margin: 0;
+    min-width: 0;
+    flex: 1 1 160px;
+    color: var(--navy-deep);
+    font-size: clamp(1.2rem, 2.8vw, 1.65rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .entry-pron {
-    color: rgba(255, 255, 255, 0.72);
+    color: var(--muted);
     font-size: 13px;
     font-weight: 400;
     margin-left: 6px;
 }
 
 .listen-btn {
-    flex-shrink: 0;
-    padding: 4px 10px;
-    font-size: 11px;
     cursor: pointer;
     border: 0;
     border-radius: 999px;
-    background: var(--yellow);
-    color: #17304a;
     font-family: inherit;
     font-weight: 700;
-    white-space: nowrap;
+}
+
+.dict-entry-head .ex-btn.listen-btn {
+    flex-shrink: 0;
+    align-self: center;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1921,8 +2128,8 @@ body.site-menu--open {
         gap: 10px;
     }
 
-    .entry-title {
-        font-size: 17px;
+    .dict-entry-head__inner {
+        padding: 14px 14px;
     }
 }
 
@@ -1934,6 +2141,28 @@ body.site-menu--open {
 
     .dictionary-page .page {
         padding: 12px 10px 24px;
+    }
+
+    .dict-entry-head {
+        padding: 0 10px;
+        margin-bottom: 12px;
+        gap: 10px;
+    }
+
+    .dict-page-ad {
+        padding: 8px 10px;
+    }
+
+    .dict-page-ad__slot {
+        min-height: 72px;
+    }
+
+    .dictionary-page > .dict-entry-head:first-child {
+        margin-top: 10px;
+    }
+
+    .topbar + .dict-entry-head {
+        margin-top: 10px;
     }
 
     .hero {
@@ -1997,18 +2226,13 @@ body.site-menu--open {
 }
 
 @media (max-width: 480px) {
+    .dict-entry-head__inner {
+        gap: 10px;
+    }
+
     .entry-title {
-        white-space: normal;
-        overflow: visible;
-        text-overflow: clip;
-    }
-
-    .topbar-inner {
-        align-items: flex-start;
-    }
-
-    .listen-btn {
-        align-self: center;
+        flex: 1 1 auto;
+        min-width: 0;
     }
 
     .site-lang__panel {

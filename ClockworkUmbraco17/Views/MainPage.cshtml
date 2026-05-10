@@ -18,13 +18,13 @@
             </div>
 
             <div class="search-card">
-                <form method="get" action="#" id="dict-search-form" data-dictionary-search-url="@dictionarySearchUrl" data-dictionary-no-results-url="@dictionaryNoResultsUrl" autocomplete="off">
-                    <input type="hidden" name="direction" id="direction" value="en-tr">
+                <form method="get" action="#" class="dict-search-form" data-dictionary-search-url="@dictionarySearchUrl" data-dictionary-no-results-url="@dictionaryNoResultsUrl" autocomplete="off">
+                    <input type="hidden" name="direction" value="en-tr">
                     <div class="search-wrap">
                         <div class="search-shell">
-                            <input type="text" id="query" name="q" autocomplete="off" placeholder="Search English - Turkish" required>
+                            <input type="text" name="q" autocomplete="off" placeholder="Search English - Turkish" required>
                             <div class="search-shell__actions">
-                                <button type="button" class="search-clear" id="dict-search-clear" hidden aria-label="Metni temizle">
+                                <button type="button" class="search-clear dict-search-clear" hidden aria-label="Metni temizle">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                                 <span class="search-shell__divider" aria-hidden="true"></span>
@@ -36,8 +36,8 @@
                                 </button>
                             </div>
                         </div>
-                        <ul class="suggestions" id="suggestions" role="listbox" aria-label="Arama önerileri" hidden></ul>
-                        <template id="dictionary-suggestion-item-template">
+                        <ul class="dict-search-suggestions suggestions" role="listbox" aria-label="Arama önerileri" hidden></ul>
+                        <template class="dictionary-suggestion-item-template">
                             <li role="option"><a href="#"></a></li>
                         </template>
                     </div>
