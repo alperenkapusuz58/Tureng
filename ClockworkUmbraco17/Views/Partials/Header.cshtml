@@ -47,13 +47,13 @@
                     <div class="site-social" aria-label="Sosyal medya">
                         @foreach(var link in siteSettings.HeaderSocialLinks) {
                             <a class="site-social__link" href="@link.Url" target="_blank" rel="noopener noreferrer" aria-label="@link.Name">
-                                <img class="site-social__icon" src="~/images/@link.Network" alt="@link.Name" width="16" height="16" />
+                                <img class="site-social__icon" src="~/images/@(link.Network)-white.svg" alt="@link.Name" width="16" height="16" />
                             </a>
                         }
                     </div>
                 }
 
-                <details class="site-lang">
+                @*<details class="site-lang">
                     <summary class="site-lang__toggle" aria-label="Dil seçin">
                         <span class="site-lang__current">@System.Threading.Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName.ToUpper()</span>
                         <span class="site-lang__caret" aria-hidden="true"></span>
@@ -73,7 +73,7 @@
                             }
                         }
                     </div>
-                </details>
+                </details>*@
             </div>
         </div>
     </div>
@@ -116,7 +116,7 @@
                     <div class="site-menu__social">
                         @foreach(var link in siteSettings.HeaderSocialLinks) {
                             <a class="site-menu__social-link" href="@link.Url" target="_blank" rel="noopener noreferrer" aria-label="@link.Name">
-                                <img src="~/images/@link.Network" alt="@link.Name" width="22" height="22" />
+                                <img src="~/images/@(link.Network)-white.svg" alt="@link.Name" width="22" height="22" />
                             </a>
                         }
                     </div>
