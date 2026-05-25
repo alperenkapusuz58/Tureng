@@ -17,9 +17,11 @@
     var searchPlaceholder = string.Equals(searchDirection, "tr-en", StringComparison.OrdinalIgnoreCase)
         ? "Search Turkish - English"
         : "Search English - Turkish";
+    var ttsLanguage = string.Equals(searchDirection, "tr-en", StringComparison.OrdinalIgnoreCase) ? "tr-TR" : "en-US";
+    var dictionaryAudioUrl = "/api/dictionary/audio";
 }
 
-<div class="dictionary-page">
+<div class="dictionary-page" data-dictionary-audio-url="@dictionaryAudioUrl">
     <div class="topbar">
         <div class="topbar-inner topbar-inner--with-search">
             @if (Model?.Parent() != null)
@@ -68,7 +70,7 @@
         </div>
         <div class="dict-entry-head__inner">
             <h1 id="dict-entry-title" class="entry-title">@Model?.Word</h1>
-            <button class="ex-btn listen-btn" type="button" data-text="@Model?.Word" data-lang="en-US" aria-label='@Umbraco.GetDictionaryValue("Common.Seslendir")'>
+            <button class="ex-btn listen-btn" type="button" data-text="@Model?.Word" data-language="@ttsLanguage" data-source-type="word" aria-label='@Umbraco.GetDictionaryValue("Common.Seslendir")'>
                 <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                     <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -114,7 +116,7 @@
                                             <div class="example-block">
                                                 @Html.Raw(item?.Sentence)
 
-                                                <button class="ex-btn listen-btn" type="button" data-text="@sentenceText" data-lang="en-US" aria-label="Dinle">
+                                                <button class="ex-btn listen-btn" type="button" data-text="@sentenceText" data-language="@ttsLanguage" data-source-type="sentence" aria-label="Dinle">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                                                         <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -154,7 +156,7 @@
                             <div class="phrase-example">
                                 @Html.Raw(item?.Sentence)
 
-                                <button class="ex-btn listen-btn" type="button" data-text="@phraseSentenceText" data-lang="en-US" aria-label="Dinle">
+                                <button class="ex-btn listen-btn" type="button" data-text="@phraseSentenceText" data-language="@ttsLanguage" data-source-type="sentence" aria-label="Dinle">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                                         <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -189,7 +191,7 @@
                             <div class="phrase-example">
                                 @Html.Raw(item?.Sentence)
 
-                                <button class="ex-btn listen-btn" type="button" data-text="@phraseSentenceText" data-lang="en-US" aria-label="Dinle">
+                                <button class="ex-btn listen-btn" type="button" data-text="@phraseSentenceText" data-language="@ttsLanguage" data-source-type="sentence" aria-label="Dinle">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                                         <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -210,19 +212,5 @@
 
 @section scripts {
     <script src="~/js/dictionary-search.js" asp-append-version="true"></script>
-    <script>
-        function speakText(text, lang) {
-            if (!('speechSynthesis' in window)) return;
-            var u = new SpeechSynthesisUtterance(text);
-            u.lang = lang || 'en-US';
-            u.rate = 0.85;
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(u);
-        }
-        document.querySelectorAll('.listen-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                speakText(btn.dataset.text || '', btn.dataset.lang);
-            });
-        });
-    </script>
+    <script src="~/js/listen-audio.js" asp-append-version="true"></script>
 }

@@ -1,7 +1,11 @@
 using ClockworkUmbraco.Helpers;
 using ClockworkUmbraco.Services;
 using ClockworkUmbraco.Services.Interfaces;
+using ClockworkUmbraco.Services.Tts;
 using Microsoft.Extensions.Options;
+using Kelimebull.Tts.Core.Configuration;
+using Kelimebull.Tts.Core.Data;
+using Kelimebull.Tts.Core.Voices;
 using Umbraco.Cms.Core.Composing;
 
 namespace ClockworkUmbraco.Composers
@@ -16,6 +20,11 @@ namespace ClockworkUmbraco.Composers
             builder.Services.AddScoped<MailHandler>();
             builder.Services.AddScoped<ISearchService, SearchService>();
             builder.Services.AddScoped<HeadwordSearchMapper>();
+            builder.Services.Configure<TtsOptions>(builder.Config.GetSection(TtsOptions.SectionName));
+            builder.Services.AddScoped<TtsVoiceResolver>();
+            builder.Services.AddScoped<ITtsAudioRegistry, TtsAudioRegistry>();
+            builder.Services.AddScoped<ITtsAudioUrlBuilder, TtsAudioUrlBuilder>();
+            builder.Services.AddScoped<ITtsInventoryService, TtsInventoryService>();
             builder.SetContentLastChanceFinder<PageNotFound>();
         }
     }
