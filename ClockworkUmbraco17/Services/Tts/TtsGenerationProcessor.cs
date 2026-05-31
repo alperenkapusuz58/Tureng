@@ -3,7 +3,7 @@ using Kelimebull.Tts.Core.Configuration;
 using Kelimebull.Tts.Core.Data;
 using Kelimebull.Tts.Core.Models;
 
-namespace Kelimebull.TtsWorker.Services;
+namespace ClockworkUmbraco.Services.Tts;
 
 public sealed class TtsGenerationProcessor
 {

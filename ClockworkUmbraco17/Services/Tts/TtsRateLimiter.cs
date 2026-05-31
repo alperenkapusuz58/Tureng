@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Options;
 using Kelimebull.Tts.Core.Configuration;
 
-namespace Kelimebull.TtsWorker.Services;
+namespace ClockworkUmbraco.Services.Tts;
 
 public sealed class TtsRateLimiter
 {

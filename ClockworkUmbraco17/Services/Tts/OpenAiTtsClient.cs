@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 using Kelimebull.Tts.Core.Configuration;
 using Kelimebull.Tts.Core.Models;
 
-namespace Kelimebull.TtsWorker.Services;
+namespace ClockworkUmbraco.Services.Tts;
 
 public interface IOpenAiTtsClient
 {
