@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>Bir şeyler ters gitti</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy: #243b7a;
+            --navy-deep: #1d3166;
+            --bg: #eef4f8;
+            --text: #1c2d44;
+            --muted: #60748b;
+            --card: #ffffff;
+            --yellow: #ffcc1a;
+            --border: #dde5ed;
+            --shadow: 0 18px 45px rgba(15, 34, 79, 0.18);
+            --radius: 14px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 56px 18px;
+            font-family: "Manrope", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .error-card {
+            width: 100%;
+            max-width: 560px;
+            text-align: center;
+            padding: 48px 32px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .error-code {
+            font-size: clamp(72px, 18vw, 132px);
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            color: var(--navy);
+        }
+
+        .error-code b {
+            color: var(--yellow);
+            font-weight: 800;
+        }
+
+        .error-title {
+            margin: 14px 0 8px;
+            font-size: clamp(1.25rem, 3vw, 1.6rem);
+            font-weight: 800;
+            color: var(--navy-deep);
+        }
+
+        .error-text {
+            margin: 0 auto 26px;
+            max-width: 44ch;
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .error-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .error-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 22px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 14px;
+            text-decoration: none;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .error-btn--primary {
+            background: var(--navy);
+            color: #fff;
+            box-shadow: 0 10px 24px rgba(36, 59, 122, 0.28);
+        }
+
+        .error-btn--primary:hover { background: var(--navy-deep); }
+
+        .error-btn--ghost {
+            background: #f6fafc;
+            color: var(--navy-deep);
+            border-color: var(--border);
+        }
+
+        .error-btn--ghost:hover { background: rgba(36, 59, 122, 0.08); }
+    </style>
+</head>
+<body>
+    <main class="error-card" role="alert" aria-labelledby="error-title">
+        <div class="error-code" aria-hidden="true">5<b>0</b>0</div>
+        <h1 id="error-title" class="error-title">Bir şeyler ters gitti</h1>
+        <p class="error-text">
+            Beklenmeyen bir hata oluştu ve sayfa şu anda görüntülenemiyor.
+            Ekibimiz durumdan haberdar. Lütfen birazdan tekrar deneyin.
+        </p>
+        <div class="error-actions">
+            <a class="error-btn error-btn--primary" href="/">Ana sayfaya dön</a>
+            <a class="error-btn error-btn--ghost" href="javascript:location.reload()">Tekrar dene</a>
+        </div>
+    </main>
+</body>
+</html>

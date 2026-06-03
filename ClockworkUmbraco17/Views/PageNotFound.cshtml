@@ -1,0 +1,111 @@
+﻿@inherits UmbracoViewPage<ContentModels.PageNotFoundPage>
+@{
+    Layout = "Layout.cshtml";
+    var homeUrl = Model.GetMainPage()?.Url() ?? "/";
+    Context.Response.StatusCode = 404;
+}
+
+@section styles {
+    <style>
+        .error-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 58vh;
+            padding: 56px 18px;
+        }
+
+        .error-card {
+            width: 100%;
+            max-width: 560px;
+            text-align: center;
+            padding: 48px 32px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .error-code {
+            font-size: clamp(72px, 18vw, 132px);
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            color: var(--navy);
+        }
+
+        .error-code b {
+            color: var(--yellow);
+            font-weight: 800;
+        }
+
+        .error-title {
+            margin: 14px 0 8px;
+            font-size: clamp(1.25rem, 3vw, 1.6rem);
+            font-weight: 800;
+            color: var(--navy-deep);
+        }
+
+        .error-text {
+            margin: 0 auto 26px;
+            max-width: 44ch;
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .error-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .error-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 22px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 14px;
+            text-decoration: none;
+            border: 1px solid transparent;
+            transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .error-btn--primary {
+            background: var(--navy);
+            color: #fff;
+            box-shadow: 0 10px 24px rgba(36, 59, 122, 0.28);
+        }
+
+        .error-btn--primary:hover {
+            background: var(--navy-deep);
+        }
+
+        .error-btn--ghost {
+            background: #f6fafc;
+            color: var(--navy-deep);
+            border-color: var(--border);
+        }
+
+        .error-btn--ghost:hover {
+            background: rgba(36, 59, 122, 0.08);
+        }
+    </style>
+}
+
+<section class="error-page">
+    <div class="error-card" role="alert" aria-labelledby="error-title">
+        <div class="error-code" aria-hidden="true">4<b>0</b>4</div>
+        <h1 id="error-title" class="error-title">@Model.Title</h1>
+        <p class="error-text">
+            @Html.Raw(Model.Description)
+        </p>
+        <div class="error-actions">
+            <a class="error-btn error-btn--primary" href="@homeUrl">@Umbraco.GetDictionaryValue("Common.AnaSayfayaDon")</a>
+            <a class="error-btn error-btn--ghost" href="javascript:history.back()">@Umbraco.GetDictionaryValue("Common.GeriGit")</a>
+        </div>
+    </div>
+</section>
