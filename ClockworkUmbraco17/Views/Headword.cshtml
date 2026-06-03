@@ -68,16 +68,6 @@
                 <div id="dictionary-entry-ad" class="dict-page-ad__slot"></div>
             </aside>
         </div>
-        <div class="dict-entry-head__inner">
-            <h1 id="dict-entry-title" class="entry-title">@Model?.Word</h1>
-            <button class="ex-btn listen-btn" type="button" data-text="@Model?.Word" data-language="@ttsLanguage" data-source-type="word" aria-label='@Umbraco.GetDictionaryValue("Common.Seslendir")'>
-                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-                </svg>
-            </button>
-        </div>
     </header>
     <div class="page">
         <section>
@@ -96,20 +86,28 @@
                             <span class="pos-tag">@category?.PartOfSpeech</span>
                         </div>
 
-                        <div class="irregular-forms">@category?.IrregularForms</div>
+                        @if (!string.IsNullOrWhiteSpace(category?.IrregularForms))
+                        {
+                            <div class="irregular-forms">@category?.IrregularForms</div>
+                        }
 
                         @if(category?.Items != null && category.Items.Any())
                         {
+                            var senseCount = category.Items.Count();
+
                             <ol class="sense-list">
 
-                                @for(var j = 0; j < category.Items.Count(); j++)
+                                @for(var j = 0; j < senseCount; j++)
                                 {
                                     var item = category.Items.ElementAt(j).Content as SenseItem;
                                     var sentenceHtml = item?.Sentence?.ToString() ?? string.Empty;
                                     var sentenceText = System.Text.RegularExpressions.Regex.Replace(sentenceHtml, "<.*?>", " ").Trim();
 
                                     <li class="sense-item">
-                                        <span class="sense-num">@(j + 1)</span>
+                                        @if (senseCount > 1)
+                                        {
+                                            <span class="sense-num">@(j + 1)</span>
+                                        }
                                         <div class="sense-body">
                                             <div class="translation-line">@item?.Translation</div>
 
@@ -151,19 +149,38 @@
                         <div class="phrase-item">
                             <span class="phrase-text">@item?.Phrase</span>
 
-                            <div class="phrase-tr">@item?.Translation</div>
+                            @if(item.Items != null && item.Items.Any()){
+                                var phraseSenseCount = item.Items.Count();
 
-                            <div class="phrase-example">
-                                @Html.Raw(item?.Sentence)
+                                @for(var j = 0; j < phraseSenseCount; j++){
 
-                                <button class="ex-btn listen-btn" type="button" data-text="@phraseSentenceText" data-language="@ttsLanguage" data-source-type="sentence" aria-label="Dinle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-                                    </svg>
-                                </button>
-                            </div>
+                                    var itemContent = item.Items.ElementAt(j).Content as SenseItem;
+                                    var innerSentenceHtml = itemContent?.Sentence?.ToString() ?? string.Empty;
+                                    var innerSentenceText = System.Text.RegularExpressions.Regex.Replace(innerSentenceHtml, "<.*?>", " ").Trim();
+
+                                    <div class="phrase-sense">
+                                        @if (phraseSenseCount > 1)
+                                        {
+                                            <span class="sense-num">@(j + 1)</span>
+                                        }
+                                        <div class="phrase-sense-body">
+                                            <div class="phrase-tr">@itemContent?.Translation</div>
+                                            <div class="phrase-example">
+                                                @Html.Raw(itemContent?.Sentence)
+
+                                                <button class="ex-btn listen-btn" type="button" data-text="@innerSentenceText" data-language="@ttsLanguage" data-source-type="sentence" aria-label="Dinle">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            
 
                         </div>
                     }
@@ -180,25 +197,42 @@
                     @for (var i = 0; i < Model?.PhrasalVerbs.Count(); i++)
                     {
                         var item = Model?.PhrasalVerbs.ElementAt(i).Content as IdiomsAndProverbsItem;
-                        var phraseSentenceHtml = item?.Sentence?.ToString() ?? string.Empty;
-                        var phraseSentenceText = System.Text.RegularExpressions.Regex.Replace(phraseSentenceHtml, "<.*?>", " ").Trim();
 
                         <div class="phrase-item">
                             <span class="phrase-text">@item?.Phrase</span>
 
-                            <div class="phrase-tr">@item?.Translation</div>
+                            @if (item?.Items != null && item.Items.Any())
+                            {
+                                var phraseSenseCount = item.Items.Count();
 
-                            <div class="phrase-example">
-                                @Html.Raw(item?.Sentence)
+                                @for (var j = 0; j < phraseSenseCount; j++)
+                                {
+                                    var itemContent = item.Items.ElementAt(j).Content as SenseItem;
+                                    var innerSentenceHtml = itemContent?.Sentence?.ToString() ?? string.Empty;
+                                    var innerSentenceText = System.Text.RegularExpressions.Regex.Replace(innerSentenceHtml, "<.*?>", " ").Trim();
 
-                                <button class="ex-btn listen-btn" type="button" data-text="@phraseSentenceText" data-language="@ttsLanguage" data-source-type="sentence" aria-label="Dinle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-                                    </svg>
-                                </button>
-                            </div>
+                                    <div class="phrase-sense">
+                                        @if (phraseSenseCount > 1)
+                                        {
+                                            <span class="sense-num">@(j + 1)</span>
+                                        }
+                                        <div class="phrase-sense-body">
+                                            <div class="phrase-tr">@itemContent?.Translation</div>
+                                            <div class="phrase-example">
+                                                @Html.Raw(itemContent?.Sentence)
+
+                                                <button class="ex-btn listen-btn" type="button" data-text="@innerSentenceText" data-language="@ttsLanguage" data-source-type="sentence" aria-label="Dinle">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
 
                         </div>
                     }

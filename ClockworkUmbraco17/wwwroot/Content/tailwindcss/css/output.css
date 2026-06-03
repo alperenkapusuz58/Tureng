@@ -3320,7 +3320,7 @@ body.site-menu--open {
 }
 .entry-pron {
     color: var(--muted);
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 400;
     margin-left: 6px;
 }
@@ -3359,12 +3359,12 @@ body.site-menu--open {
 }
 .pos-lemma {
     font-weight: 700;
-    font-size: 15px;
+    font-size: 17px;
     color: var(--navy-deep);
 }
 .pos-pron {
     color: var(--muted);
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 400;
 }
 .pos-tag {
@@ -3373,13 +3373,13 @@ body.site-menu--open {
     background: #dce8f0;
     color: var(--navy-deep);
     font-weight: 700;
-    font-size: 10px;
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.3px;
 }
 .irregular-forms {
     color: var(--muted);
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
     padding: 3px 14px 6px;
     background: #f5f8fb;
@@ -3402,7 +3402,7 @@ body.site-menu--open {
 .sense-num {
     flex: 0 0 18px;
     font-weight: 700;
-    font-size: 12px;
+    font-size: 14px;
     color: var(--muted);
     padding-top: 1px;
 }
@@ -3412,24 +3412,24 @@ body.site-menu--open {
 }
 .grammar-code {
     color: var(--muted);
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 600;
     margin-right: 4px;
 }
 .definition {
     color: #3a526a;
-    font-size: 12px;
+    font-size: 14px;
     display: block;
     margin-bottom: 2px;
 }
 .translation-line {
     color: var(--navy-deep);
     font-weight: 700;
-    font-size: 13px;
+    font-size: 15px;
 }
 .example-block {
     margin-top: 4px;
-    font-size: 12px;
+    font-size: 14px;
     color: #4a5e72;
     line-height: 1.4;
     position: relative;
@@ -3480,7 +3480,7 @@ body.site-menu--open {
 }
 .phrases-title {
     font-weight: 700;
-    font-size: 10px;
+    font-size: 12px;
     color: var(--muted);
     padding: 8px 14px;
     background: #f5f8fb;
@@ -3495,27 +3495,41 @@ body.site-menu--open {
 .phrase-item:last-child {
     border-bottom: 0;
 }
+.phrase-sense {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+}
+.phrase-sense + .phrase-sense {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+}
+.phrase-sense-body {
+    flex: 1;
+    min-width: 0;
+}
 .phrase-text {
     font-weight: 700;
-    font-size: 13px;
+    font-size: 15px;
     color: var(--navy-deep);
 }
 .phrase-def {
     color: #3a526a;
-    font-size: 12px;
+    font-size: 14px;
     margin-top: 2px;
 }
 .phrase-tr {
     color: var(--navy-deep);
     font-weight: 500;
-    font-size: 12px;
+    font-size: 14px;
     margin-top: 2px;
 }
 .phrase-example {
     margin-top: 3px;
-    font-style: italic;
+    font-style: normal;
     color: #4a5e72;
-    font-size: 12px;
+    font-size: 14px;
     position: relative;
     padding-right: 30px;
 }
