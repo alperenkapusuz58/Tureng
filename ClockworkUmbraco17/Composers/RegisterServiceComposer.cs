@@ -7,6 +7,7 @@ using Kelimebull.Tts.Core.Configuration;
 using Kelimebull.Tts.Core.Data;
 using Kelimebull.Tts.Core.Voices;
 using Umbraco.Cms.Core.Composing;
+using PageNotFound = ClockworkUmbraco.Services.PageNotFound;
 
 namespace ClockworkUmbraco.Composers
 {
