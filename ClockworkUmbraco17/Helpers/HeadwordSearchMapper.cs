@@ -56,7 +56,7 @@ public class HeadwordSearchMapper
         }
 
         return results
-            .GroupBy(x => x.Lemma, StringComparer.OrdinalIgnoreCase)
+            .GroupBy(x => x.Lemma, StringComparer.Ordinal)
             .Select(g => g.First())
             .OrderBy(x => GetSearchScore(x, queryText))
             .ThenBy(x => x.Lemma, StringComparer.OrdinalIgnoreCase)

@@ -1,6 +1,8 @@
 (function () {
     var audioCache = new Map();
     var currentAudio = null;
+    var pollIntervalMs = 1000;
+    var pollAttempts = 10;
 
     function buildAudioUrl(baseUrl, btn) {
         var url = new URL(baseUrl || '/api/dictionary/audio', window.location.href);
@@ -33,7 +35,7 @@
 
         var statusUrl = (baseUrl || '/api/dictionary/audio').replace(/\/$/, '') + '/status/' + encodeURIComponent(hash);
         return new Promise(function (resolve) {
-            window.setTimeout(resolve, 1500);
+            window.setTimeout(resolve, pollIntervalMs);
         })
             .then(function () {
                 return fetch(statusUrl, { headers: { Accept: 'application/json' } });
@@ -90,7 +92,7 @@
                     return playUrl(url);
                 }
 
-                return pollStatus(baseUrl, hash, 3).then(function (readyUrl) {
+                return pollStatus(baseUrl, hash, pollAttempts).then(function (readyUrl) {
                     if (readyUrl) {
                         audioCache.set(cacheKey, readyUrl);
                         return playUrl(readyUrl);

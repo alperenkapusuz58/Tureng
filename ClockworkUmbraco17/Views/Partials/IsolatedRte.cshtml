@@ -1,0 +1,14 @@
+@model string
+
+@if (!string.IsNullOrWhiteSpace(Model))
+{
+    <span class="rte-isolated">
+        <template shadowrootmode="open">
+            <style>
+                :host { display: contents; }
+                b, strong { font-size: 15px; font-weight: 700; }
+            </style>
+            @Html.Raw(Model)
+        </template>
+    </span>
+}

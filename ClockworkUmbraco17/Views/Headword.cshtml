@@ -102,6 +102,11 @@
                                     var item = category.Items.ElementAt(j).Content as SenseItem;
                                     var sentenceHtml = item?.Sentence?.ToString() ?? string.Empty;
                                     var sentenceText = System.Text.RegularExpressions.Regex.Replace(sentenceHtml, "<.*?>", " ").Trim();
+                                    var dotIndex = sentenceText.IndexOf('.');
+                                    if (dotIndex >= 0)
+                                    {
+                                        sentenceText = sentenceText.Substring(0, dotIndex).Trim();
+                                    }
 
                                     <li class="sense-item">
                                         @if (senseCount > 1)
@@ -112,7 +117,7 @@
                                             <div class="translation-line">@item?.Translation</div>
 
                                             <div class="example-block">
-                                                @Html.Raw(item?.Sentence)
+                                                @await Html.PartialAsync("IsolatedRte", sentenceHtml)
 
                                                 <button class="ex-btn listen-btn" type="button" data-text="@sentenceText" data-language="@ttsLanguage" data-source-type="sentence" aria-label="Dinle">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -157,6 +162,11 @@
                                     var itemContent = item.Items.ElementAt(j).Content as SenseItem;
                                     var innerSentenceHtml = itemContent?.Sentence?.ToString() ?? string.Empty;
                                     var innerSentenceText = System.Text.RegularExpressions.Regex.Replace(innerSentenceHtml, "<.*?>", " ").Trim();
+                                    var dotIndex = innerSentenceText.IndexOf('.');
+                                    if (dotIndex >= 0)
+                                    {
+                                        innerSentenceText = innerSentenceText.Substring(0, dotIndex).Trim();
+                                    }
 
                                     <div class="phrase-sense">
                                         @if (phraseSenseCount > 1)
@@ -166,7 +176,7 @@
                                         <div class="phrase-sense-body">
                                             <div class="phrase-tr">@itemContent?.Translation</div>
                                             <div class="phrase-example">
-                                                @Html.Raw(itemContent?.Sentence)
+                                                @await Html.PartialAsync("IsolatedRte", innerSentenceHtml)
 
                                                 <button class="ex-btn listen-btn" type="button" data-text="@innerSentenceText" data-language="@ttsLanguage" data-source-type="sentence" aria-label="Dinle">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -210,6 +220,11 @@
                                     var itemContent = item.Items.ElementAt(j).Content as SenseItem;
                                     var innerSentenceHtml = itemContent?.Sentence?.ToString() ?? string.Empty;
                                     var innerSentenceText = System.Text.RegularExpressions.Regex.Replace(innerSentenceHtml, "<.*?>", " ").Trim();
+                                    var dotIndex = innerSentenceText.IndexOf('.');
+                                    if (dotIndex >= 0)
+                                    {
+                                        innerSentenceText = innerSentenceText.Substring(0, dotIndex).Trim();
+                                    }
 
                                     <div class="phrase-sense">
                                         @if (phraseSenseCount > 1)
@@ -219,7 +234,7 @@
                                         <div class="phrase-sense-body">
                                             <div class="phrase-tr">@itemContent?.Translation</div>
                                             <div class="phrase-example">
-                                                @Html.Raw(itemContent?.Sentence)
+                                                @await Html.PartialAsync("IsolatedRte", innerSentenceHtml)
 
                                                 <button class="ex-btn listen-btn" type="button" data-text="@innerSentenceText" data-language="@ttsLanguage" data-source-type="sentence" aria-label="Dinle">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

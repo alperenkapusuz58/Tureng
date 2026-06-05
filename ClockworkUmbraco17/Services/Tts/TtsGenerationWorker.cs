@@ -41,7 +41,7 @@ public sealed class TtsGenerationWorker : BackgroundService
 
                 if (items.Count == 0)
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                    await Task.Delay(TimeSpan.FromMilliseconds(500), stoppingToken);
                     continue;
                 }
 
