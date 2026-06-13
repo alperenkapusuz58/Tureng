@@ -100,6 +100,8 @@
             list.innerHTML = '';
             var qForLinks = (input.value || '').trim();
             var dirForLinks = directionInput ? directionInput.value || 'en-tr' : 'en-tr';
+            var renderedCount = 0;
+            var renderedPhraseCount = 0;
             for (var i = 0; i < results.length; i++) {
                 var item = results[i];
                 var href = item.url || item.Url || '';
@@ -109,6 +111,7 @@
                 if (!lemma) lemma = href;
 
                 var translation = item.translation != null ? item.translation : item.Translation;
+                var kind = (item.kind || item.Kind || 'word').toLowerCase();
                 var node = tpl.content.cloneNode(true);
                 var li = node.querySelector('li');
                 var a = node.querySelector('a');
@@ -128,9 +131,19 @@
                     a.appendChild(meta);
                 }
 
+                if (kind === 'phrase') {
+                    a.setAttribute('data-result-kind', 'phrase');
+                    renderedPhraseCount += 1;
+                }
+
                 list.appendChild(node);
+                renderedCount += 1;
             }
             list.hidden = results.length === 0;
+
+            // #region agent log
+            fetch('http://127.0.0.1:7396/ingest/c6b999e4-3319-4540-bcac-5c9789ccfc20',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8ad337'},body:JSON.stringify({sessionId:'8ad337',runId:'pre-fix',hypothesisId:'H3,H4',location:'dictionary-search.js:renderItems',message:'Dropdown render result',data:{query:qForLinks,inputResultCount:results.length,renderedCount:renderedCount,renderedPhraseCount:renderedPhraseCount,hidden:list.hidden,firstResults:results.slice(0,5).map(function(x){return{kind:x.kind||x.Kind,lemma:x.lemma||x.Lemma,url:x.url||x.Url};})},timestamp:Date.now()})}).catch(()=>{});
+            // #endregion
         }
 
         function fetchSuggestions(q) {
@@ -152,6 +165,9 @@
                 })
                 .then(function (data) {
                     var results = (data && (data.results || data.Results)) || [];
+                    // #region agent log
+                    fetch('http://127.0.0.1:7396/ingest/c6b999e4-3319-4540-bcac-5c9789ccfc20',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8ad337'},body:JSON.stringify({sessionId:'8ad337',runId:'pre-fix',hypothesisId:'H3,H4',location:'dictionary-search.js:fetchSuggestions',message:'Autocomplete API response',data:{query:q,total:data&&(data.total||data.Total),resultCount:results.length,phraseCount:results.filter(function(x){return ((x.kind||x.Kind||'word')+'').toLowerCase()==='phrase';}).length,firstResults:results.slice(0,5).map(function(x){return{kind:x.kind||x.Kind,lemma:x.lemma||x.Lemma,url:x.url||x.Url};})},timestamp:Date.now()})}).catch(()=>{});
+                    // #endregion
                     renderItems(results);
                 })
                 .catch(function (err) {

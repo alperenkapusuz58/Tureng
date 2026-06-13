@@ -1,6 +1,7 @@
 ﻿@inherits UmbracoViewPage<Headword>
 @using ClockworkUmbraco.Controllers
 @using ClockworkUmbraco.Extensions
+@using ClockworkUmbraco.Helpers
 @{
     Layout = "Layout.cshtml";
 
@@ -19,6 +20,18 @@
         : "Search English - Turkish";
     var ttsLanguage = string.Equals(searchDirection, "tr-en", StringComparison.OrdinalIgnoreCase) ? "tr-TR" : "en-US";
     var dictionaryAudioUrl = "/api/dictionary/audio";
+}
+
+@section styles {
+    <style>
+        .phrase-item.is-focused {
+            outline: 2px solid rgba(36, 59, 122, 0.45);
+            outline-offset: 4px;
+            border-radius: 8px;
+            background: rgba(255, 214, 0, 0.12);
+            scroll-margin-top: 120px;
+        }
+    </style>
 }
 
 <div class="dictionary-page" data-dictionary-audio-url="@dictionaryAudioUrl">
@@ -151,7 +164,7 @@
                         var phraseSentenceHtml = item?.Sentence?.ToString() ?? string.Empty;
                         var phraseSentenceText = System.Text.RegularExpressions.Regex.Replace(phraseSentenceHtml, "<.*?>", " ").Trim();
 
-                        <div class="phrase-item">
+                        <div class="phrase-item" id="@PhraseAnchor.ToHash(item?.Phrase)" data-phrase="@item?.Phrase">
                             <span class="phrase-text">@item?.Phrase</span>
 
                             @if(item.Items != null && item.Items.Any()){
@@ -208,7 +221,7 @@
                     {
                         var item = Model?.PhrasalVerbs.ElementAt(i).Content as IdiomsAndProverbsItem;
 
-                        <div class="phrase-item">
+                        <div class="phrase-item" id="@PhraseAnchor.ToHash(item?.Phrase)" data-phrase="@item?.Phrase">
                             <span class="phrase-text">@item?.Phrase</span>
 
                             @if (item?.Items != null && item.Items.Any())
@@ -261,5 +274,6 @@
 
 @section scripts {
     <script src="~/js/dictionary-search.js" asp-append-version="true"></script>
+    <script src="~/js/phrase-focus.js" asp-append-version="true"></script>
     <script src="~/js/listen-audio.js" asp-append-version="true"></script>
 }

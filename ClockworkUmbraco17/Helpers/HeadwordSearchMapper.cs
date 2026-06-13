@@ -49,6 +49,7 @@ public class HeadwordSearchMapper
 
             results.Add(new AutocompleteItemDto
             {
+                Kind = "word",
                 Lemma = lemmaText,
                 Url = headword.Url() ?? string.Empty,
                 Translation = translation,
@@ -56,15 +57,37 @@ public class HeadwordSearchMapper
         }
 
         return results
-            .GroupBy(x => x.Lemma, StringComparer.Ordinal)
+            .GroupBy(x => x.Kind + "|" + x.Lemma + "|" + x.Url, StringComparer.OrdinalIgnoreCase)
             .Select(g => g.First())
             .OrderBy(x => GetSearchScore(x, queryText))
             .ThenBy(x => x.Lemma, StringComparer.OrdinalIgnoreCase)
             .ToList();
     }
 
+    /// <summary>Kelime ve öbek sonuçlarını karışık tek listede birleştirir.</summary>
+    public List<AutocompleteItemDto> MergeAutocompleteResults(
+        IEnumerable<AutocompleteItemDto> wordResults,
+        IEnumerable<AutocompleteItemDto> phraseResults,
+        string queryText)
+    {
+        return wordResults
+            .Concat(phraseResults)
+            .GroupBy(x => x.Kind + "|" + x.Lemma + "|" + x.Url, StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.First())
+            .OrderBy(x => GetSearchScore(x, queryText))
+            .ThenBy(x => x.Kind, StringComparer.Ordinal)
+            .ThenBy(x => x.Lemma, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
     private static int GetSearchScore(AutocompleteItemDto item, string query)
     {
+        if (string.Equals(item.Kind, "phrase", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(item.Lemma, query, StringComparison.OrdinalIgnoreCase))
+        {
+            return -1;
+        }
+
         if (string.Equals(item.Lemma, query, StringComparison.OrdinalIgnoreCase))
         {
             return 0;
