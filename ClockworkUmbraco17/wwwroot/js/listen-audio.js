@@ -1,6 +1,7 @@
 (function () {
     var audioCache = new Map();
     var currentAudio = null;
+    var audioContext = null;
     var pollIntervalMs = 1000;
     var pollAttempts = 10;
 
@@ -18,14 +19,63 @@
         btn.setAttribute('aria-busy', loading ? 'true' : 'false');
     }
 
+    function getAudioContext() {
+        var AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextCtor) return null;
+        if (!audioContext) {
+            audioContext = new AudioContextCtor();
+        }
+        return audioContext;
+    }
+
+    function unlockAudioPlayback() {
+        var ctx = getAudioContext();
+        if (!ctx) return;
+
+        if (ctx.state === 'suspended' && typeof ctx.resume === 'function') {
+            ctx.resume().catch(function () {});
+        }
+    }
+
+    function playWithAudioContext(url) {
+        var ctx = getAudioContext();
+        if (!ctx) {
+            return Promise.reject(new Error('audio context unavailable'));
+        }
+
+        return fetch(url)
+            .then(function (res) {
+                if (!res.ok) throw new Error('audio fetch failed');
+                return res.arrayBuffer();
+            })
+            .then(function (buffer) {
+                return ctx.decodeAudioData(buffer);
+            })
+            .then(function (decoded) {
+                var source = ctx.createBufferSource();
+                source.buffer = decoded;
+                source.connect(ctx.destination);
+                source.start(0);
+            });
+    }
+
     function playUrl(url) {
         if (currentAudio) {
             currentAudio.pause();
-            currentAudio = null;
         }
 
-        currentAudio = new Audio(url);
-        return currentAudio.play();
+        if (!currentAudio) {
+            currentAudio = new Audio();
+            currentAudio.preload = 'auto';
+            currentAudio.playsInline = true;
+        }
+
+        currentAudio.src = url;
+        currentAudio.load();
+
+        return currentAudio.play().catch(function () {
+            return playWithAudioContext(url);
+        });
     }
 
     function pollStatus(baseUrl, hash, attemptsLeft) {
@@ -74,6 +124,7 @@
         }
 
         setLoading(btn, true);
+        unlockAudioPlayback();
         fetch(buildAudioUrl(baseUrl, btn), { headers: { Accept: 'application/json' } })
             .then(function (res) {
                 if (res.status !== 200 && res.status !== 202) {
@@ -114,6 +165,7 @@
         var baseUrl = page.getAttribute('data-dictionary-audio-url') || '/api/dictionary/audio';
         page.querySelectorAll('.listen-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
+                unlockAudioPlayback();
                 requestAndPlay(btn, baseUrl);
             });
         });
