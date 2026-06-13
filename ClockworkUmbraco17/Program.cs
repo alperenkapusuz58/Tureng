@@ -10,8 +10,6 @@ builder.CreateUmbracoBuilder()
 
 WebApplication app = builder.Build();
 
-
-
 //bu alan loadbalancer arkasinda calisan uygulamalar icin gerekli dogru calismasi icin loadbalancer den bu iki header ekli olmali => X-Forwarded-For ve X-Forwarded-Proto
 // Add the forwarded headers middleware here
 //var forwardedHeaderOptions = new ForwardedHeadersOptions
@@ -23,6 +21,12 @@ WebApplication app = builder.Build();
 //app.UseForwardedHeaders(forwardedHeaderOptions);
 
 await app.BootUmbracoAsync();
+
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["X-Robots-Tag"] = "noindex, nofollow";
+    await next();
+});
 
 app.UseUmbraco()
     .WithMiddleware(u =>
