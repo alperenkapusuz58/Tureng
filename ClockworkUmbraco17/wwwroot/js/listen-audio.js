@@ -78,6 +78,12 @@
         });
     }
 
+    var TERMINAL_STATUSES = ['failed', 'not_found', 'invalid'];
+
+    function isTerminalStatus(status) {
+        return TERMINAL_STATUSES.indexOf((status || '').toLowerCase()) !== -1;
+    }
+
     function pollStatus(baseUrl, hash, attemptsLeft) {
         if (!hash || attemptsLeft <= 0) {
             return Promise.resolve(null);
@@ -99,6 +105,11 @@
                 var url = data && (data.url || data.Url);
                 if (status === 'ready' && url) {
                     return url;
+                }
+
+                // Üretim başarısız/oluşmadıysa tekrar tekrar sormayı bırak.
+                if (isTerminalStatus(status)) {
+                    return null;
                 }
 
                 return pollStatus(baseUrl, hash, attemptsLeft - 1);
@@ -148,6 +159,8 @@
                         audioCache.set(cacheKey, readyUrl);
                         return playUrl(readyUrl);
                     }
+
+                    throw new Error('audio not ready');
                 });
             })
             .catch(function () {

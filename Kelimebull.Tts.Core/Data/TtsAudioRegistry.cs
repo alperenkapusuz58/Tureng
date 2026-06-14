@@ -46,6 +46,11 @@ public sealed class TtsAudioRegistry : ITtsAudioRegistry
         {
             await InsertRegistryAsync(connection, (SqlTransaction)transaction, descriptor, cancellationToken);
         }
+        else if (string.Equals(record.Status, "failed", StringComparison.OrdinalIgnoreCase))
+        {
+            // Daha önce başarısız olan kaydı, kullanıcı tekrar talep ettiğinde yeniden denemeye al.
+            await ResetFailedRegistryAsync(connection, (SqlTransaction)transaction, descriptor.ContentHash, cancellationToken);
+        }
 
         await EnqueueIfNeededAsync(connection, (SqlTransaction)transaction, descriptor, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
@@ -293,11 +298,28 @@ public sealed class TtsAudioRegistry : ITtsAudioRegistry
             connection,
             transaction,
             """
-            IF NOT EXISTS
+            IF EXISTS
             (
                 SELECT 1
                 FROM dbo.tts_generation_queue WITH (UPDLOCK, HOLDLOCK)
-                WHERE ContentHash = @ContentHash AND Status IN ('pending', 'processing', 'failed')
+                WHERE ContentHash = @ContentHash AND Status = 'failed'
+            )
+            BEGIN
+                UPDATE dbo.tts_generation_queue
+                   SET Status = 'pending',
+                       NextAttemptUtc = NULL,
+                       LockedUntilUtc = NULL,
+                       WorkerId = NULL,
+                       AttemptCount = 0,
+                       ErrorMessage = NULL,
+                       UpdatedUtc = SYSUTCDATETIME()
+                 WHERE ContentHash = @ContentHash AND Status = 'failed';
+            END
+            ELSE IF NOT EXISTS
+            (
+                SELECT 1
+                FROM dbo.tts_generation_queue WITH (UPDLOCK, HOLDLOCK)
+                WHERE ContentHash = @ContentHash AND Status IN ('pending', 'processing')
             )
             BEGIN
                 INSERT INTO dbo.tts_generation_queue
@@ -307,6 +329,22 @@ public sealed class TtsAudioRegistry : ITtsAudioRegistry
             END
             """,
             command => command.Parameters.AddWithValue("@ContentHash", descriptor.ContentHash),
+            cancellationToken);
+    }
+
+    private static async Task ResetFailedRegistryAsync(SqlConnection connection, SqlTransaction transaction, string contentHash, CancellationToken cancellationToken)
+    {
+        await ExecuteNonQueryAsync(
+            connection,
+            transaction,
+            """
+            UPDATE dbo.tts_audio_registry
+               SET Status = 'pending',
+                   ErrorMessage = NULL,
+                   UpdatedUtc = SYSUTCDATETIME()
+             WHERE ContentHash = @ContentHash AND Status = 'failed';
+            """,
+            command => command.Parameters.AddWithValue("@ContentHash", contentHash),
             cancellationToken);
     }
 
