@@ -220,30 +220,19 @@ namespace ClockworkUmbraco.Services
         {
             var internalIndexFound = _examineManager.TryGetIndex(UmbracoConstants.UmbracoIndexes.InternalIndexName, out IIndex? index);
 
-            #region agent log
-            AgentDebugLog.Write(
-                "SearchService.cs:221",
-                "Phrase search entry",
-                new { query = trimmed, queryLength = trimmed.Length, internalIndexFound },
-                "H1,H2",
-                "post-fix");
-            #endregion
-
             if (trimmed.Length < 3 || !internalIndexFound || index == null)
             {
                 return [];
             }
 
-            var tokens = trimmed.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var tokens = PhraseExtractor.GetSearchTokens(trimmed);
             if (tokens.Length == 0)
             {
                 return [];
             }
 
-            // Öbekler madde başının (headword) Idioms/PhrasalVerbs bloklarında yaşar ve öbek metni
-            // genelde madde başı kelimesiyle başlar. Bu yüzden sorgu tokenlarıyla word/nodeName üzerinden
-            // aday headword'leri buluyor, ardından published içerikten "içeren" (contains) filtresiyle
-            // eşleşen öbekleri seçiyoruz. Bu yol özel index alanına (ve rebuild'e) bağımlı değildir.
+            // Öbekler her zaman madde başı kelimesiyle başlamaz; bu yüzden adayları hem headword
+            // alanlarından hem de InternalIndex'e eklenen phrases alanından topluyoruz.
             IBooleanOperation query = index.Searcher.CreateQuery(IndexTypes.Content)
                 .GroupedNot(["hide"], ["1"])
                 .And().GroupedNot(["__NodeTypeAlias"], _docTypesToExclude)
@@ -253,26 +242,13 @@ namespace ClockworkUmbraco.Services
                 inner => inner
                     .GroupedOr(HeadwordTextFields, tokens.MultipleCharacterWildcard())
                     .Or()
-                    .GroupedOr(["nodeName"], tokens.MultipleCharacterWildcard()),
+                    .GroupedOr(["nodeName"], tokens.MultipleCharacterWildcard())
+                    .Or()
+                    .GroupedOr([PhraseIndexingComponent.PhrasesFieldName], tokens.MultipleCharacterWildcard()),
                 BooleanOperation.Or);
 
             ISearchResults pageOfResults = query.Execute();
             var candidateResults = pageOfResults.Take(ExamineMaxHits).ToList();
-
-            #region agent log
-            AgentDebugLog.Write(
-                "SearchService.cs:258",
-                "InternalIndex phrase candidate results",
-                new
-                {
-                    query = trimmed,
-                    tokens,
-                    candidateCount = candidateResults.Count,
-                    candidateIds = candidateResults.Take(10).Select(x => x.Id).ToArray(),
-                },
-                "H1,H2",
-                "post-fix");
-            #endregion
 
             var phraseItems = new List<AutocompleteItemDto>();
             var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -316,20 +292,6 @@ namespace ClockworkUmbraco.Services
                     });
                 }
             }
-
-            #region agent log
-            AgentDebugLog.Write(
-                "SearchService.cs:302",
-                "Phrase search mapped items",
-                new
-                {
-                    query = trimmed,
-                    phraseItemCount = phraseItems.Count,
-                    items = phraseItems.Take(10).Select(x => new { x.Lemma, x.Url, x.Translation }).ToArray(),
-                },
-                "H2,H3,H4",
-                "post-fix");
-            #endregion
 
             return phraseItems;
         }

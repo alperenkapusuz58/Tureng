@@ -34,14 +34,6 @@ public sealed class PhraseIndexingComponent : IComponent
     {
         var internalIndexFound = _examineManager.TryGetIndex(UmbracoConstants.UmbracoIndexes.InternalIndexName, out IIndex? index);
 
-        #region agent log
-        AgentDebugLog.Write(
-            "PhraseIndexingComponent.cs:35",
-            "Phrase index component initialize",
-            new { internalIndexFound },
-            "H1");
-        #endregion
-
         if (!internalIndexFound || index == null)
         {
             return;
@@ -93,20 +85,6 @@ public sealed class PhraseIndexingComponent : IComponent
         {
             return;
         }
-
-        #region agent log
-        AgentDebugLog.Write(
-            "PhraseIndexingComponent.cs:87",
-            "Adding phrases to InternalIndex values",
-            new
-            {
-                nodeId,
-                phraseCount = phrases.Length,
-                matchingAbandon = phrases.Where(x => x.Contains("abandon", StringComparison.OrdinalIgnoreCase)).Take(5).ToArray(),
-                sample = phrases.Take(5).ToArray(),
-            },
-            "H1");
-        #endregion
 
         var updatedValues = e.ValueSet.Values.ToDictionary(x => x.Key, x => x.Value.ToList());
         updatedValues[PhrasesFieldName] = phrases.Cast<object>().ToList();

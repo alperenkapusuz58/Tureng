@@ -6,6 +6,17 @@ namespace ClockworkUmbraco.Helpers;
 /// <summary>Headword içindeki Idioms ve PhrasalVerbs bloklarından öbek metinlerini çıkarır.</summary>
 public static class PhraseExtractor
 {
+    public static string[] GetSearchTokens(string value)
+    {
+        return value
+            .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .SelectMany(token => token.Split(
+                ['/', '\\', '-', '_', '.', ',', ';', ':', '(', ')', '[', ']', '{', '}', '"', '\''],
+                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .Where(token => token.Length > 0)
+            .ToArray();
+    }
+
     public static IEnumerable<string> GetPhrases(Headword headword)
     {
         foreach (var phrase in ExtractFromBlockList(headword.Idioms))
@@ -28,11 +39,55 @@ public static class PhraseExtractor
 
         foreach (var phrase in GetPhrases(headword))
         {
-            if (phrase.Contains(query, StringComparison.OrdinalIgnoreCase))
+            if (MatchesQuery(phrase, query))
             {
                 yield return phrase;
             }
         }
+    }
+
+    private static bool MatchesQuery(string phrase, string query)
+    {
+        if (phrase.Contains(query, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var phraseTokens = GetSearchTokens(phrase);
+        var queryTokens = GetSearchTokens(query);
+        if (phraseTokens.Length == 0 || queryTokens.Length == 0)
+        {
+            return false;
+        }
+
+        var phraseText = string.Join(' ', phraseTokens);
+        var queryText = string.Join(' ', queryTokens);
+        if (phraseText.Contains(queryText, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var searchStart = 0;
+        foreach (var queryToken in queryTokens)
+        {
+            var found = false;
+            for (var i = searchStart; i < phraseTokens.Length; i++)
+            {
+                if (phraseTokens[i].Contains(queryToken, StringComparison.OrdinalIgnoreCase))
+                {
+                    searchStart = i + 1;
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static IEnumerable<string> ExtractFromBlockList(BlockListModel? blocks)

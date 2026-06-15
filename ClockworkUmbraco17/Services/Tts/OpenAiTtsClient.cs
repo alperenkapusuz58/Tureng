@@ -69,8 +69,7 @@ public sealed class OpenAiTtsClient : IOpenAiTtsClient
 
     private string? ResolveApiKey()
     {
-        var env = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
-        return !string.IsNullOrWhiteSpace(env) ? env : _options.OpenAiApiKey;
+        return _options.OpenAiApiKey;
     }
 }
 

@@ -36,21 +36,6 @@ public class SearchController : ControllerBase
         var wordResults = _headwordSearchMapper.MapSearchHitsToAutocompleteItems(searchResponse.SearchResults, query);
         var results = _headwordSearchMapper.MergeAutocompleteResults(wordResults, searchResponse.PhraseResults, query);
 
-        #region agent log
-        AgentDebugLog.Write(
-            "SearchController.cs:39",
-            "Search API merged autocomplete results",
-            new
-            {
-                query,
-                wordCount = wordResults.Count,
-                phraseCount = searchResponse.PhraseResults.Count,
-                total = results.Count,
-                firstResults = results.Take(10).Select(x => new { x.Kind, x.Lemma, x.Url, x.Translation }).ToArray(),
-            },
-            "H3,H4");
-        #endregion
-
         return Ok(new HeadwordSearchResponseDto
         {
             Query = searchResponse.Query,
