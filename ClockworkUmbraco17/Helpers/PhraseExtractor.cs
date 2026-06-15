@@ -46,8 +46,13 @@ public static class PhraseExtractor
         }
     }
 
-    private static bool MatchesQuery(string phrase, string query)
+    public static bool MatchesQuery(string phrase, string query)
     {
+        if (string.IsNullOrWhiteSpace(phrase) || string.IsNullOrWhiteSpace(query))
+        {
+            return false;
+        }
+
         if (phrase.Contains(query, StringComparison.OrdinalIgnoreCase))
         {
             return true;

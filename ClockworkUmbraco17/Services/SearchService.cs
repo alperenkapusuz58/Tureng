@@ -1,14 +1,15 @@
 using ClockworkUmbraco.Extensions;
-using ClockworkUmbraco.Examine;
 using ClockworkUmbraco.Helpers;
 using ClockworkUmbraco.Models.Dtos;
 using ClockworkUmbraco.Services.Interfaces;
 using Examine;
 using Examine.Search;
 using Umbraco.Cms.Core;
+using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Infrastructure.Examine;
 using Umbraco.Cms.Web.Common.PublishedModels;
+using Umbraco.Extensions;
 
 namespace ClockworkUmbraco.Services
 {
@@ -22,10 +23,17 @@ namespace ClockworkUmbraco.Services
 
         private const int ExamineMaxHits = 400;
 
+        /// <summary>Öbek (phrase) bellek-içi indeksinin cache anahtarı.</summary>
+        private const string PhraseIndexCacheKey = "ClockworkUmbraco.PhraseSearchIndex";
+
+        /// <summary>Öbek indeksinin cache süresi; içerik nadiren değiştiğinden kısa bir bayatlama kabul edilebilir.</summary>
+        private static readonly TimeSpan PhraseIndexCacheDuration = TimeSpan.FromMinutes(10);
+
         private readonly IExamineManager _examineManager;
         private readonly IPublishedContentQuery _publishedContentQuery;
         private readonly IVariationContextAccessor _variationContextAccessor;
         private readonly IPublishedValueFallback _publishedValueFallback;
+        private readonly AppCaches _appCaches;
 
         /// <summary>Yönlendirme dışı içerik tipleri (headword hariç — madde araması headword ile pozitif filtrelenir).</summary>
         private readonly string[] _docTypesToExclude =
@@ -35,13 +43,18 @@ namespace ClockworkUmbraco.Services
             IExamineManager examineManager,
             IPublishedContentQuery publishedContentQuery,
             IVariationContextAccessor variationContextAccessor,
-            IPublishedValueFallback publishedValueFallback)
+            IPublishedValueFallback publishedValueFallback,
+            AppCaches appCaches)
         {
             _examineManager = examineManager ?? throw new ArgumentNullException(nameof(examineManager));
             _publishedContentQuery = publishedContentQuery ?? throw new ArgumentNullException(nameof(publishedContentQuery));
             _variationContextAccessor = variationContextAccessor;
             _publishedValueFallback = publishedValueFallback;
+            _appCaches = appCaches ?? throw new ArgumentNullException(nameof(appCaches));
         }
+
+        /// <summary>Öbek arama indeksinde tek bir öbek girdisi (öbek metni + madde başı URL'i ve etiketi).</summary>
+        private sealed record PhraseEntry(string Phrase, string Url, string Label);
 
         /// <inheritdoc />
         /// <remarks>
@@ -214,86 +227,102 @@ namespace ClockworkUmbraco.Services
         }
 
         /// <summary>
-        /// InternalIndex <c>phrases</c> alanında öbek araması; eşleşen öbekler autocomplete DTO olarak döner.
+        /// Öbek (phrase) araması. Madde başının (headword) ortasında geçen kelimelerle de ("with gay" gibi)
+        /// eşleşebilmek için Examine yerine, yayındaki tüm headword öbeklerinden oluşturulan ve cache'lenen
+        /// bellek-içi indeks üzerinde arar. Böylece sonuç Examine index rebuild'ine bağımlı değildir.
         /// </summary>
         private List<AutocompleteItemDto> SearchPhrases(string trimmed)
         {
-            var internalIndexFound = _examineManager.TryGetIndex(UmbracoConstants.UmbracoIndexes.InternalIndexName, out IIndex? index);
-
-            if (trimmed.Length < 3 || !internalIndexFound || index == null)
+            if (trimmed.Length < 3)
             {
                 return [];
             }
 
-            var tokens = PhraseExtractor.GetSearchTokens(trimmed);
-            if (tokens.Length == 0)
+            var phraseIndex = GetPhraseIndex();
+            if (phraseIndex.Count == 0)
             {
                 return [];
             }
-
-            // Öbekler her zaman madde başı kelimesiyle başlamaz; bu yüzden adayları hem headword
-            // alanlarından hem de InternalIndex'e eklenen phrases alanından topluyoruz.
-            IBooleanOperation query = index.Searcher.CreateQuery(IndexTypes.Content)
-                .GroupedNot(["hide"], ["1"])
-                .And().GroupedNot(["__NodeTypeAlias"], _docTypesToExclude)
-                .And().Field("__NodeTypeAlias", Headword.ModelTypeAlias);
-
-            query.And().Group(
-                inner => inner
-                    .GroupedOr(HeadwordTextFields, tokens.MultipleCharacterWildcard())
-                    .Or()
-                    .GroupedOr(["nodeName"], tokens.MultipleCharacterWildcard())
-                    .Or()
-                    .GroupedOr([PhraseIndexingComponent.PhrasesFieldName], tokens.MultipleCharacterWildcard()),
-                BooleanOperation.Or);
-
-            ISearchResults pageOfResults = query.Execute();
-            var candidateResults = pageOfResults.Take(ExamineMaxHits).ToList();
 
             var phraseItems = new List<AutocompleteItemDto>();
             var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var result in candidateResults)
+            foreach (var entry in phraseIndex)
             {
-                var contentItem = _publishedContentQuery.Content(result.Id);
-                if (contentItem?.TemplateId == null || contentItem.ContentType.Alias != Headword.ModelTypeAlias)
+                if (!PhraseExtractor.MatchesQuery(entry.Phrase, trimmed))
                 {
                     continue;
                 }
 
-                var headword = new Headword(contentItem, _publishedValueFallback);
-                var headwordUrl = headword.Url();
-                if (string.IsNullOrEmpty(headwordUrl))
+                var dedupeKey = $"{entry.Url}|{entry.Phrase}";
+                if (!seen.Add(dedupeKey))
                 {
                     continue;
                 }
 
-                var headwordLabel = headword.Word?.Trim();
-                if (string.IsNullOrEmpty(headwordLabel))
+                var anchor = PhraseAnchor.ToHash(entry.Phrase);
+                phraseItems.Add(new AutocompleteItemDto
                 {
-                    headwordLabel = contentItem.Name ?? string.Empty;
-                }
+                    Kind = "phrase",
+                    Lemma = entry.Phrase,
+                    Translation = entry.Label,
+                    Url = string.IsNullOrEmpty(anchor) ? entry.Url : $"{entry.Url}#{anchor}",
+                });
+            }
 
-                foreach (var phrase in PhraseExtractor.GetMatchingPhrases(headword, trimmed))
+            return phraseItems;
+        }
+
+        /// <summary>Yayındaki tüm headword öbeklerini düz bir listede toplayıp cache'ler.</summary>
+        private IReadOnlyList<PhraseEntry> GetPhraseIndex()
+        {
+            return _appCaches.RuntimeCache.GetCacheItem(
+                       PhraseIndexCacheKey,
+                       BuildPhraseIndex,
+                       PhraseIndexCacheDuration)
+                   ?? [];
+        }
+
+        private List<PhraseEntry> BuildPhraseIndex()
+        {
+            var entries = new List<PhraseEntry>();
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var root in _publishedContentQuery.ContentAtRoot())
+            {
+                foreach (var content in root.DescendantsOrSelfOfType(Headword.ModelTypeAlias))
                 {
-                    var dedupeKey = $"{headwordUrl}|{phrase}";
-                    if (!seen.Add(dedupeKey))
+                    if (content.TemplateId == null || content.ContentType.Alias != Headword.ModelTypeAlias)
                     {
                         continue;
                     }
 
-                    var anchor = PhraseAnchor.ToHash(phrase);
-                    phraseItems.Add(new AutocompleteItemDto
+                    var headword = new Headword(content, _publishedValueFallback);
+                    var headwordUrl = content.Url();
+                    if (string.IsNullOrEmpty(headwordUrl))
                     {
-                        Kind = "phrase",
-                        Lemma = phrase,
-                        Translation = headwordLabel,
-                        Url = string.IsNullOrEmpty(anchor) ? headwordUrl : $"{headwordUrl}#{anchor}",
-                    });
+                        continue;
+                    }
+
+                    var headwordLabel = headword.Word?.Trim();
+                    if (string.IsNullOrEmpty(headwordLabel))
+                    {
+                        headwordLabel = content.Name ?? string.Empty;
+                    }
+
+                    foreach (var phrase in PhraseExtractor.GetPhrases(headword))
+                    {
+                        if (!seen.Add($"{headwordUrl}|{phrase}"))
+                        {
+                            continue;
+                        }
+
+                        entries.Add(new PhraseEntry(phrase, headwordUrl, headwordLabel));
+                    }
                 }
             }
 
-            return phraseItems;
+            return entries;
         }
     }
 }
