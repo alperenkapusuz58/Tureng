@@ -5,19 +5,12 @@
 @{
     Layout = "Layout.cshtml";
 
-    var dictionarySearchUrl = Url.Action(nameof(SearchController.Search), nameof(SearchController).Replace("Controller", "", StringComparison.Ordinal));
-    var dictionaryNoResults = Model.GetDictionaryNoResults();
-    var dictionaryNoResultsUrl = dictionaryNoResults?.Url() ?? string.Empty;
-    var searchQ = Context.Request.Query["q"].ToString();
     var searchDirection = Context.Request.Query["direction"].ToString();
     if (string.IsNullOrWhiteSpace(searchDirection))
     {
         searchDirection = "en-tr";
     }
 
-    var searchPlaceholder = string.Equals(searchDirection, "tr-en", StringComparison.OrdinalIgnoreCase)
-        ? "Search Turkish - English"
-        : "Search English - Turkish";
     var ttsLanguage = string.Equals(searchDirection, "tr-en", StringComparison.OrdinalIgnoreCase) ? "tr-TR" : "en-US";
     var dictionaryAudioUrl = "/api/dictionary/audio";
 }
@@ -40,46 +33,6 @@
 }
 
 <div class="dictionary-page" data-dictionary-audio-url="@dictionaryAudioUrl">
-    <div class="topbar">
-        <div class="topbar-inner topbar-inner--with-search">
-            @if (Model?.Parent() != null)
-            {
-                <a class="back-link" href="@Model?.Parent()?.Parent()?.Url()">← @Model.Parent().Name</a> @*IKON Eklenecek*@
-            }
-            <div class="topbar-search">
-                <form method="get" action="#" class="dict-search-form dict-search-form--compact" data-dictionary-search-url="@dictionarySearchUrl" data-dictionary-no-results-url="@dictionaryNoResultsUrl" autocomplete="off">
-                    <input type="hidden" name="direction" value="@searchDirection">
-                    <div class="topbar-search-inline">
-                        <div class="search-wrap">
-                            <div class="search-shell">
-                                <input type="text" name="q" value="@searchQ" autocomplete="off" placeholder="@searchPlaceholder" required>
-                                <div class="search-shell__actions">
-                                    <button type="button" class="search-clear dict-search-clear" hidden aria-label="Metni temizle">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                    <span class="search-shell__divider" aria-hidden="true"></span>
-                                    <button class="search-submit" type="submit" aria-label="Ara">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                            <circle cx="11" cy="11" r="8" />
-                                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <ul class="dict-search-suggestions suggestions" role="listbox" aria-label="Arama önerileri" hidden></ul>
-                            <template class="dictionary-suggestion-item-template">
-                                <li role="option"><a href="#"></a></li>
-                            </template>
-                        </div>
-                        <div class="dict-direction-tabs dict-direction-tabs--topbar-inline" role="group" aria-label="Çeviri yönü">
-                            <button type="button" class="tab-btn @(string.Equals(searchDirection, "en-tr", StringComparison.OrdinalIgnoreCase) ? "active" : null)" data-direction="en-tr">@Umbraco.GetDictionaryValue("Common.English-Turkish")</button>
-                            <button type="button" class="tab-btn @(string.Equals(searchDirection, "tr-en", StringComparison.OrdinalIgnoreCase) ? "active" : null)" data-direction="tr-en">@Umbraco.GetDictionaryValue("Common.Turkish-English")</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
     <header class="dict-entry-head" aria-labelledby="dict-entry-title">
         <div class="dict-entry-head__ad">
             <aside class="dict-page-ad" role="complementary" aria-label="Reklam">
@@ -286,7 +239,6 @@
 </div>
 
 @section scripts {
-    <script src="~/js/dictionary-search.js" asp-append-version="true"></script>
     <script src="~/js/phrase-focus.js" asp-append-version="true"></script>
     <script src="~/js/listen-audio.js" asp-append-version="true"></script>
 }

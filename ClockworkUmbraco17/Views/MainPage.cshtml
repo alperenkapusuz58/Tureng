@@ -3,54 +3,10 @@
 @using Umbraco.Cms.Core.Models.PublishedContent
 @{
     Layout = "Layout.cshtml";
-
-    var dictionarySearchUrl = Url.Action(nameof(SearchController.Search), nameof(SearchController).Replace("Controller", "", StringComparison.Ordinal));
-    var dictionaryNoResults = Model.GetDictionaryNoResults();
-    var dictionaryNoResultsUrl = dictionaryNoResults?.Url();
 }
 
 
 <div class="home-page">
-    <section class="hero">
-        <div class="hero-inner">
-            <div class="brand-panel">
-                <h1 class="brand-copy">@Model.Title</h1>
-            </div>
-
-            <div class="search-card">
-                <form method="get" action="#" class="dict-search-form" data-dictionary-search-url="@dictionarySearchUrl" data-dictionary-no-results-url="@dictionaryNoResultsUrl" autocomplete="off">
-                    <input type="hidden" name="direction" value="en-tr">
-                    <div class="search-wrap">
-                        <div class="search-shell">
-                            <input type="text" name="q" autocomplete="off" placeholder="@Umbraco.GetDictionaryValue("Common.English-Turkish")" required>
-                            <div class="search-shell__actions">
-                                <button type="button" class="search-clear dict-search-clear" hidden aria-label="@Umbraco.GetDictionaryValue("Common.MetniTemizle")">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                                <span class="search-shell__divider" aria-hidden="true"></span>
-                                <button class="search-submit" type="submit" aria-label="Ara">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <circle cx="11" cy="11" r="8" />
-                                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <ul class="dict-search-suggestions suggestions" role="listbox" aria-label="@Umbraco.GetDictionaryValue("Common.AramaOnerileri")" hidden></ul>
-                        <template class="dictionary-suggestion-item-template">
-                            <li role="option"><a href="#"></a></li>
-                        </template>
-                    </div>
-
-                    <div class="dict-direction-tabs">
-                        <button type="button" class="tab-btn active" data-direction="en-tr">@Umbraco.GetDictionaryValue("Common.English-Turkish")</button>
-                        <button type="button" class="tab-btn" data-direction="tr-en">@Umbraco.GetDictionaryValue("Common.Turkish-English")</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </section>
-
     <div class="home-ad-strip">
         <div class="home-ad" role="region" aria-label="Reklam">
             <span class="home-ad__label">Reklam</span>
@@ -58,7 +14,3 @@
         </div>
     </div>
 </div>
-
-@section scripts {
-    <script src="~/js/dictionary-search.js" asp-append-version="true"></script>
-}

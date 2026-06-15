@@ -197,6 +197,11 @@
             if (!form.contains(e.target)) {
                 hideSuggestions();
             }
+
+            var dirDetails = form.querySelector('details.dict-direction-select');
+            if (dirDetails && dirDetails.open && !dirDetails.contains(e.target)) {
+                dirDetails.open = false;
+            }
         });
 
         list.addEventListener('mousedown', function (e) {
@@ -263,6 +268,15 @@
                     input.placeholder = 'Search Turkish - English';
                 } else {
                     input.placeholder = 'Search English - Turkish';
+                }
+
+                var dirLabel = form.querySelector('[data-direction-label]');
+                if (dirLabel) {
+                    dirLabel.textContent = (btn.textContent || '').trim();
+                }
+                var dirDetails = btn.closest('details');
+                if (dirDetails) {
+                    dirDetails.open = false;
                 }
             });
         });
