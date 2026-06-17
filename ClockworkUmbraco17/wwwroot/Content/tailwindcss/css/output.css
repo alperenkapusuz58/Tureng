@@ -1763,6 +1763,9 @@ details.collapse summary::-webkit-details-marker {
 .uppercase {
   text-transform: uppercase;
 }
+.italic {
+  font-style: italic;
+}
 .text-\[\#0000ff\] {
   --tw-text-opacity: 1;
   color: rgb(0 0 255 / var(--tw-text-opacity, 1));
@@ -2393,6 +2396,9 @@ body.site-menu--open {
     box-sizing: border-box;
     overflow-x: clip;
 }
+.site-ad-banner + .site-footer {
+    margin-top: 0;
+}
 .site-footer__top {
     display: flex;
     align-items: flex-start;
@@ -2526,6 +2532,308 @@ body.site-menu--open {
     box-sizing: border-box;
     padding: 28px 18px 36px;
 }
+.home-content {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 28px 18px 36px;
+    box-sizing: border-box;
+}
+/* Footer üstü — global reklam şeridi */
+.site-ad-banner {
+    width: 100%;
+    margin-top: 28px;
+    box-sizing: border-box;
+}
+.site-ad-banner__inner {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 0 18px 20px;
+    box-sizing: border-box;
+}
+.site-ad-banner__slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    min-height: 90px;
+    padding: 16px;
+    border: 1px dashed rgba(96, 116, 139, 0.45);
+    border-radius: 0;
+    background: rgba(255, 255, 255, 0.65);
+    text-align: center;
+    box-sizing: border-box;
+}
+.site-ad-banner__label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+.site-ad-banner__hint {
+    margin: 0;
+    font-size: 12px;
+    color: var(--muted);
+    max-width: 42rem;
+    line-height: 1.4;
+}
+.home-cards {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    gap: 20px;
+    align-items: stretch;
+}
+.home-feature-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 200px;
+    gap: 0;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 0;
+    overflow: hidden;
+    min-height: 180px;
+}
+.home-feature-card__body {
+    padding: 18px 20px;
+    min-width: 0;
+}
+.home-feature-card__title {
+    margin: 0 0 10px;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+.home-feature-card__title a {
+    color: #0066cc;
+    text-decoration: none;
+}
+.home-feature-card__title a:hover {
+    text-decoration: underline;
+}
+.home-feature-card__text {
+    margin: 0 0 12px;
+    color: #4a5e72;
+    font-size: 13px;
+    line-height: 1.5;
+}
+.home-feature-card__url {
+    color: #0066cc;
+    font-size: 12px;
+    text-decoration: none;
+    word-break: break-all;
+}
+.home-feature-card__url:hover {
+    text-decoration: underline;
+}
+.home-feature-card__logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+    background: #f5f8fb;
+    border-left: 1px solid var(--border);
+}
+.home-feature-card__logo-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 120px;
+}
+.home-feature-card__logo-slot img {
+    display: block;
+    max-width: 100%;
+    max-height: 120px;
+    width: auto;
+    height: auto;
+    -o-object-fit: contain;
+       object-fit: contain;
+}
+.home-wotd-card {
+    display: flex;
+    flex-direction: column;
+    padding: 18px 20px 16px;
+    background: #ece9f3;
+    border-radius: 12px;
+    min-height: 180px;
+}
+.home-wotd-card__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+.home-wotd-card__date {
+    font-size: 13px;
+    font-weight: 600;
+    color: #4a5e72;
+}
+.home-wotd-card__rss {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #4a5e72;
+    text-decoration: none;
+}
+.home-wotd-card__rss:hover {
+    color: var(--navy);
+}
+.home-wotd-card__word-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 10px;
+    margin-bottom: 10px;
+}
+.home-wotd-card__word {
+    font-size: clamp(1.75rem, 3vw, 2.25rem);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--navy-deep);
+    text-decoration: none;
+}
+.home-wotd-card__word:hover {
+    color: var(--navy);
+}
+.home-wotd-card__pos {
+    font-size: 14px;
+    font-style: italic;
+    color: #60748b;
+}
+.home-wotd-card__audio {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.home-wotd-audio-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--navy);
+    color: #fff;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+.home-wotd-audio-btn--us {
+    background: #ED1C24;
+}
+.home-wotd-audio-btn:hover {
+    opacity: 0.9;
+}
+.home-wotd-audio-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+.home-wotd-card__translation {
+    margin: 0 0 12px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--navy-deep);
+}
+.home-wotd-card__tag {
+    display: inline-flex;
+    align-self: flex-start;
+    margin-top: auto;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: #5c4d99;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+.home-wotd-card__credit {
+    margin: 10px 0 0;
+    font-size: 11px;
+    color: #60748b;
+}
+/* Ana sayfa — üçlü spotlight kartları (Oxford tarzı) */
+.home-spotlights {
+    width: 100%;
+    box-sizing: border-box;
+}
+.home-spotlights__inner {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 0 18px 36px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    align-items: stretch;
+}
+.home-spotlight-card {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 0;
+    box-shadow: 0 8px 20px rgba(15, 34, 79, 0.06);
+    overflow: hidden;
+    min-height: 100%;
+}
+.home-spotlight-card__illus {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px;
+    padding: 16px 20px;
+    background: #eef4f8;
+}
+.home-spotlight-card__illus--lists {
+    background: linear-gradient(180deg, #eef4f8 0%, #dce8f0 100%);
+}
+.home-spotlight-card__illus--blog {
+    background: linear-gradient(180deg, #f5f0f8 0%, #ece9f3 100%);
+}
+.home-spotlight-card__illus--topics {
+    background: linear-gradient(180deg, #eef8f0 0%, #dce8e4 100%);
+}
+.home-spotlight-card__illus svg {
+    display: block;
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+}
+.home-spotlight-card__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 18px 20px 20px;
+}
+.home-spotlight-card__title {
+    margin: 0 0 10px;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--navy-deep);
+}
+.home-spotlight-card__text {
+    flex: 1;
+    margin: 0 0 16px;
+    color: #3a526a;
+    font-size: 13px;
+    line-height: 1.55;
+}
+.home-spotlight-card__link {
+    align-self: flex-start;
+    color: #0066cc;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+.home-spotlight-card__link:hover {
+    text-decoration: underline;
+}
 .home-ad {
     margin: 0;
     display: flex;
@@ -2556,15 +2864,60 @@ body.site-menu--open {
     max-width: 42rem;
     line-height: 1.4;
 }
+@media (max-width: 960px) {
+    .home-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .home-spotlights__inner {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
 @media (max-width: 640px) {
-    .home-ad-strip {
+    .home-ad-strip,
+    .home-content {
         padding-top: 22px;
         padding-bottom: 28px;
+    }
+
+    .site-ad-banner {
+        margin-top: 20px;
+    }
+
+    .site-ad-banner__inner {
+        padding-left: 10px;
+        padding-right: 10px;
+        padding-bottom: 16px;
+    }
+
+    .site-ad-banner__slot {
+        min-height: 80px;
+        padding: 12px;
     }
 
     .home-ad {
         min-height: 100px;
         padding: 16px 12px;
+    }
+
+    .home-cards {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .home-feature-card {
+        grid-template-columns: 1fr;
+    }
+
+    .home-feature-card__logo {
+        border-left: 0;
+        border-top: 1px solid var(--border);
+        min-height: 100px;
+    }
+
+    .home-wotd-card {
+        border-radius: 10px;
     }
 }
 /* -------------------------------------------------------------------------- */
@@ -3128,11 +3481,15 @@ body.site-menu--open {
     padding: 0 12px 0 14px;
     font-size: 13px;
     border-radius: 4px 0 0 4px;
+    background: #ED1C24;
+    color: #fff;
+    box-shadow: none;
 }
 .dict-direction-select--compact .dict-direction-select__caret {
     border-left-width: 4px;
     border-right-width: 4px;
     border-top-width: 5px;
+    border-top-color: #fff;
 }
 .dict-search-form--compact .search-submit svg {
     width: 13px;

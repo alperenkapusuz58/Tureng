@@ -1,16 +1,171 @@
 ﻿@inherits UmbracoViewPage<MainPage>
-@using ClockworkUmbraco.Controllers
+@using ClockworkUmbraco.Helpers
+@using Umbraco.Cms.Core
 @using Umbraco.Cms.Core.Models.PublishedContent
+@using Umbraco.Cms.Web.Common.PublishedModels
+@inject IPublishedContentQuery PublishedContentQuery
+@inject IPublishedValueFallback PublishedValueFallback
 @{
     Layout = "Layout.cshtml";
+
+    var dictionaryAudioUrl = "/api/dictionary/audio";
+    var today = DateTime.Now;
+
+    var headwordNodes = PublishedContentQuery.ContentAtRoot()
+        .SelectMany(root => root.DescendantsOfType(Headword.ModelTypeAlias))
+        .Where(node => node.TemplateId != null && !string.IsNullOrWhiteSpace(node.Value<string>("word")))
+        .ToList();
+
+    Headword? wordOfDay = null;
+    string? wordOfDayPos = null;
+
+    if (headwordNodes.Count > 0)
+    {
+        var index = today.DayOfYear % headwordNodes.Count;
+        wordOfDay = new Headword(headwordNodes[index], PublishedValueFallback);
+        var firstCategory = wordOfDay.PartofSpeech?.FirstOrDefault()?.Content as SenseCategoryItem;
+        wordOfDayPos = firstCategory?.PartOfSpeech;
+    }
 }
 
+<div class="home-page" data-dictionary-audio-url="@dictionaryAudioUrl">
+    <section class="home-content">
+        <div class="home-cards">
+            <article class="home-feature-card">
+                <div class="home-feature-card__body">
+                    <h2 class="home-feature-card__title">
+                        <a href="#">Get Published &amp; Win an iPad – OTELC Competition Deadline Extended and Eligibility Expanded!</a>
+                    </h2>
+                    <p class="home-feature-card__text">
+                        The Oxford Test of English Learner Corpora (OTELC) Research Competition is now open to all teachers and researchers worldwide. Submit your research proposal and compete for prizes including an iPad.
+                    </p>
+                    <a class="home-feature-card__url" href="https://elt.oup.com/feature/global/learner-corpora" target="_blank" rel="noopener noreferrer">elt.oup.com/feature/global/learner-corpora</a>
+                </div>
+                <div class="home-feature-card__logo">
+                    <div class="home-feature-card__logo-slot" aria-hidden="true"></div>
+                </div>
+            </article>
 
-<div class="home-page">
-    <div class="home-ad-strip">
-        <div class="home-ad" role="region" aria-label="Reklam">
-            <span class="home-ad__label">Reklam</span>
-            <p class="home-ad__hint">Örn. yanıt veren geniş şerit (728 × 90) veya özel yükseklik</p>
+            <article class="home-wotd-card">
+                <div class="home-wotd-card__top">
+                    <time class="home-wotd-card__date" datetime="@today.ToString("yyyy-MM-dd")">@today.ToString("d MMMM yyyy", System.Globalization.CultureInfo.GetCultureInfo("en-GB"))</time>
+                    <a class="home-wotd-card__rss" href="#" aria-label="RSS feed">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <circle cx="6" cy="18" r="2" />
+                            <path d="M4 10a14 14 0 0 1 14 14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                            <path d="M4 4a20 20 0 0 1 20 20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                        </svg>
+                    </a>
+                </div>
+
+                @if (wordOfDay != null)
+                {
+                    <div class="home-wotd-card__word-row">
+                        <a class="home-wotd-card__word" href="@wordOfDay.Url()">@wordOfDay.Word</a>
+                        @if (!string.IsNullOrWhiteSpace(wordOfDayPos))
+                        {
+                            <span class="home-wotd-card__pos">@wordOfDayPos.ToLowerInvariant()</span>
+                        }
+                    </div>
+
+                    <div class="home-wotd-card__audio">
+                        <button class="home-wotd-audio-btn listen-btn" type="button" data-text="@wordOfDay.Word" data-language="en-GB" data-source-type="word" aria-label="@wordOfDay.Word — UK pronunciation">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                            </svg>
+                        </button>
+                        <button class="home-wotd-audio-btn home-wotd-audio-btn--us listen-btn" type="button" data-text="@wordOfDay.Word" data-language="en-US" data-source-type="word" aria-label="@wordOfDay.Word — US pronunciation">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(HeadwordDisplay.FirstTranslation(wordOfDay)))
+                    {
+                        <p class="home-wotd-card__translation">@HeadwordDisplay.FirstTranslation(wordOfDay)</p>
+                    }
+                }
+                else
+                {
+                    <div class="home-wotd-card__word-row">
+                        <span class="home-wotd-card__word">early</span>
+                        <span class="home-wotd-card__pos">adjective</span>
+                    </div>
+                }
+
+                <span class="home-wotd-card__tag">KelimeBull Günün Kelimesi</span>
+                <p class="home-wotd-card__credit">KelimeBull Sözlük — Günün Kelimesi</p>
+            </article>
         </div>
-    </div>
+    </section>
+
+    <section class="home-spotlights" aria-label="Keşfet">
+        <div class="home-spotlights__inner">
+            <article class="home-spotlight-card">
+                <div class="home-spotlight-card__illus home-spotlight-card__illus--lists" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140" fill="none">
+                        <rect x="28" y="24" width="88" height="12" rx="2" fill="#243b7a" opacity="0.85" />
+                        <rect x="28" y="44" width="72" height="8" rx="2" fill="#60748b" opacity="0.5" />
+                        <rect x="28" y="58" width="80" height="8" rx="2" fill="#60748b" opacity="0.5" />
+                        <rect x="28" y="72" width="64" height="8" rx="2" fill="#60748b" opacity="0.5" />
+                        <circle cx="148" cy="70" r="34" fill="#96cdf0" opacity="0.55" />
+                        <path d="M132 70h32M148 54v32" stroke="#243b7a" stroke-width="4" stroke-linecap="round" />
+                    </svg>
+                </div>
+                <div class="home-spotlight-card__body">
+                    <h2 class="home-spotlight-card__title">Kelime listeleri</h2>
+                    <p class="home-spotlight-card__text">
+                        Kelime listelerimiz, her seviyedeki öğrenicilerin odaklanması gereken en önemli kelimeleri keşfetmesine yardımcı olur. Genel İngilizce ve akademik listeleri inceleyin.
+                    </p>
+                    <a class="home-spotlight-card__link" href="#">Listeleri gör</a>
+                </div>
+            </article>
+
+            <article class="home-spotlight-card">
+                <div class="home-spotlight-card__illus home-spotlight-card__illus--blog" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140" fill="none">
+                        <rect x="36" y="30" width="128" height="80" rx="4" fill="#fff" stroke="#dde5ed" stroke-width="2" />
+                        <rect x="48" y="44" width="72" height="8" rx="2" fill="#243b7a" opacity="0.8" />
+                        <rect x="48" y="60" width="104" height="6" rx="2" fill="#60748b" opacity="0.4" />
+                        <rect x="48" y="72" width="96" height="6" rx="2" fill="#60748b" opacity="0.4" />
+                        <rect x="48" y="84" width="88" height="6" rx="2" fill="#60748b" opacity="0.4" />
+                        <circle cx="152" cy="38" r="14" fill="#ED1C24" opacity="0.85" />
+                    </svg>
+                </div>
+                <div class="home-spotlight-card__body">
+                    <h2 class="home-spotlight-card__title">KelimeBull Blog</h2>
+                    <p class="home-spotlight-card__text">
+                        Sözlüğümüze yeni eklenen kelimeler, dil öğrenme ipuçları ve İngilizce–Türkçe çeviri dünyasından güncel yazılar.
+                    </p>
+                    <a class="home-spotlight-card__link" href="#">Blogu oku</a>
+                </div>
+            </article>
+
+            <article class="home-spotlight-card">
+                <div class="home-spotlight-card__illus home-spotlight-card__illus--topics" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140" fill="none">
+                        <circle cx="68" cy="62" r="28" fill="#ffcc1a" opacity="0.75" />
+                        <circle cx="118" cy="48" r="22" fill="#96cdf0" opacity="0.7" />
+                        <circle cx="132" cy="88" r="26" fill="#5c4d99" opacity="0.45" />
+                        <rect x="44" y="98" width="112" height="10" rx="2" fill="#243b7a" opacity="0.7" />
+                        <rect x="56" y="114" width="88" height="6" rx="2" fill="#60748b" opacity="0.45" />
+                    </svg>
+                </div>
+                <div class="home-spotlight-card__body">
+                    <h2 class="home-spotlight-card__title">Konu sözlükleri</h2>
+                    <p class="home-spotlight-card__text">
+                        Hayvanlar, sağlık ve iş hayatı gibi konulara göre gruplanmış kelime listeleriyle kelime dağarcığınızı genişletin.
+                    </p>
+                    <a class="home-spotlight-card__link" href="#">Konulara göz at</a>
+                </div>
+            </article>
+        </div>
+    </section>
 </div>
+
+@section scripts {
+    <script src="~/js/listen-audio.js" asp-append-version="true"></script>
+}

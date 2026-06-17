@@ -37,6 +37,14 @@
         }
     }
 
+    function isSameOrigin(url) {
+        try {
+            return new URL(url, window.location.href).origin === window.location.origin;
+        } catch (e) {
+            return false;
+        }
+    }
+
     function playWithAudioContext(url) {
         var ctx = getAudioContext();
         if (!ctx) {
@@ -62,19 +70,47 @@
     function playUrl(url) {
         if (currentAudio) {
             currentAudio.pause();
+            currentAudio.removeAttribute('src');
+            currentAudio.load();
         }
 
-        if (!currentAudio) {
-            currentAudio = new Audio();
-            currentAudio.preload = 'auto';
-            currentAudio.playsInline = true;
-        }
+        currentAudio = new Audio();
+        currentAudio.preload = 'auto';
+        currentAudio.setAttribute('playsinline', '');
+        currentAudio.setAttribute('webkit-playsinline', '');
 
-        currentAudio.src = url;
-        currentAudio.load();
+        return new Promise(function (resolve, reject) {
+            function cleanup() {
+                currentAudio.removeEventListener('canplaythrough', onReady);
+                currentAudio.removeEventListener('error', onError);
+            }
 
-        return currentAudio.play().catch(function () {
-            return playWithAudioContext(url);
+            function onReady() {
+                cleanup();
+                var playPromise = currentAudio.play();
+                if (playPromise && typeof playPromise.then === 'function') {
+                    playPromise.then(resolve).catch(reject);
+                } else {
+                    resolve();
+                }
+            }
+
+            function onError() {
+                cleanup();
+                reject(new Error('audio load failed'));
+            }
+
+            currentAudio.addEventListener('canplaythrough', onReady, { once: true });
+            currentAudio.addEventListener('error', onError, { once: true });
+            currentAudio.src = url;
+            currentAudio.load();
+        }).catch(function () {
+            // CDN/R2 gibi cross-origin URL'lerde fetch CORS gerektirir; Safari'de bu yüzden patlar.
+            if (isSameOrigin(url)) {
+                return playWithAudioContext(url);
+            }
+
+            return Promise.reject(new Error('audio playback failed'));
         });
     }
 
@@ -130,7 +166,12 @@
         ].join('|');
 
         if (audioCache.has(cacheKey)) {
-            playUrl(audioCache.get(cacheKey));
+            playUrl(audioCache.get(cacheKey)).catch(function () {
+                btn.classList.add('has-error');
+                window.setTimeout(function () {
+                    btn.classList.remove('has-error');
+                }, 1500);
+            });
             return;
         }
 
@@ -174,7 +215,7 @@
             });
     }
 
-    document.querySelectorAll('.dictionary-page').forEach(function (page) {
+    document.querySelectorAll('.dictionary-page, .home-page').forEach(function (page) {
         var baseUrl = page.getAttribute('data-dictionary-audio-url') || '/api/dictionary/audio';
         page.querySelectorAll('.listen-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
