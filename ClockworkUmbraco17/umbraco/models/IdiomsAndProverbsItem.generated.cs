@@ -18,7 +18,7 @@ using Umbraco.Extensions;
 
 namespace Umbraco.Cms.Web.Common.PublishedModels
 {
-	/// <summary>Idioms And Proverbs Item</summary>
+	/// <summary>Common Item</summary>
 	[PublishedModel("idiomsAndProverbsItem")]
 	public partial class IdiomsAndProverbsItem : PublishedElementModel
 	{
@@ -58,27 +58,11 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		public virtual global::Umbraco.Cms.Core.Models.Blocks.BlockListModel Items => this.Value<global::Umbraco.Cms.Core.Models.Blocks.BlockListModel>(_publishedValueFallback, "items");
 
 		///<summary>
-		/// Phrase: Deyim/Atasözü metni
+		/// Title
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
 		[ImplementPropertyType("phrase")]
 		public virtual string Phrase => this.Value<string>(_publishedValueFallback, "phrase");
-
-		///<summary>
-		/// [DEPRECATED]
-		///</summary>
-		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
-		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("sentence")]
-		public virtual global::Umbraco.Cms.Core.Strings.IHtmlEncodedString Sentence => this.Value<global::Umbraco.Cms.Core.Strings.IHtmlEncodedString>(_publishedValueFallback, "sentence");
-
-		///<summary>
-		/// [DEPRECATED]
-		///</summary>
-		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
-		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("translation")]
-		public virtual string Translation => this.Value<string>(_publishedValueFallback, "translation");
 	}
 }

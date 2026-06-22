@@ -20,6 +20,7 @@ namespace ClockworkUmbraco.Composers
             builder.Services.AddScoped<RenderPartialViewHandler>();
             builder.Services.AddScoped<MailHandler>();
             builder.Services.AddScoped<ISearchService, SearchService>();
+            builder.Services.AddScoped<IWordOfTheDayService, WordOfTheDayService>();
             builder.Services.AddScoped<HeadwordSearchMapper>();
             builder.Services.Configure<TtsOptions>(builder.Config.GetSection(TtsOptions.SectionName));
             builder.Services.AddScoped<TtsVoiceResolver>();

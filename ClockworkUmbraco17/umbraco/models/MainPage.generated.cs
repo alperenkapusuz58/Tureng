@@ -50,11 +50,43 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		// properties
 
 		///<summary>
-		/// Title: Search'un yanında bulunan başlık
+		/// Card Description
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
-		[ImplementPropertyType("title")]
-		public virtual string Title => this.Value<string>(_publishedValueFallback, "title");
+		[ImplementPropertyType("cardDescription")]
+		public virtual global::Umbraco.Cms.Core.Strings.IHtmlEncodedString CardDescription => this.Value<global::Umbraco.Cms.Core.Strings.IHtmlEncodedString>(_publishedValueFallback, "cardDescription");
+
+		///<summary>
+		/// Card Image
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("cardImage")]
+		public virtual global::Umbraco.Cms.Core.Models.MediaWithCrops CardImage => this.Value<global::Umbraco.Cms.Core.Models.MediaWithCrops>(_publishedValueFallback, "cardImage");
+
+		///<summary>
+		/// Card Title
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("cardTitle")]
+		public virtual string CardTitle => this.Value<string>(_publishedValueFallback, "cardTitle");
+
+		///<summary>
+		/// Card Url
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("cardUrl")]
+		public virtual global::Umbraco.Cms.Core.Models.Link CardUrl => this.Value<global::Umbraco.Cms.Core.Models.Link>(_publishedValueFallback, "cardUrl");
+
+		///<summary>
+		/// Spotlights
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("spotlights")]
+		public virtual global::Umbraco.Cms.Core.Models.Blocks.BlockListModel Spotlights => this.Value<global::Umbraco.Cms.Core.Models.Blocks.BlockListModel>(_publishedValueFallback, "spotlights");
 	}
 }
