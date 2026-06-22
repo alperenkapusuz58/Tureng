@@ -83,44 +83,60 @@ public class HeadwordSearchMapper
     private static int GetSearchScore(AutocompleteItemDto item, string query)
     {
         if (string.Equals(item.Kind, "phrase", StringComparison.OrdinalIgnoreCase)
-            && string.Equals(item.Lemma, query, StringComparison.OrdinalIgnoreCase))
+            && string.Equals(item.Lemma, query, StringComparison.Ordinal))
+        {
+            return -2;
+        }
+
+        if (string.Equals(item.Lemma, query, StringComparison.Ordinal))
         {
             return -1;
         }
 
-        if (string.Equals(item.Lemma, query, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(item.Kind, "phrase", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(item.Lemma, query, StringComparison.OrdinalIgnoreCase))
         {
             return 0;
         }
 
-        if (item.Lemma.StartsWith(query, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(item.Lemma, query, StringComparison.OrdinalIgnoreCase))
         {
             return 1;
+        }
+
+        if (item.Lemma.StartsWith(query, StringComparison.Ordinal))
+        {
+            return 2;
+        }
+
+        if (item.Lemma.StartsWith(query, StringComparison.OrdinalIgnoreCase))
+        {
+            return 3;
         }
 
         if (!string.IsNullOrWhiteSpace(item.Translation)
             && string.Equals(item.Translation, query, StringComparison.OrdinalIgnoreCase))
         {
-            return 2;
+            return 4;
         }
 
         if (!string.IsNullOrWhiteSpace(item.Translation)
             && item.Translation.StartsWith(query, StringComparison.OrdinalIgnoreCase))
         {
-            return 3;
+            return 5;
         }
 
         if (item.Lemma.Contains(query, StringComparison.OrdinalIgnoreCase))
         {
-            return 4;
+            return 6;
         }
 
         if (!string.IsNullOrWhiteSpace(item.Translation)
             && item.Translation.Contains(query, StringComparison.OrdinalIgnoreCase))
         {
-            return 5;
+            return 7;
         }
 
-        return 6;
+        return 8;
     }
 }

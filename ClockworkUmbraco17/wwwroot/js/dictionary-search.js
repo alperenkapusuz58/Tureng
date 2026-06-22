@@ -56,8 +56,8 @@
         updateClearBtn();
 
         var debounceMs = 280;
-        /** Sunucu yalnızca 3+ harfli tokenlarla arar (SearchService). */
-        var minChars = 3;
+        /** Kısa maddeler (örn. "AD", "ad") için 2+ harf; uzun sorgular SearchService'te 3+ token ile aranır. */
+        var minChars = 2;
         var timer = null;
         var lastController = null;
 

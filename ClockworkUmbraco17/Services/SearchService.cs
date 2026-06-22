@@ -75,9 +75,8 @@ namespace ClockworkUmbraco.Services
 
             if (terms.Length == 0)
             {
-                // Kısa terimler (örn. tek harf "a") ExternalIndex'in StandardAnalyzer stopword'lerine
-                // takıldığından burada bulunamaz. Enter ile tam eşleşen madde başına gidebilmek için
-                // stopword içermeyen InternalIndex üzerinden birebir eşleşme araması yapılır.
+                // Kısa terimler (örn. "AD" / "ad") Examine'da case-insensitive eşleşebilir;
+                // büyük-küçük harfe duyarlı tam eşleşme için yayındaki madde metni taranır.
                 return SearchExactShortTerm(trimmed);
             }
 
@@ -188,42 +187,71 @@ namespace ClockworkUmbraco.Services
         }
 
         /// <summary>
-        /// Kısa terimler (3 karakterden az, örn. tek harf "a") için birebir eşleşme araması.
-        /// ExternalIndex'in StandardAnalyzer stopword'leri bu terimleri elediğinden, stopword
-        /// içermeyen <see cref="UmbracoConstants.UmbracoIndexes.InternalIndexName"/> üzerinden aranır.
+        /// Kısa terimler (3 karakterden az, örn. "AD" / "ad") için büyük-küçük harfe duyarlı birebir eşleşme.
+        /// Examine indeksleri case-insensitive olduğundan yayındaki madde metni doğrudan taranır.
         /// </summary>
         private SearchResponseModel SearchExactShortTerm(string trimmed)
         {
-            if (!_examineManager.TryGetIndex(UmbracoConstants.UmbracoIndexes.InternalIndexName, out IIndex? index))
+            var exactMatches = FindExactCaseHeadwords(trimmed)
+                .Select(content => (ISearchResult)new NodeIdSearchResult(content.Id.ToString()))
+                .ToList();
+
+            return new SearchResponseModel(trimmed, exactMatches.Count, exactMatches);
+        }
+
+        private IEnumerable<IPublishedContent> FindExactCaseHeadwords(string term)
+        {
+            foreach (var root in _publishedContentQuery.ContentAtRoot())
             {
-                return new SearchResponseModel(trimmed, 0, Array.Empty<ISearchResult>());
-            }
-
-            string[] exact = [trimmed];
-
-            IBooleanOperation query = index.Searcher.CreateQuery(IndexTypes.Content)
-                .GroupedNot(["hide"], ["1"])
-                .And().GroupedNot(["__NodeTypeAlias"], _docTypesToExclude)
-                .And().Field("__NodeTypeAlias", Headword.ModelTypeAlias);
-
-            query.And().Group(
-                inner => inner
-                    .GroupedOr(HeadwordTextFields, exact)
-                    .Or()
-                    .GroupedOr(["nodeName"], exact),
-                BooleanOperation.Or);
-
-            ISearchResults pageOfResults = query.Execute();
-
-            var filteredResults = pageOfResults
-                .Take(ExamineMaxHits)
-                .Where(result =>
+                foreach (var content in root.DescendantsOrSelfOfType(Headword.ModelTypeAlias))
                 {
-                    var contentItem = _publishedContentQuery.Content(result.Id);
-                    return contentItem?.TemplateId != null;
-                });
+                    if (content.TemplateId == null || content.ContentType.Alias != Headword.ModelTypeAlias)
+                    {
+                        continue;
+                    }
 
-            return new SearchResponseModel(trimmed, filteredResults.Count(), filteredResults);
+                    var headword = new Headword(content, _publishedValueFallback);
+                    var lemma = headword.Word?.Trim();
+                    if (string.IsNullOrEmpty(lemma))
+                    {
+                        lemma = content.Name?.Trim();
+                    }
+
+                    if (string.IsNullOrEmpty(lemma))
+                    {
+                        continue;
+                    }
+
+                    if (string.Equals(lemma, term, StringComparison.Ordinal))
+                    {
+                        yield return content;
+                    }
+                }
+            }
+        }
+
+        /// <summary>Examine sonuçları yerine yalnızca node kimliği taşıyan hafif ISearchResult uygulaması.</summary>
+        private sealed class NodeIdSearchResult(string id) : ISearchResult
+        {
+            private static readonly IReadOnlyDictionary<string, string> EmptyValues =
+                new Dictionary<string, string>();
+
+            private static readonly IReadOnlyDictionary<string, IReadOnlyList<string>> EmptyAllValues =
+                new Dictionary<string, IReadOnlyList<string>>();
+
+            public string Id => id;
+
+            public float Score => 1f;
+
+            public IReadOnlyDictionary<string, string> Values => EmptyValues;
+
+            public IReadOnlyDictionary<string, IReadOnlyList<string>> AllValues => EmptyAllValues;
+
+            public KeyValuePair<string, string> this[int index] => default;
+
+            public string this[string fieldName] => string.Empty;
+
+            public IEnumerable<string> GetValues(string fieldName) => [];
         }
 
         /// <summary>
