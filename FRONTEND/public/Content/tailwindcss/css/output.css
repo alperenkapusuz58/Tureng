@@ -2134,6 +2134,11 @@ html {
         background: rgba(36, 59, 122, 0.08);
         outline: none;
     }
+.site-menu__link--home {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
 .site-menu__social {
     display: flex;
     flex-wrap: wrap;
@@ -2222,6 +2227,34 @@ body.site-menu--open {
         color: var(--navy);
         box-shadow: var(--ring);
         border-radius: 6px;
+    }
+.site-header__home-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px;
+    color: var(--text);
+    text-decoration: none;
+    opacity: 0.68;
+    transition:
+        color 0.15s ease,
+        opacity 0.15s ease,
+        transform 0.15s ease;
+}
+.site-header__home-link:hover {
+        color: var(--navy);
+        opacity: 1;
+        transform: translateY(-1px);
+    }
+.site-header__home-link:focus-visible {
+        outline: none;
+        color: var(--navy);
+        opacity: 1;
+        box-shadow: var(--ring);
+        border-radius: 6px;
+    }
+.site-header__home-link svg {
+        display: block;
     }
 .site-lang {
     position: relative;

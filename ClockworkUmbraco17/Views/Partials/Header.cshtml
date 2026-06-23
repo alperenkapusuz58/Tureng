@@ -38,12 +38,23 @@
             </button>
 
             <div class="site-header__tools site-header__tools--desktop">
-                @if(siteSettings.HeaderNavLinks != null) {
+                @if(siteSettings.HeaderNavLinks != null || home != null) {
                     <nav class="site-header__nav" aria-label="Kısa bağlantılar">
-                        @foreach(var link in siteSettings.HeaderNavLinks) {
-                            <a class="site-header__nav-link" href="@link.Url" target="@link.Target">@link.Name</a>
+                        @if(siteSettings.HeaderNavLinks != null) {
+                            @foreach(var link in siteSettings.HeaderNavLinks) {
+                                <a class="site-header__nav-link" href="@link.Url" target="@link.Target">@link.Name</a>
+                            }
                         }
-                </nav>
+
+                        @if (home != null) {
+                            <a class="site-header__home-link" href="@home.Url()" aria-label="Anasayfa">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M3 10.5 12 3l9 7.5"></path>
+                                    <path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"></path>
+                                </svg>
+                            </a>
+                        }
+                    </nav>
                 }
                 
 
@@ -150,10 +161,22 @@
                     }
                 </div>
 
-                @if(siteSettings.HeaderNavLinks != null) {
+                @if(siteSettings.HeaderNavLinks != null || home != null) {
                     <nav class="site-menu__nav" aria-label="Kısa bağlantılar">
-                        @foreach(var link in siteSettings.HeaderNavLinks) {
-                            <a class="site-menu__link" href="@link.Url" target="@link.Target">@link.Name</a>
+                        @if(siteSettings.HeaderNavLinks != null) {
+                            @foreach(var link in siteSettings.HeaderNavLinks) {
+                                <a class="site-menu__link" href="@link.Url" target="@link.Target">@link.Name</a>
+                            }
+                        }
+
+                        @if (home != null) {
+                            <a class="site-menu__link site-menu__link--home" href="@home.Url()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M3 10.5 12 3l9 7.5"></path>
+                                    <path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"></path>
+                                </svg>
+                                Anasayfa
+                            </a>
                         }
                     </nav>
                 }
