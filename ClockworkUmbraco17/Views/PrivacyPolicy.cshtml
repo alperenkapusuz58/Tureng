@@ -1,0 +1,17 @@
+﻿@inherits UmbracoViewPage<PrivacyPolicy>
+@{
+    Layout = "Layout.cshtml";
+}
+
+<section class="static-page">
+    <div class="page">
+        <article class="static-page__card">
+            <h1 class="static-page__title">@Model.Title</h1>
+            <p class="static-page__intro">@Model.Intro</p>
+
+            <div class="static-page__content">
+                @Html.Raw(Model.Description)
+            </div>
+        </article>
+    </div>
+</section>

@@ -2407,6 +2407,164 @@ body.site-menu--open {
 }
 
 /* -------------------------------------------------------------------------- */
+/* Statik içerik sayfaları (Kurumsal, Kullanım Koşulları, Gizlilik vb.)     */
+/* -------------------------------------------------------------------------- */
+.static-page {
+    padding: 28px 0 40px;
+}
+
+.static-page .page {
+    display: flex;
+    flex-direction: column;
+}
+
+.static-page__card {
+    width: 100%;
+    flex: 1;
+    padding: 32px 28px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 22px rgba(15, 34, 79, 0.06);
+}
+
+.static-page__title {
+    margin: 0 0 10px;
+    font-size: clamp(1.5rem, 3vw, 1.85rem);
+    font-weight: 800;
+    color: var(--navy-deep);
+    letter-spacing: -0.02em;
+}
+
+.static-page__intro {
+    margin: 0 0 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.static-page__content {
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.7;
+
+    h2 {
+        margin: 22px 0 8px;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--navy-deep);
+    }
+
+    h2:first-child {
+        margin-top: 0;
+    }
+
+    p {
+        margin: 0 0 12px;
+    }
+
+    p:last-child {
+        margin-bottom: 0;
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Çerez izni                                                                 */
+/* -------------------------------------------------------------------------- */
+.cookie-consent {
+    position: fixed;
+    z-index: 500;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 14px 0 calc(14px + env(safe-area-inset-bottom, 0px));
+    background: rgba(28, 45, 68, 0.96);
+    color: #fff;
+    box-shadow: 0 -8px 28px rgba(15, 34, 79, 0.28);
+    backdrop-filter: blur(8px);
+}
+
+.cookie-consent__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding-bottom: 0;
+}
+
+.cookie-consent__title {
+    margin: 0 0 4px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.cookie-consent__desc {
+    margin: 0;
+    max-width: 72ch;
+    font-size: 13px;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.cookie-consent__link {
+    color: #fff;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    &:hover {
+        color: var(--yellow);
+    }
+}
+
+.cookie-consent__actions {
+    flex-shrink: 0;
+}
+
+.cookie-consent__accept {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 22px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--yellow);
+    color: var(--navy-deep);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+
+    &:hover {
+        background: #ffd84d;
+    }
+
+    &:focus-visible {
+        outline: none;
+        box-shadow: var(--ring);
+    }
+}
+
+@media (max-width: 768px) {
+    .static-page__card {
+        padding: 24px 18px;
+    }
+
+    .cookie-consent__inner {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .cookie-consent__accept {
+        width: 100%;
+    }
+}
+
+/* -------------------------------------------------------------------------- */
 /* Headwords / sonuç listesi (basit tablo)                                    */
 /* -------------------------------------------------------------------------- */
 .dict-results.page {
