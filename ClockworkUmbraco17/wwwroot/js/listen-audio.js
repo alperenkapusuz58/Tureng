@@ -52,35 +52,40 @@
 
     function unlockAudioPlayback() {
         var ctx = getAudioContext();
+        var resumePromise = Promise.resolve();
         if (ctx && ctx.state === 'suspended' && typeof ctx.resume === 'function') {
-            ctx.resume().catch(function () {});
+            resumePromise = ctx.resume().catch(function () {});
         }
 
-        if (audioUnlocked) return;
-
-        var audio = ensureAudioElement();
-        var previousSrc = audio.src;
-        audio.src = silentMp3;
-
-        var playPromise = audio.play();
-        if (!playPromise || typeof playPromise.then !== 'function') {
-            audioUnlocked = true;
-            return;
+        if (audioUnlocked) {
+            return resumePromise;
         }
 
-        playPromise
-            .then(function () {
+        return resumePromise.then(function () {
+            var audio = ensureAudioElement();
+            var previousSrc = audio.src;
+            audio.src = silentMp3;
+
+            var playPromise = audio.play();
+            if (!playPromise || typeof playPromise.then !== 'function') {
                 audioUnlocked = true;
-                audio.pause();
-                audio.currentTime = 0;
-                if (previousSrc) {
-                    audio.src = previousSrc;
-                } else {
-                    audio.removeAttribute('src');
-                }
-                audio.load();
-            })
-            .catch(function () {});
+                return;
+            }
+
+            return playPromise
+                .then(function () {
+                    audioUnlocked = true;
+                    audio.pause();
+                    audio.currentTime = 0;
+                    if (previousSrc) {
+                        audio.src = previousSrc;
+                    } else {
+                        audio.removeAttribute('src');
+                    }
+                    audio.load();
+                })
+                .catch(function () {});
+        });
     }
 
     function isSameOrigin(url) {
@@ -91,13 +96,34 @@
         }
     }
 
+    function playWithBlobUrl(url) {
+        return fetch(url)
+            .then(function (res) {
+                if (!res.ok) throw new Error('audio fetch failed');
+                return res.blob();
+            })
+            .then(function (blob) {
+                var blobUrl = URL.createObjectURL(blob);
+                return playUrl(blobUrl).finally(function () {
+                    URL.revokeObjectURL(blobUrl);
+                });
+            });
+    }
+
     function playWithAudioContext(url) {
         var ctx = getAudioContext();
         if (!ctx) {
             return Promise.reject(new Error('audio context unavailable'));
         }
 
-        return fetch(url)
+        var resumePromise = ctx.state === 'suspended' && typeof ctx.resume === 'function'
+            ? ctx.resume().catch(function () {})
+            : Promise.resolve();
+
+        return resumePromise
+            .then(function () {
+                return fetch(url);
+            })
             .then(function (res) {
                 if (!res.ok) throw new Error('audio fetch failed');
                 return res.arrayBuffer();
@@ -170,11 +196,13 @@
             audio.src = resolvedUrl;
             audio.load();
         }).catch(function () {
-            if (isSameOrigin(resolvedUrl)) {
-                return playWithAudioContext(resolvedUrl);
+            if (!isSameOrigin(resolvedUrl)) {
+                return Promise.reject(new Error('audio playback failed'));
             }
 
-            return Promise.reject(new Error('audio playback failed'));
+            return playWithBlobUrl(resolvedUrl).catch(function () {
+                return playWithAudioContext(resolvedUrl);
+            });
         });
     }
 
@@ -282,8 +310,9 @@
         var baseUrl = page.getAttribute('data-dictionary-audio-url') || '/api/dictionary/audio';
         page.querySelectorAll('.listen-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
-                unlockAudioPlayback();
-                requestAndPlay(btn, baseUrl);
+                unlockAudioPlayback().then(function () {
+                    requestAndPlay(btn, baseUrl);
+                });
             });
         });
     });

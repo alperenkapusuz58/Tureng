@@ -1832,6 +1832,8 @@ details.collapse summary::-webkit-details-marker {
     --shadow: 0 18px 45px rgba(15, 34, 79, 0.18);
     --ring: 0 0 0 4px rgba(36, 59, 122, 0.18);
     --radius: 14px;
+    --font-family: "Manrope", Arial, sans-serif;
+    --font-size-description: 14px;
 }
 /* -------------------------------------------------------------------------- */
 /* Base                                                                       */
@@ -1844,7 +1846,7 @@ details.collapse summary::-webkit-details-marker {
 body {
     margin: 0;
     overflow-x: clip;
-    font-family: "Manrope", Arial, sans-serif;
+    font-family: var(--font-family);
     background: var(--bg);
     color: var(--text);
     font-size: 13px;
@@ -2648,7 +2650,6 @@ body.site-menu--open {
 .home-feature-card__text {
     margin: 0 0 12px;
     color: #4a5e72;
-    font-size: 13px;
     line-height: 1.5;
 }
 .home-feature-card__url {
@@ -2783,7 +2784,6 @@ body.site-menu--open {
 }
 .home-wotd-card__translation {
     margin: 0 0 12px;
-    font-size: 15px;
     font-weight: 700;
     color: var(--navy-deep);
 }
@@ -2869,7 +2869,6 @@ body.site-menu--open {
     flex: 1;
     margin: 0 0 16px;
     color: #3a526a;
-    font-size: 13px;
     line-height: 1.55;
 }
 .home-spotlight-card__link {
@@ -3425,7 +3424,6 @@ body.site-menu--open {
 }
 .dictionary-no-results__empty-text {
     margin: 0;
-    font-size: 13px;
     line-height: 1.55;
     color: var(--muted);
     font-weight: 500;
@@ -3433,7 +3431,6 @@ body.site-menu--open {
 .meta {
     margin: 18px 6px 0;
     color: #55708d;
-    font-size: 14px;
     font-weight: 400;
 }
 /* -------------------------------------------------------------------------- */
@@ -3750,7 +3747,6 @@ body.site-menu--open {
 }
 .pos-pron {
     color: var(--muted);
-    font-size: 14px;
     font-weight: 400;
 }
 .pos-tag {
@@ -3765,7 +3761,6 @@ body.site-menu--open {
 }
 .irregular-forms {
     color: var(--muted);
-    font-size: 14px;
     font-weight: 500;
     padding: 3px 14px 6px;
     background: #f5f8fb;
@@ -3798,24 +3793,20 @@ body.site-menu--open {
 }
 .grammar-code {
     color: var(--muted);
-    font-size: 13px;
     font-weight: 600;
     margin-right: 4px;
 }
 .definition {
     color: #3a526a;
-    font-size: 14px;
     display: block;
     margin-bottom: 2px;
 }
 .translation-line {
     color: var(--navy-deep);
     font-weight: 700;
-    font-size: 15px;
 }
 .example-block {
     margin-top: 4px;
-    font-size: 14px;
     color: #4a5e72;
     line-height: 1.4;
     position: relative;
@@ -3897,25 +3888,21 @@ body.site-menu--open {
 }
 .phrase-text {
     font-weight: 700;
-    font-size: 15px;
     color: var(--navy-deep);
 }
 .phrase-def {
     color: #3a526a;
-    font-size: 14px;
     margin-top: 2px;
 }
 .phrase-tr {
     color: var(--navy-deep);
     font-weight: 700;
-    font-size: 15px;
     margin-top: 2px;
 }
 .phrase-example {
     margin-top: 3px;
     font-style: normal;
     color: #4a5e72;
-    font-size: 14px;
     position: relative;
     padding-right: 30px;
 }
@@ -3923,6 +3910,30 @@ body.site-menu--open {
     padding: 20px 0;
     color: var(--muted);
     text-align: center;
+}
+/* Açıklama / gövde metinleri — tutarlı tipografi */
+.home-feature-card__text,
+.home-spotlight-card__text,
+.home-wotd-card__translation,
+.translation-line,
+.example-block,
+.example-tr,
+.definition,
+.grammar-code,
+.phrase-text,
+.phrase-def,
+.phrase-tr,
+.phrase-example,
+.static-page__intro,
+.static-page__content,
+.cookie-consent__desc,
+.dictionary-no-results__empty-text,
+.meta,
+.pos-pron,
+.irregular-forms,
+.error-text {
+    font-family: var(--font-family);
+    font-size: var(--font-size-description);
 }
 /* -------------------------------------------------------------------------- */
 /* Statik içerik sayfaları (Kurumsal, Kullanım Koşulları, Gizlilik vb.)     */
@@ -3955,12 +3966,10 @@ body.site-menu--open {
     padding-bottom: 20px;
     border-bottom: 1px solid var(--border);
     color: var(--muted);
-    font-size: 14px;
     line-height: 1.6;
 }
 .static-page__content {
     color: var(--text);
-    font-size: 14px;
     line-height: 1.7;
 }
 .static-page__content h2 {
@@ -4009,7 +4018,6 @@ body.site-menu--open {
 .cookie-consent__desc {
     margin: 0;
     max-width: 72ch;
-    font-size: 13px;
     line-height: 1.55;
     color: rgba(255, 255, 255, 0.88);
 }

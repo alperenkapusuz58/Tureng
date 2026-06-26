@@ -107,9 +107,9 @@ public sealed partial class AudioController : ControllerBase
             ? record.CdnUrl
             : _urlBuilder.BuildCdnUrl(record.StorageKey ?? string.Empty);
 
-        if (string.IsNullOrWhiteSpace(cdnUrl))
+        if (string.IsNullOrWhiteSpace(cdnUrl) || !Uri.TryCreate(cdnUrl, UriKind.Absolute, out _))
         {
-            return NotFound();
+            return StatusCode(StatusCodes.Status502BadGateway);
         }
 
         var client = _httpClientFactory.CreateClient("TtsAudioStream");
@@ -120,10 +120,14 @@ public sealed partial class AudioController : ControllerBase
         }
 
         var contentType = response.Content.Headers.ContentType?.MediaType ?? "audio/mpeg";
-        var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
 
         Response.Headers.CacheControl = "public, max-age=31536000, immutable";
-        return File(stream, contentType);
+
+        return new FileContentResult(bytes, contentType)
+        {
+            EnableRangeProcessing = true,
+        };
     }
 
     [HttpGet("metrics")]

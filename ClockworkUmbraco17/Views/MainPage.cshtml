@@ -138,7 +138,7 @@
                         <div class="home-spotlight-card__body">
                             <h2 class="home-spotlight-card__title">@spotlight?.Title</h2>
                             <p class="home-spotlight-card__text">
-                                @spotlight?.Description
+                                @Html.Raw(spotlight?.Description)
                             </p>
                             @if (spotlight?.Url != null)
                             {
