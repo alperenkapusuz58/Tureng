@@ -64,51 +64,33 @@
 
             @if (wordOfDay != null)
             {
+                var firstTranslation = HeadwordDisplay.FirstTranslation(wordOfDay);
 
                 <a class="home-wotd-card home-wotd-card--link" href="@wordOfDay.Url()" aria-label="@($"{wotdLabel}: {wordOfDay.Word}")">
-
                     <div class="home-wotd-card__top">
-
                         <time class="home-wotd-card__date" datetime="@today.ToString("yyyy-MM-dd")">@today.ToString("d MMMM yyyy", englishCulture)</time>
-
+                        <span class="home-wotd-card__tag">@wotdLabel</span>
                     </div>
-
-
 
                     <div class="home-wotd-card__word-row">
-
                         <span class="home-wotd-card__word">@wordOfDay.Word</span>
-
                     </div>
 
-
-
-                    @if (!string.IsNullOrWhiteSpace(HeadwordDisplay.FirstTranslation(wordOfDay)))
-
+                    @if (!string.IsNullOrWhiteSpace(firstTranslation))
                     {
-
-                        <p class="home-wotd-card__translation">@HeadwordDisplay.FirstTranslation(wordOfDay)</p>
-
+                        <p class="home-wotd-card__translation">@firstTranslation</p>
                     }
 
-
-
-                    <span class="home-wotd-card__tag">@wotdLabel</span>
-
+                    <span class="home-wotd-card__cta">Detaya git →</span>
                 </a>
             }
             else
             {
                 <article class="home-wotd-card">
-
                     <div class="home-wotd-card__top">
-
                         <time class="home-wotd-card__date" datetime="@today.ToString("yyyy-MM-dd")">@today.ToString("d MMMM yyyy", englishCulture)</time>
-
+                        <span class="home-wotd-card__tag">@wotdLabel</span>
                     </div>
-
-                    <span class="home-wotd-card__tag">@wotdLabel</span>
-
                 </article>
             }
 

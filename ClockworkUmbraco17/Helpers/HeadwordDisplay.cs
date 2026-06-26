@@ -14,9 +14,17 @@ public static class HeadwordDisplay
 
         foreach (var block in hw.PartofSpeech)
         {
-            if (block.Content is SenseItem s && !string.IsNullOrWhiteSpace(s.Translation))
+            if (block.Content is not SenseCategoryItem category || category.Items == null)
             {
-                return s.Translation;
+                continue;
+            }
+
+            foreach (var senseBlock in category.Items)
+            {
+                if (senseBlock.Content is SenseItem sense && !string.IsNullOrWhiteSpace(sense.Translation))
+                {
+                    return sense.Translation;
+                }
             }
         }
 

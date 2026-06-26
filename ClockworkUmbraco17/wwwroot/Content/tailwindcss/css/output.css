@@ -2653,12 +2653,14 @@ body.site-menu--open {
     line-height: 1.5;
 }
 .home-feature-card__url {
-    color: #0066cc;
+    color: var(--navy);
     font-size: 12px;
+    font-weight: 600;
     text-decoration: none;
     word-break: break-all;
 }
 .home-feature-card__url:hover {
+    color: var(--navy-deep);
     text-decoration: underline;
 }
 .home-feature-card__logo {
@@ -2713,7 +2715,7 @@ body.site-menu--open {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
 }
 .home-wotd-card__date {
     font-size: 13px;
@@ -2783,15 +2785,15 @@ body.site-menu--open {
     cursor: wait;
 }
 .home-wotd-card__translation {
-    margin: 0 0 12px;
-    font-weight: 700;
-    color: var(--navy-deep);
+    margin: 0 0 4px;
+    font-weight: 500;
+    color: #3a526a;
+    line-height: 1.45;
 }
 .home-wotd-card__tag {
     display: inline-flex;
-    align-self: flex-start;
-    margin-top: auto;
-    padding: 6px 14px;
+    flex-shrink: 0;
+    padding: 5px 12px;
     border-radius: 999px;
     background: #5c4d99;
     color: #fff;
@@ -2799,6 +2801,18 @@ body.site-menu--open {
     font-weight: 800;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+}
+.home-wotd-card__cta {
+    align-self: flex-start;
+    margin-top: auto;
+    padding-top: 12px;
+    color: var(--navy);
+    font-size: 12px;
+    font-weight: 600;
+}
+.home-wotd-card--link:hover .home-wotd-card__cta {
+    color: var(--navy-deep);
+    text-decoration: underline;
 }
 .home-wotd-card__credit {
     margin: 10px 0 0;
@@ -2873,12 +2887,13 @@ body.site-menu--open {
 }
 .home-spotlight-card__link {
     align-self: flex-start;
-    color: #0066cc;
+    color: var(--navy);
     font-size: 13px;
     font-weight: 600;
     text-decoration: none;
 }
 .home-spotlight-card__link:hover {
+    color: var(--navy-deep);
     text-decoration: underline;
 }
 .home-ad {
