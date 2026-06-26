@@ -53,4 +53,7 @@ public sealed class TtsAudioUrlBuilder : ITtsAudioUrlBuilder
 
         return $"{baseUrl.TrimEnd('/')}/{storageKey.TrimStart('/')}";
     }
+
+    public string BuildStreamUrl(string contentHash)
+        => $"/api/dictionary/audio/stream/{contentHash}";
 }

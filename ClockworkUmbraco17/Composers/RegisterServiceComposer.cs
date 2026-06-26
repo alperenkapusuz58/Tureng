@@ -27,6 +27,10 @@ namespace ClockworkUmbraco.Composers
             builder.Services.AddScoped<ITtsAudioRegistry, TtsAudioRegistry>();
             builder.Services.AddScoped<ITtsAudioUrlBuilder, TtsAudioUrlBuilder>();
             builder.Services.AddScoped<ITtsInventoryService, TtsInventoryService>();
+            builder.Services.AddHttpClient("TtsAudioStream", client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
             builder.Services.AddSingleton<TtsRateLimiter>();
             builder.Services.AddScoped<IOpenAiTtsClient, OpenAiTtsClient>();
             builder.Services.AddScoped<IR2AudioStorage, R2AudioStorage>();

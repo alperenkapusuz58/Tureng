@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using ClockworkUmbraco.Services.Tts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -9,21 +10,24 @@ namespace ClockworkUmbraco.Controllers.Api;
 
 [ApiController]
 [Route("api/dictionary/audio")]
-public sealed class AudioController : ControllerBase
+public sealed partial class AudioController : ControllerBase
 {
     private readonly ITtsAudioRegistry _registry;
     private readonly ITtsAudioUrlBuilder _urlBuilder;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly TtsOptions _options;
     private readonly IConfiguration _configuration;
 
     public AudioController(
         ITtsAudioRegistry registry,
         ITtsAudioUrlBuilder urlBuilder,
+        IHttpClientFactory httpClientFactory,
         IOptions<TtsOptions> options,
         IConfiguration configuration)
     {
         _registry = registry;
         _urlBuilder = urlBuilder;
+        _httpClientFactory = httpClientFactory;
         _options = options.Value;
         _configuration = configuration;
     }
@@ -55,11 +59,7 @@ public sealed class AudioController : ControllerBase
         var record = await _registry.EnsureQueuedAsync(descriptor, cancellationToken);
         if (string.Equals(record.Status, TtsStatuses.Completed, StringComparison.OrdinalIgnoreCase))
         {
-            var url = !string.IsNullOrWhiteSpace(record.CdnUrl)
-                ? record.CdnUrl
-                : _urlBuilder.BuildCdnUrl(record.StorageKey ?? descriptor.StorageKey);
-
-            return Ok(new AudioResponseDto("ready", descriptor.ContentHash, url, null));
+            return Ok(new AudioResponseDto("ready", descriptor.ContentHash, _urlBuilder.BuildStreamUrl(descriptor.ContentHash), null));
         }
 
         return Accepted(new AudioResponseDto("pending", descriptor.ContentHash, null, null));
@@ -69,6 +69,11 @@ public sealed class AudioController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult<AudioResponseDto>> GetStatus(string hash, CancellationToken cancellationToken = default)
     {
+        if (!IsValidHash(hash))
+        {
+            return BadRequest(new AudioResponseDto("invalid", hash, null, "Invalid hash."));
+        }
+
         var record = await _registry.GetByHashAsync(hash, cancellationToken);
         if (record is null)
         {
@@ -77,14 +82,48 @@ public sealed class AudioController : ControllerBase
 
         if (string.Equals(record.Status, TtsStatuses.Completed, StringComparison.OrdinalIgnoreCase))
         {
-            var url = !string.IsNullOrWhiteSpace(record.CdnUrl)
-                ? record.CdnUrl
-                : _urlBuilder.BuildCdnUrl(record.StorageKey ?? string.Empty);
-
-            return Ok(new AudioResponseDto("ready", hash, url, null));
+            return Ok(new AudioResponseDto("ready", hash, _urlBuilder.BuildStreamUrl(hash), null));
         }
 
         return Ok(new AudioResponseDto(record.Status, hash, null, record.ErrorMessage));
+    }
+
+    [HttpGet("stream/{hash}")]
+    [ResponseCache(Duration = 31536000, Location = ResponseCacheLocation.Any)]
+    public async Task<IActionResult> StreamAudio(string hash, CancellationToken cancellationToken = default)
+    {
+        if (!IsValidHash(hash))
+        {
+            return BadRequest();
+        }
+
+        var record = await _registry.GetByHashAsync(hash, cancellationToken);
+        if (record is null || !string.Equals(record.Status, TtsStatuses.Completed, StringComparison.OrdinalIgnoreCase))
+        {
+            return NotFound();
+        }
+
+        var cdnUrl = !string.IsNullOrWhiteSpace(record.CdnUrl)
+            ? record.CdnUrl
+            : _urlBuilder.BuildCdnUrl(record.StorageKey ?? string.Empty);
+
+        if (string.IsNullOrWhiteSpace(cdnUrl))
+        {
+            return NotFound();
+        }
+
+        var client = _httpClientFactory.CreateClient("TtsAudioStream");
+        using var response = await client.GetAsync(cdnUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            return StatusCode(StatusCodes.Status502BadGateway);
+        }
+
+        var contentType = response.Content.Headers.ContentType?.MediaType ?? "audio/mpeg";
+        var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+
+        Response.Headers.CacheControl = "public, max-age=31536000, immutable";
+        return File(stream, contentType);
     }
 
     [HttpGet("metrics")]
@@ -113,6 +152,9 @@ public sealed class AudioController : ControllerBase
         return Ok(new { replayed = count });
     }
 
+    private static bool IsValidHash(string? hash)
+        => !string.IsNullOrWhiteSpace(hash) && ContentHashRegex().IsMatch(hash);
+
     private bool IsAdminRequest()
     {
         var expected = _configuration["TTS_ADMIN_KEY"];
@@ -129,6 +171,9 @@ public sealed class AudioController : ControllerBase
         var provided = Request.Headers["X-TTS-Admin-Key"].FirstOrDefault();
         return string.Equals(provided, expected, StringComparison.Ordinal);
     }
+
+    [GeneratedRegex("^[a-f0-9]{64}$", RegexOptions.IgnoreCase)]
+    private static partial Regex ContentHashRegex();
 }
 
 public sealed record AudioResponseDto(string Status, string? Hash, string? Url, string? Error);
