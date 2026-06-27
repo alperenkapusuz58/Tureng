@@ -1,5 +1,6 @@
 (function () {
     var audioCache = new Map();
+    var blobCache = new Map();
     var currentAudio = null;
     var audioContext = null;
     var audioUnlocked = false;
@@ -8,6 +9,19 @@
     var loadTimeoutMs = 8000;
     // Minimal silent MP3 for Safari/iOS user-gesture unlock.
     var silentMp3 = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAbAAqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV////////////////////////////////////////////AAAAAExhdmM1OC4xMwAAAAAAAAAAAAAAACQDkAAAAAAAAAGw9wrNaQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/+MYxAAAAANIAAAAAExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV/+MYxDsAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV/+MYxHYAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
+    var webAudioGainBoost = 2.0;
+
+    function isAppleLike() {
+        if (/iPad|iPhone|iPod|Macintosh|Mac OS X/.test(navigator.userAgent || '')) {
+            return true;
+        }
+
+        return !!(navigator.userAgentData && navigator.userAgentData.platform === 'macOS');
+    }
+
+    function isBlobOrDataUrl(url) {
+        return /^blob:|^data:audio\//i.test(url);
+    }
 
     function buildAudioUrl(baseUrl, btn) {
         var url = new URL(baseUrl || '/api/dictionary/audio', window.location.href);
@@ -47,6 +61,11 @@
             currentAudio.setAttribute('playsinline', '');
             currentAudio.setAttribute('webkit-playsinline', '');
         }
+
+        currentAudio.volume = 1;
+        currentAudio.muted = false;
+        currentAudio.playsInline = true;
+
         return currentAudio;
     }
 
@@ -96,50 +115,7 @@
         }
     }
 
-    function playWithBlobUrl(url) {
-        return fetch(url)
-            .then(function (res) {
-                if (!res.ok) throw new Error('audio fetch failed');
-                return res.blob();
-            })
-            .then(function (blob) {
-                var blobUrl = URL.createObjectURL(blob);
-                return playUrl(blobUrl).finally(function () {
-                    URL.revokeObjectURL(blobUrl);
-                });
-            });
-    }
-
-    function playWithAudioContext(url) {
-        var ctx = getAudioContext();
-        if (!ctx) {
-            return Promise.reject(new Error('audio context unavailable'));
-        }
-
-        var resumePromise = ctx.state === 'suspended' && typeof ctx.resume === 'function'
-            ? ctx.resume().catch(function () {})
-            : Promise.resolve();
-
-        return resumePromise
-            .then(function () {
-                return fetch(url);
-            })
-            .then(function (res) {
-                if (!res.ok) throw new Error('audio fetch failed');
-                return res.arrayBuffer();
-            })
-            .then(function (buffer) {
-                return ctx.decodeAudioData(buffer);
-            })
-            .then(function (decoded) {
-                var source = ctx.createBufferSource();
-                source.buffer = decoded;
-                source.connect(ctx.destination);
-                source.start(0);
-            });
-    }
-
-    function playUrl(url) {
+    function playWithMediaElement(url) {
         var resolvedUrl = resolveAudioUrl(url);
         var audio = ensureAudioElement();
         audio.pause();
@@ -164,6 +140,9 @@
                     reject(err);
                     return;
                 }
+
+                audio.volume = 1;
+                audio.muted = false;
 
                 var playPromise = audio.play();
                 if (playPromise && typeof playPromise.then === 'function') {
@@ -195,7 +174,83 @@
             audio.addEventListener('error', onError, { once: true });
             audio.src = resolvedUrl;
             audio.load();
-        }).catch(function () {
+        });
+    }
+
+    function fetchBlobUrl(url) {
+        var resolvedUrl = resolveAudioUrl(url);
+
+        if (blobCache.has(resolvedUrl)) {
+            return Promise.resolve(blobCache.get(resolvedUrl));
+        }
+
+        return fetch(resolvedUrl)
+            .then(function (res) {
+                if (!res.ok) throw new Error('audio fetch failed');
+                return res.blob();
+            })
+            .then(function (blob) {
+                var blobUrl = URL.createObjectURL(blob);
+                blobCache.set(resolvedUrl, blobUrl);
+                return blobUrl;
+            });
+    }
+
+    function playWithBlobUrl(url) {
+        return fetchBlobUrl(url).then(function (blobUrl) {
+            return playWithMediaElement(blobUrl);
+        });
+    }
+
+    function playWithAudioContext(url) {
+        var ctx = getAudioContext();
+        if (!ctx) {
+            return Promise.reject(new Error('audio context unavailable'));
+        }
+
+        var resumePromise = ctx.state === 'suspended' && typeof ctx.resume === 'function'
+            ? ctx.resume().catch(function () {})
+            : Promise.resolve();
+
+        return resumePromise
+            .then(function () {
+                return fetchBlobUrl(url);
+            })
+            .then(function (blobUrl) {
+                return fetch(blobUrl);
+            })
+            .then(function (res) {
+                if (!res.ok) throw new Error('audio fetch failed');
+                return res.arrayBuffer();
+            })
+            .then(function (buffer) {
+                return ctx.decodeAudioData(buffer);
+            })
+            .then(function (decoded) {
+                var source = ctx.createBufferSource();
+                var gainNode = ctx.createGain();
+                source.buffer = decoded;
+                gainNode.gain.value = webAudioGainBoost;
+                source.connect(gainNode);
+                gainNode.connect(ctx.destination);
+                source.start(0);
+            });
+    }
+
+    function playUrl(url) {
+        var resolvedUrl = resolveAudioUrl(url);
+
+        if (isBlobOrDataUrl(resolvedUrl)) {
+            return playWithMediaElement(resolvedUrl);
+        }
+
+        if (isAppleLike()) {
+            return playWithBlobUrl(resolvedUrl).catch(function () {
+                return playWithAudioContext(resolvedUrl);
+            });
+        }
+
+        return playWithMediaElement(resolvedUrl).catch(function () {
             if (!isSameOrigin(resolvedUrl)) {
                 return Promise.reject(new Error('audio playback failed'));
             }
@@ -246,6 +301,15 @@
             });
     }
 
+    function prefetchAudio(url) {
+        var resolvedUrl = resolveAudioUrl(url);
+        if (!isSameOrigin(resolvedUrl) || blobCache.has(resolvedUrl)) {
+            return Promise.resolve();
+        }
+
+        return fetchBlobUrl(resolvedUrl).catch(function () {});
+    }
+
     function showError(btn) {
         btn.classList.add('has-error');
         window.setTimeout(function () {
@@ -286,13 +350,17 @@
 
                 if (status === 'ready' && url) {
                     audioCache.set(cacheKey, url);
-                    return playUrl(url);
+                    return prefetchAudio(url).then(function () {
+                        return playUrl(url);
+                    });
                 }
 
                 return pollStatus(baseUrl, hash, pollAttempts).then(function (readyUrl) {
                     if (readyUrl) {
                         audioCache.set(cacheKey, readyUrl);
-                        return playUrl(readyUrl);
+                        return prefetchAudio(readyUrl).then(function () {
+                            return playUrl(readyUrl);
+                        });
                     }
 
                     throw new Error('audio not ready');
