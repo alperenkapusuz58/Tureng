@@ -63,13 +63,13 @@
                             <div class="irregular-forms">@category?.IrregularForms</div>
                         }
 
-                        @if(category?.Items != null && category.Items.Any())
+                        @if (category?.Items != null && category.Items.Any())
                         {
                             var senseCount = category.Items.Count();
 
                             <ol class="sense-list">
 
-                                @for(var j = 0; j < senseCount; j++)
+                                @for (var j = 0; j < senseCount; j++)
                                 {
                                     var item = category.Items.ElementAt(j).Content as SenseItem;
                                     var sentenceHtml = item?.Sentence?.ToString() ?? string.Empty;
@@ -111,7 +111,7 @@
             }
 
 
-            @*@if(Model?.Idioms != null && Model.Idioms.Any())
+            @if (Model?.Idioms != null && Model.Idioms.Any())
             {
                 <div class="phrases-section">
 
@@ -120,17 +120,16 @@
                     @for (var i = 0; i < Model?.Idioms.Count(); i++)
                     {
                         var item = Model?.Idioms.ElementAt(i).Content as IdiomsAndProverbsItem;
-                        var phraseSentenceHtml = item?.Sentence?.ToString() ?? string.Empty;
-                        var phraseSentenceText = System.Text.RegularExpressions.Regex.Replace(phraseSentenceHtml, "<.*?>", " ").Trim();
 
                         <div class="phrase-item" id="@PhraseAnchor.ToHash(item?.Phrase)" data-phrase="@item?.Phrase">
                             <span class="phrase-text">@item?.Phrase</span>
 
-                            @if(item.Items != null && item.Items.Any()){
+                            @if (item?.Items != null && item.Items.Any())
+                            {
                                 var phraseSenseCount = item.Items.Count();
 
-                                @for(var j = 0; j < phraseSenseCount; j++){
-
+                                @for (var j = 0; j < phraseSenseCount; j++)
+                                {
                                     var itemContent = item.Items.ElementAt(j).Content as SenseItem;
                                     var innerSentenceHtml = itemContent?.Sentence?.ToString() ?? string.Empty;
                                     var innerSentenceText = System.Text.RegularExpressions.Regex.Replace(innerSentenceHtml, "<.*?>", " ").Trim();
@@ -162,12 +161,11 @@
                                     </div>
                                 }
                             }
-                            
 
                         </div>
                     }
                 </div>
-            }*@
+            }
 
 
             @if (Model?.PhrasalVerbs != null && Model.PhrasalVerbs.Any())
