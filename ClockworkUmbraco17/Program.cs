@@ -1,6 +1,43 @@
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
+using ClockworkUmbraco.Composers;
+using ClockworkUmbraco.Services.Tts;
+using Microsoft.Extensions.Options;
+using Kelimebull.Tts.Core.Configuration;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            context.HttpContext.Response.Headers.RetryAfter = ((int)retryAfter.TotalSeconds).ToString();
+        }
+
+        await context.HttpContext.Response.WriteAsJsonAsync(
+            new { status = "rate_limited", error = "Çok fazla istek. Lütfen biraz bekleyip tekrar deneyin." },
+            cancellationToken);
+    };
+
+    options.AddPolicy(RegisterServiceComposer.TtsAudioRateLimitPolicy, httpContext =>
+    {
+        var ttsOptions = httpContext.RequestServices.GetRequiredService<IOptions<TtsOptions>>().Value;
+        var permitLimit = Math.Max(1, ttsOptions.ApiRequestsPerMinutePerIp);
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            TtsClientIpResolver.Resolve(httpContext),
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = permitLimit,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+            });
+    });
+});
 
 builder.CreateUmbracoBuilder()
     .AddBackOffice()
@@ -21,6 +58,8 @@ WebApplication app = builder.Build();
 //app.UseForwardedHeaders(forwardedHeaderOptions);
 
 await app.BootUmbracoAsync();
+
+app.UseRateLimiter();
 
 app.UseStaticFiles();
 

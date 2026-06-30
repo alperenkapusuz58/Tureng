@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using Kelimebull.Tts.Core.Configuration;
 using Kelimebull.Tts.Core.Data;
+using Kelimebull.Tts.Core.Exceptions;
 using Kelimebull.Tts.Core.Models;
 
 namespace ClockworkUmbraco.Services.Tts;
@@ -41,6 +42,14 @@ public sealed class TtsGenerationProcessor
             var url = await _storage.UploadAsync(item.StorageKey, ResolveContentType(item.Format), result.AudioBytes, cancellationToken);
             await _registry.MarkCompletedAsync(item.ContentHash, item.StorageKey, url, result.RequestId, cancellationToken);
         }
+        catch (TtsBudgetLimitException budgetEx)
+        {
+            _logger.LogWarning(
+                "TTS budget limit reached for {ContentHash}. Next attempt: {NextAttemptUtc}",
+                item.ContentHash,
+                budgetEx.RetryAfterUtc);
+            await _registry.MarkFailedAsync(item.ContentHash, budgetEx.Message, budgetEx.RetryAfterUtc, cancellationToken);
+        }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             DateTimeOffset? nextAttemptUtc = item.AttemptCount >= _options.MaxRetryAttempts
@@ -57,7 +66,10 @@ public sealed class TtsGenerationProcessor
         var daySummary = await _registry.GetUsageSummaryAsync(DateTimeOffset.UtcNow.Date, cancellationToken);
         if (daySummary.CompletedCharacters + item.CharacterCount > _options.DailyCharacterLimit)
         {
-            throw new InvalidOperationException("Daily TTS character limit reached.");
+            var retryAfterUtc = DateTimeOffset.UtcNow.Date.AddDays(1);
+            throw new TtsBudgetLimitException(
+                "Günlük seslendirme limiti doldu. Yarın otomatik olarak tekrar denenecek.",
+                retryAfterUtc);
         }
 
         var now = DateTimeOffset.UtcNow;
@@ -65,7 +77,10 @@ public sealed class TtsGenerationProcessor
         var monthSummary = await _registry.GetUsageSummaryAsync(monthStart, cancellationToken);
         if (monthSummary.CompletedCharacters + item.CharacterCount > _options.MonthlyCharacterLimit)
         {
-            throw new InvalidOperationException("Monthly TTS character limit reached.");
+            var retryAfterUtc = monthStart.AddMonths(1);
+            throw new TtsBudgetLimitException(
+                "Aylık seslendirme limiti doldu. Gelecek ay otomatik olarak tekrar denenecek.",
+                retryAfterUtc);
         }
     }
 

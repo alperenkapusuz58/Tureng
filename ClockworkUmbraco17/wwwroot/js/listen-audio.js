@@ -6,7 +6,7 @@
     var audioContext = null;
     var audioUnlocked = false;
     var pollIntervalMs = 1500;
-    var pollAttempts = 60;
+    var pollAttempts = 120;
     var loadTimeoutMs = 8000;
     // Minimal silent MP3 for Safari/iOS user-gesture unlock.
     var silentMp3 = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAbAAqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV////////////////////////////////////////////AAAAAExhdmM1OC4xMwAAAAAAAAAAAAAAACQDkAAAAAAAAAGw9wrNaQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/+MYxAAAAANIAAAAAExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV/+MYxDsAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV/+MYxHYAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
@@ -277,7 +277,7 @@
         });
     }
 
-    var TERMINAL_STATUSES = ['failed', 'not_found', 'invalid'];
+    var TERMINAL_STATUSES = ['failed', 'not_found', 'invalid', 'rate_limited'];
 
     function isTerminalStatus(status) {
         return TERMINAL_STATUSES.indexOf((status || '').toLowerCase()) !== -1;
@@ -313,7 +313,7 @@
                 }
 
                 if (isTerminalStatus(status)) {
-                    return { url: null, error: error || 'Ses üretilemedi' };
+                    return { url: null, error: error || (status === 'rate_limited' ? 'Çok fazla istek. Lütfen biraz bekleyip tekrar deneyin.' : 'Ses üretilemedi') };
                 }
 
                 return pollStatus(baseUrl, hash, attemptsLeft - 1);
@@ -365,6 +365,14 @@
         setLoading(btn, true);
         fetch(buildAudioUrl(baseUrl, btn), { headers: { Accept: 'application/json' } })
             .then(function (res) {
+                if (res.status === 429) {
+                    return res.json().catch(function () {
+                        return { status: 'rate_limited', error: 'Çok fazla istek. Lütfen biraz bekleyip tekrar deneyin.' };
+                    }).then(function (data) {
+                        throw new Error((data && (data.error || data.Error)) || 'Çok fazla istek. Lütfen biraz bekleyip tekrar deneyin.');
+                    });
+                }
+
                 if (res.status !== 200 && res.status !== 202) {
                     throw new Error('audio request failed');
                 }

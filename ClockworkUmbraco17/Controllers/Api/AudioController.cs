@@ -1,6 +1,8 @@
 using System.Text.RegularExpressions;
+using ClockworkUmbraco.Composers;
 using ClockworkUmbraco.Services.Tts;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using Kelimebull.Tts.Core.Configuration;
 using Kelimebull.Tts.Core.Data;
@@ -10,6 +12,7 @@ namespace ClockworkUmbraco.Controllers.Api;
 
 [ApiController]
 [Route("api/dictionary/audio")]
+[EnableRateLimiting(RegisterServiceComposer.TtsAudioRateLimitPolicy)]
 public sealed partial class AudioController : ControllerBase
 {
     private readonly ITtsAudioRegistry _registry;
@@ -131,6 +134,7 @@ public sealed partial class AudioController : ControllerBase
     }
 
     [HttpGet("metrics")]
+    [DisableRateLimiting]
     [Produces("application/json")]
     public async Task<ActionResult<TtsUsageSummary>> Metrics(CancellationToken cancellationToken = default)
     {
@@ -144,6 +148,7 @@ public sealed partial class AudioController : ControllerBase
     }
 
     [HttpPost("replay-failed")]
+    [DisableRateLimiting]
     [Produces("application/json")]
     public async Task<ActionResult<object>> ReplayFailed([FromQuery] int maxItems = 100, CancellationToken cancellationToken = default)
     {

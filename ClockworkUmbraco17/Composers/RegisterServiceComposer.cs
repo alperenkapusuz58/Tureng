@@ -13,6 +13,8 @@ namespace ClockworkUmbraco.Composers
 {
     public class RegisterServiceComposer : IComposer
     {
+        public const string TtsAudioRateLimitPolicy = "tts-audio";
+
         public void Compose(IUmbracoBuilder builder)
         {
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -31,11 +33,15 @@ namespace ClockworkUmbraco.Composers
             {
                 client.Timeout = TimeSpan.FromSeconds(30);
             });
+            builder.Services.AddHttpClient<IOpenAiTtsClient, OpenAiTtsClient>(client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(90);
+            });
             builder.Services.AddSingleton<TtsRateLimiter>();
-            builder.Services.AddScoped<IOpenAiTtsClient, OpenAiTtsClient>();
             builder.Services.AddScoped<IR2AudioStorage, R2AudioStorage>();
             builder.Services.AddScoped<TtsGenerationProcessor>();
             builder.Services.AddHostedService<TtsGenerationWorker>();
+            builder.Services.AddHostedService<TtsWarmupHostedService>();
             builder.SetContentLastChanceFinder<PageNotFound>();
         }
     }

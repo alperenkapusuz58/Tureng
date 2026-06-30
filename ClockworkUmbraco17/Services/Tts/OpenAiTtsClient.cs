@@ -17,21 +17,19 @@ public sealed class OpenAiTtsClient : IOpenAiTtsClient
     private static readonly Uri SpeechUri = new("https://api.openai.com/v1/audio/speech");
     private readonly HttpClient _httpClient;
     private readonly TtsOptions _options;
-    private readonly IConfiguration _configuration;
 
-    public OpenAiTtsClient(IOptions<TtsOptions> options, IConfiguration configuration)
+    public OpenAiTtsClient(HttpClient httpClient, IOptions<TtsOptions> options)
     {
+        _httpClient = httpClient;
         _options = options.Value;
-        _configuration = configuration;
-        _httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(90) };
     }
 
     public async Task<OpenAiTtsResult> GenerateAsync(TtsQueueItem item, CancellationToken cancellationToken = default)
     {
-        var apiKey = ResolveApiKey();
+        var apiKey = _options.OpenAiApiKey;
         if (string.IsNullOrWhiteSpace(apiKey))
         {
-            throw new InvalidOperationException("OpenAI API key is not configured. Set OPENAI_API_KEY or Tts:OpenAiApiKey.");
+            throw new InvalidOperationException("OpenAI API key is not configured. Set Tts:OpenAiApiKey.");
         }
 
         using var request = new HttpRequestMessage(HttpMethod.Post, SpeechUri);
@@ -65,11 +63,6 @@ public sealed class OpenAiTtsClient : IOpenAiTtsClient
         var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
         var requestId = response.Headers.TryGetValues("x-request-id", out var values) ? values.FirstOrDefault() : null;
         return new OpenAiTtsResult(bytes, requestId);
-    }
-
-    private string? ResolveApiKey()
-    {
-        return _options.OpenAiApiKey;
     }
 }
 

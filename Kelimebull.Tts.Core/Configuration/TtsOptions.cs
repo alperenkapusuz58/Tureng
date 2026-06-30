@@ -22,6 +22,8 @@ public sealed class TtsOptions
 
     public int RequestsPerMinute { get; set; } = 20;
 
+    public int ApiRequestsPerMinutePerIp { get; set; } = 90;
+
     public int WorkerBatchSize { get; set; } = 10;
 
     public int WorkerParallelism { get; set; } = 1;
