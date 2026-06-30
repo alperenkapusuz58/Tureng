@@ -2334,6 +2334,28 @@ body.site-menu--open {
     color: var(--navy);
 }
 
+.ex-btn.is-loading,
+.ex-btn.is-preparing {
+    opacity: 0.65;
+    cursor: wait;
+    border-color: var(--navy);
+    color: var(--navy);
+}
+
+.ex-btn.is-preparing {
+    animation: listen-btn-pulse 1.2s ease-in-out infinite;
+}
+
+.ex-btn.has-error {
+    border-color: #c0392b;
+    color: #c0392b;
+}
+
+@keyframes listen-btn-pulse {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 1; }
+}
+
 .phrases-section {
     margin-top: 14px;
     background: var(--card);

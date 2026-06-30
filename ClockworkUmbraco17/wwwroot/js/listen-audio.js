@@ -2,22 +2,15 @@
     var audioCache = new Map();
     var blobCache = new Map();
     var currentAudio = null;
+    var currentSource = null;
     var audioContext = null;
     var audioUnlocked = false;
-    var pollIntervalMs = 1000;
-    var pollAttempts = 10;
+    var pollIntervalMs = 1500;
+    var pollAttempts = 60;
     var loadTimeoutMs = 8000;
     // Minimal silent MP3 for Safari/iOS user-gesture unlock.
     var silentMp3 = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAbAAqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV////////////////////////////////////////////AAAAAExhdmM1OC4xMwAAAAAAAAAAAAAAACQDkAAAAAAAAAGw9wrNaQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/+MYxAAAAANIAAAAAExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV/+MYxDsAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV/+MYxHYAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
-    var webAudioGainBoost = 2.0;
-
-    function isAppleLike() {
-        if (/iPad|iPhone|iPod|Macintosh|Mac OS X/.test(navigator.userAgent || '')) {
-            return true;
-        }
-
-        return !!(navigator.userAgentData && navigator.userAgentData.platform === 'macOS');
-    }
+    var webAudioGainBoost = 3.0;
 
     function isBlobOrDataUrl(url) {
         return /^blob:|^data:audio\//i.test(url);
@@ -43,6 +36,16 @@
         btn.disabled = loading;
         btn.classList.toggle('is-loading', loading);
         btn.setAttribute('aria-busy', loading ? 'true' : 'false');
+    }
+
+    function setPreparing(btn, preparing) {
+        btn.classList.toggle('is-preparing', preparing);
+        if (preparing) {
+            btn.setAttribute('aria-label', 'Ses hazırlanıyor');
+            btn.setAttribute('title', 'Ses hazırlanıyor…');
+        } else {
+            btn.removeAttribute('title');
+        }
     }
 
     function getAudioContext() {
@@ -118,7 +121,7 @@
     function playWithMediaElement(url) {
         var resolvedUrl = resolveAudioUrl(url);
         var audio = ensureAudioElement();
-        audio.pause();
+        stopCurrentPlayback();
 
         return new Promise(function (resolve, reject) {
             var settled = false;
@@ -202,6 +205,19 @@
         });
     }
 
+    function stopCurrentPlayback() {
+        if (currentSource) {
+            try {
+                currentSource.stop();
+            } catch (e) {}
+            currentSource = null;
+        }
+
+        if (currentAudio) {
+            currentAudio.pause();
+        }
+    }
+
     function playWithAudioContext(url) {
         var ctx = getAudioContext();
         if (!ctx) {
@@ -227,12 +243,20 @@
                 return ctx.decodeAudioData(buffer);
             })
             .then(function (decoded) {
+                stopCurrentPlayback();
+
                 var source = ctx.createBufferSource();
                 var gainNode = ctx.createGain();
                 source.buffer = decoded;
                 gainNode.gain.value = webAudioGainBoost;
                 source.connect(gainNode);
                 gainNode.connect(ctx.destination);
+                currentSource = source;
+                source.onended = function () {
+                    if (currentSource === source) {
+                        currentSource = null;
+                    }
+                };
                 source.start(0);
             });
     }
@@ -240,23 +264,15 @@
     function playUrl(url) {
         var resolvedUrl = resolveAudioUrl(url);
 
-        if (isBlobOrDataUrl(resolvedUrl)) {
-            return playWithMediaElement(resolvedUrl);
-        }
+        return playWithAudioContext(resolvedUrl).catch(function () {
+            return playWithMediaElement(resolvedUrl).catch(function () {
+                if (isBlobOrDataUrl(resolvedUrl) || !isSameOrigin(resolvedUrl)) {
+                    return Promise.reject(new Error('audio playback failed'));
+                }
 
-        if (isAppleLike()) {
-            return playWithBlobUrl(resolvedUrl).catch(function () {
-                return playWithAudioContext(resolvedUrl);
-            });
-        }
-
-        return playWithMediaElement(resolvedUrl).catch(function () {
-            if (!isSameOrigin(resolvedUrl)) {
-                return Promise.reject(new Error('audio playback failed'));
-            }
-
-            return playWithBlobUrl(resolvedUrl).catch(function () {
-                return playWithAudioContext(resolvedUrl);
+                return playWithBlobUrl(resolvedUrl).then(function (blobUrl) {
+                    return playWithMediaElement(blobUrl);
+                });
             });
         });
     }
@@ -284,20 +300,26 @@
                 return res.json();
             })
             .then(function (data) {
-                var status = data && (data.status || data.Status);
-                var url = data && (data.url || data.Url);
+                if (!data) {
+                    return pollStatus(baseUrl, hash, attemptsLeft - 1);
+                }
+
+                var status = (data.status || data.Status || '').toLowerCase();
+                var url = data.url || data.Url;
+                var error = data.error || data.Error;
+
                 if (status === 'ready' && url) {
-                    return url;
+                    return { url: url, error: null };
                 }
 
                 if (isTerminalStatus(status)) {
-                    return null;
+                    return { url: null, error: error || 'Ses üretilemedi' };
                 }
 
                 return pollStatus(baseUrl, hash, attemptsLeft - 1);
             })
             .catch(function () {
-                return null;
+                return pollStatus(baseUrl, hash, attemptsLeft - 1);
             });
     }
 
@@ -310,11 +332,16 @@
         return fetchBlobUrl(resolvedUrl).catch(function () {});
     }
 
-    function showError(btn) {
+    function showError(btn, message) {
         btn.classList.add('has-error');
+        if (message) {
+            btn.setAttribute('title', message);
+        }
+
         window.setTimeout(function () {
             btn.classList.remove('has-error');
-        }, 1500);
+            btn.removeAttribute('title');
+        }, 2500);
     }
 
     function requestAndPlay(btn, baseUrl) {
@@ -329,11 +356,12 @@
 
         if (audioCache.has(cacheKey)) {
             playUrl(audioCache.get(cacheKey)).catch(function () {
-                showError(btn);
+                showError(btn, 'Ses çalınamadı');
             });
             return;
         }
 
+        var defaultAriaLabel = btn.getAttribute('aria-label') || 'Dinle';
         setLoading(btn, true);
         fetch(buildAudioUrl(baseUrl, btn), { headers: { Accept: 'application/json' } })
             .then(function (res) {
@@ -355,22 +383,29 @@
                     });
                 }
 
-                return pollStatus(baseUrl, hash, pollAttempts).then(function (readyUrl) {
-                    if (readyUrl) {
-                        audioCache.set(cacheKey, readyUrl);
-                        return prefetchAudio(readyUrl).then(function () {
-                            return playUrl(readyUrl);
+                setPreparing(btn, true);
+                return pollStatus(baseUrl, hash, pollAttempts).then(function (result) {
+                    if (result && result.url) {
+                        audioCache.set(cacheKey, result.url);
+                        return prefetchAudio(result.url).then(function () {
+                            return playUrl(result.url);
                         });
                     }
 
-                    throw new Error('audio not ready');
+                    if (result && result.error) {
+                        throw new Error(result.error);
+                    }
+
+                    throw new Error('Ses hazırlanamadı. Lütfen biraz sonra tekrar deneyin.');
                 });
             })
-            .catch(function () {
-                showError(btn);
+            .catch(function (err) {
+                showError(btn, err && err.message ? err.message : 'Ses çalınamadı');
             })
             .finally(function () {
+                setPreparing(btn, false);
                 setLoading(btn, false);
+                btn.setAttribute('aria-label', defaultAriaLabel);
             });
     }
 

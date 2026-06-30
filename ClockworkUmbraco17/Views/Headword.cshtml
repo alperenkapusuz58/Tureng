@@ -73,12 +73,7 @@
                                 {
                                     var item = category.Items.ElementAt(j).Content as SenseItem;
                                     var sentenceHtml = item?.Sentence?.ToString() ?? string.Empty;
-                                    var sentenceText = System.Text.RegularExpressions.Regex.Replace(sentenceHtml, "<.*?>", " ").Trim();
-                                    var dotIndex = sentenceText.IndexOf('.');
-                                    if (dotIndex >= 0)
-                                    {
-                                        sentenceText = sentenceText.Substring(0, dotIndex).Trim();
-                                    }
+                                    var sentenceText = SentenceTtsText.GetFirstParagraphPlainText(sentenceHtml);
 
                                     <li class="sense-item">
                                         @if (senseCount > 1)
@@ -132,12 +127,7 @@
                                 {
                                     var itemContent = item.Items.ElementAt(j).Content as SenseItem;
                                     var innerSentenceHtml = itemContent?.Sentence?.ToString() ?? string.Empty;
-                                    var innerSentenceText = System.Text.RegularExpressions.Regex.Replace(innerSentenceHtml, "<.*?>", " ").Trim();
-                                    var dotIndex = innerSentenceText.IndexOf('.');
-                                    if (dotIndex >= 0)
-                                    {
-                                        innerSentenceText = innerSentenceText.Substring(0, dotIndex).Trim();
-                                    }
+                                    var innerSentenceText = SentenceTtsText.GetFirstParagraphPlainText(innerSentenceHtml);
 
                                     <div class="phrase-sense">
                                         @if (phraseSenseCount > 1)
@@ -189,12 +179,7 @@
                                 {
                                     var itemContent = item.Items.ElementAt(j).Content as SenseItem;
                                     var innerSentenceHtml = itemContent?.Sentence?.ToString() ?? string.Empty;
-                                    var innerSentenceText = System.Text.RegularExpressions.Regex.Replace(innerSentenceHtml, "<.*?>", " ").Trim();
-                                    var dotIndex = innerSentenceText.IndexOf('.');
-                                    if (dotIndex >= 0)
-                                    {
-                                        innerSentenceText = innerSentenceText.Substring(0, dotIndex).Trim();
-                                    }
+                                    var innerSentenceText = SentenceTtsText.GetFirstParagraphPlainText(innerSentenceHtml);
 
                                     <div class="phrase-sense">
                                         @if (phraseSenseCount > 1)

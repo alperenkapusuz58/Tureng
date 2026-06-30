@@ -33,6 +33,12 @@ public sealed class TtsGenerationWorker : BackgroundService
                 var registry = scope.ServiceProvider.GetRequiredService<ITtsAudioRegistry>();
                 var processor = scope.ServiceProvider.GetRequiredService<TtsGenerationProcessor>();
 
+                var released = await registry.ReleaseStaleProcessingAsync(stoppingToken);
+                if (released > 0)
+                {
+                    _logger.LogWarning("Released {Count} stale TTS queue item(s) stuck in processing.", released);
+                }
+
                 var items = await registry.ClaimPendingAsync(
                     _workerId,
                     _options.WorkerBatchSize,

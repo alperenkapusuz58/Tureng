@@ -17,6 +17,8 @@ public interface ITtsAudioRegistry
     Task<TtsUsageSummary> GetUsageSummaryAsync(DateTimeOffset sinceUtc, CancellationToken cancellationToken = default);
 
     Task<int> ReplayFailedAsync(int maxItems, CancellationToken cancellationToken = default);
+
+    Task<int> ReleaseStaleProcessingAsync(CancellationToken cancellationToken = default);
 }
 
 public sealed record TtsUsageSummary(
