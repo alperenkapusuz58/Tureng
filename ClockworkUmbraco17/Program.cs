@@ -22,6 +22,8 @@ WebApplication app = builder.Build();
 
 await app.BootUmbracoAsync();
 
+app.UseStaticFiles();
+
 app.Use(async (context, next) =>
 {
     context.Response.Headers["X-Robots-Tag"] = "noindex, nofollow";
