@@ -18,6 +18,7 @@ public sealed partial class AudioController : ControllerBase
     private readonly ITtsAudioRegistry _registry;
     private readonly ITtsAudioUrlBuilder _urlBuilder;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly TtsDispatchService _dispatchService;
     private readonly TtsOptions _options;
     private readonly IConfiguration _configuration;
 
@@ -25,12 +26,14 @@ public sealed partial class AudioController : ControllerBase
         ITtsAudioRegistry registry,
         ITtsAudioUrlBuilder urlBuilder,
         IHttpClientFactory httpClientFactory,
+        TtsDispatchService dispatchService,
         IOptions<TtsOptions> options,
         IConfiguration configuration)
     {
         _registry = registry;
         _urlBuilder = urlBuilder;
         _httpClientFactory = httpClientFactory;
+        _dispatchService = dispatchService;
         _options = options.Value;
         _configuration = configuration;
     }
@@ -65,6 +68,7 @@ public sealed partial class AudioController : ControllerBase
             return Ok(new AudioResponseDto("ready", descriptor.ContentHash, _urlBuilder.BuildStreamUrl(descriptor.ContentHash), null));
         }
 
+        _dispatchService.TryProcessInBackground(descriptor.ContentHash);
         return Accepted(new AudioResponseDto("pending", descriptor.ContentHash, null, null));
     }
 
@@ -77,18 +81,39 @@ public sealed partial class AudioController : ControllerBase
             return BadRequest(new AudioResponseDto("invalid", hash, null, "Invalid hash."));
         }
 
-        var record = await _registry.GetByHashAsync(hash, cancellationToken);
-        if (record is null)
+        var snapshot = await _registry.GetStatusSnapshotAsync(hash, cancellationToken);
+        if (snapshot is null)
         {
             return NotFound(new AudioResponseDto("not_found", hash, null, null));
         }
 
-        if (string.Equals(record.Status, TtsStatuses.Completed, StringComparison.OrdinalIgnoreCase))
+        var status = TtsStatusResolver.ResolveStatus(snapshot);
+        if (string.Equals(status, "ready", StringComparison.OrdinalIgnoreCase))
         {
             return Ok(new AudioResponseDto("ready", hash, _urlBuilder.BuildStreamUrl(hash), null));
         }
 
-        return Ok(new AudioResponseDto(record.Status, hash, null, record.ErrorMessage));
+        if (string.Equals(status, TtsStatuses.Pending, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(status, TtsStatuses.Processing, StringComparison.OrdinalIgnoreCase))
+        {
+            await _registry.ReleaseAbandonedProcessingAsync(hash, cancellationToken);
+            snapshot = await _registry.GetStatusSnapshotAsync(hash, cancellationToken)
+                ?? snapshot;
+            status = TtsStatusResolver.ResolveStatus(snapshot);
+
+            if (string.Equals(status, TtsStatuses.Pending, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(status, TtsStatuses.Processing, StringComparison.OrdinalIgnoreCase))
+            {
+                _dispatchService.TryProcessInBackground(hash);
+            }
+        }
+
+        if (string.Equals(status, "ready", StringComparison.OrdinalIgnoreCase))
+        {
+            return Ok(new AudioResponseDto("ready", hash, _urlBuilder.BuildStreamUrl(hash), null));
+        }
+
+        return Ok(new AudioResponseDto(status, hash, null, TtsStatusResolver.ResolveError(snapshot)));
     }
 
     [HttpGet("stream/{hash}")]
@@ -159,6 +184,21 @@ public sealed partial class AudioController : ControllerBase
 
         var count = await _registry.ReplayFailedAsync(maxItems, cancellationToken);
         return Ok(new { replayed = count });
+    }
+
+    [HttpPost("reset-stuck")]
+    [DisableRateLimiting]
+    [Produces("application/json")]
+    public async Task<ActionResult<TtsBulkResetResult>> ResetStuck(
+        [FromQuery] bool includeFailed = false,
+        CancellationToken cancellationToken = default)
+    {
+        if (!IsAdminRequest())
+        {
+            return Unauthorized();
+        }
+
+        return Ok(await _registry.ResetAllStuckAsync(includeFailed, cancellationToken));
     }
 
     private static bool IsValidHash(string? hash)

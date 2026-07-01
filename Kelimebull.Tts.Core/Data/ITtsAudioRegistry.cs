@@ -6,9 +6,13 @@ public interface ITtsAudioRegistry
 {
     Task<TtsAudioRecord?> GetByHashAsync(string contentHash, CancellationToken cancellationToken = default);
 
+    Task<TtsStatusSnapshot?> GetStatusSnapshotAsync(string contentHash, CancellationToken cancellationToken = default);
+
     Task<TtsAudioRecord> EnsureQueuedAsync(TtsAudioDescriptor descriptor, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<TtsQueueItem>> ClaimPendingAsync(string workerId, int batchSize, TimeSpan lockDuration, CancellationToken cancellationToken = default);
+
+    Task<TtsQueueItem?> TryClaimByHashAsync(string contentHash, string workerId, TimeSpan lockDuration, CancellationToken cancellationToken = default);
 
     Task MarkCompletedAsync(string contentHash, string storageKey, string cdnUrl, string? openAiRequestId, CancellationToken cancellationToken = default);
 
@@ -19,7 +23,15 @@ public interface ITtsAudioRegistry
     Task<int> ReplayFailedAsync(int maxItems, CancellationToken cancellationToken = default);
 
     Task<int> ReleaseStaleProcessingAsync(CancellationToken cancellationToken = default);
+
+    Task ReleaseProcessingAsync(string contentHash, CancellationToken cancellationToken = default);
+
+    Task ReleaseAbandonedProcessingAsync(string contentHash, CancellationToken cancellationToken = default);
+
+    Task<TtsBulkResetResult> ResetAllStuckAsync(bool includeFailed = false, CancellationToken cancellationToken = default);
 }
+
+public sealed record TtsBulkResetResult(int QueueReleased, int RegistryReset);
 
 public sealed record TtsUsageSummary(
     int PendingCount,

@@ -6,7 +6,7 @@
     var audioContext = null;
     var audioUnlocked = false;
     var pollIntervalMs = 1500;
-    var pollAttempts = 120;
+    var pollAttempts = 300;
     var loadTimeoutMs = 8000;
     // Minimal silent MP3 for Safari/iOS user-gesture unlock.
     var silentMp3 = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAbAAqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV////////////////////////////////////////////AAAAAExhdmM1OC4xMwAAAAAAAAAAAAAAACQDkAAAAAAAAAGw9wrNaQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/+MYxAAAAANIAAAAAExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV/+MYxDsAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV/+MYxHYAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
@@ -281,6 +281,11 @@
 
     function isTerminalStatus(status) {
         return TERMINAL_STATUSES.indexOf((status || '').toLowerCase()) !== -1;
+    }
+
+    function isInProgressStatus(status) {
+        var normalized = (status || '').toLowerCase();
+        return normalized === 'pending' || normalized === 'processing';
     }
 
     function pollStatus(baseUrl, hash, attemptsLeft) {

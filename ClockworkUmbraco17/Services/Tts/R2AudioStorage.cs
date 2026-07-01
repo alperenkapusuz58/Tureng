@@ -55,6 +55,7 @@ public sealed class R2AudioStorage : IR2AudioStorage
             ServiceURL = $"https://{_options.R2.AccountId}.r2.cloudflarestorage.com",
             ForcePathStyle = true,
             AuthenticationRegion = "auto",
+            Timeout = TimeSpan.FromSeconds(60),
             RequestChecksumCalculation = RequestChecksumCalculation.WHEN_REQUIRED,
             ResponseChecksumValidation = ResponseChecksumValidation.WHEN_REQUIRED,
         };

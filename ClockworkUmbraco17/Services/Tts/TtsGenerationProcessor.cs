@@ -42,22 +42,58 @@ public sealed class TtsGenerationProcessor
             var url = await _storage.UploadAsync(item.StorageKey, ResolveContentType(item.Format), result.AudioBytes, cancellationToken);
             await _registry.MarkCompletedAsync(item.ContentHash, item.StorageKey, url, result.RequestId, cancellationToken);
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogInformation(
+                "TTS generation cancelled for {ContentHash}; releasing queue item for retry.",
+                item.ContentHash);
+
+            await TryReleaseProcessingAsync(item.ContentHash);
+            throw;
+        }
         catch (TtsBudgetLimitException budgetEx)
         {
             _logger.LogWarning(
                 "TTS budget limit reached for {ContentHash}. Next attempt: {NextAttemptUtc}",
                 item.ContentHash,
                 budgetEx.RetryAfterUtc);
-            await _registry.MarkFailedAsync(item.ContentHash, budgetEx.Message, budgetEx.RetryAfterUtc, cancellationToken);
+            await _registry.MarkFailedAsync(item.ContentHash, budgetEx.Message, budgetEx.RetryAfterUtc, CancellationToken.None);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (OperationCanceledException ex)
         {
-            DateTimeOffset? nextAttemptUtc = item.AttemptCount >= _options.MaxRetryAttempts
-                ? null
-                : DateTimeOffset.UtcNow.Add(GetBackoff(item.AttemptCount));
+            await MarkGenerationFailedAsync(
+                item,
+                "Ses üretimi zaman aşımına uğradı. Lütfen tekrar deneyin.",
+                ex);
+        }
+        catch (Exception ex)
+        {
+            await MarkGenerationFailedAsync(item, ex.Message, ex);
+        }
+    }
 
-            _logger.LogWarning(ex, "TTS generation failed for {ContentHash}. Next attempt: {NextAttemptUtc}", item.ContentHash, nextAttemptUtc);
-            await _registry.MarkFailedAsync(item.ContentHash, ex.Message, nextAttemptUtc, cancellationToken);
+    private async Task MarkGenerationFailedAsync(TtsQueueItem item, string message, Exception ex)
+    {
+        DateTimeOffset? nextAttemptUtc = item.AttemptCount >= _options.MaxRetryAttempts
+            ? null
+            : DateTimeOffset.UtcNow.Add(GetBackoff(item.AttemptCount));
+
+        _logger.LogWarning(ex, "TTS generation failed for {ContentHash}. Next attempt: {NextAttemptUtc}", item.ContentHash, nextAttemptUtc);
+        await _registry.MarkFailedAsync(item.ContentHash, message, nextAttemptUtc, CancellationToken.None);
+    }
+
+    private async Task TryReleaseProcessingAsync(string contentHash)
+    {
+        try
+        {
+            await _registry.ReleaseProcessingAsync(contentHash, CancellationToken.None);
+        }
+        catch (Exception releaseEx)
+        {
+            _logger.LogWarning(
+                releaseEx,
+                "Failed to release TTS queue item after cancellation for {ContentHash}.",
+                contentHash);
         }
     }
 

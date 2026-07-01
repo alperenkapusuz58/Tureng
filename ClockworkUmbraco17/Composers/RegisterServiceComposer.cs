@@ -38,9 +38,11 @@ namespace ClockworkUmbraco.Composers
                 client.Timeout = TimeSpan.FromSeconds(90);
             });
             builder.Services.AddSingleton<TtsRateLimiter>();
+            builder.Services.AddSingleton<TtsDispatchService>();
             builder.Services.AddScoped<IR2AudioStorage, R2AudioStorage>();
             builder.Services.AddScoped<TtsGenerationProcessor>();
             builder.Services.AddHostedService<TtsGenerationWorker>();
+            builder.Services.AddHostedService<TtsQueueMaintenanceHostedService>();
             builder.Services.AddHostedService<TtsWarmupHostedService>();
             builder.SetContentLastChanceFinder<PageNotFound>();
         }

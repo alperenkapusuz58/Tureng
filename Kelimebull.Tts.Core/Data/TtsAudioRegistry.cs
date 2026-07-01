@@ -35,6 +35,40 @@ public sealed class TtsAudioRegistry : ITtsAudioRegistry
         return await reader.ReadAsync(cancellationToken) ? MapRecord(reader) : null;
     }
 
+    public async Task<TtsStatusSnapshot?> GetStatusSnapshotAsync(string contentHash, CancellationToken cancellationToken = default)
+    {
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+
+        await using var command = new SqlCommand(
+            """
+            SELECT TOP (1)
+                r.Id, r.ContentHash, r.OriginalText, r.NormalizedText, r.Language, r.Voice, r.Model, r.Format,
+                r.PipelineVersion, r.SourceType, r.Status, r.CharacterCount, r.StorageKey, r.CdnUrl,
+                r.OpenAiRequestId, r.ErrorMessage, r.CreatedUtc, r.UpdatedUtc, r.CompletedUtc,
+                q.Status AS QueueStatus,
+                q.ErrorMessage AS QueueError
+            FROM dbo.tts_audio_registry r
+            LEFT JOIN dbo.tts_generation_queue q
+                ON q.ContentHash = r.ContentHash AND q.Status <> 'completed'
+            WHERE r.ContentHash = @ContentHash
+            ORDER BY q.Id DESC;
+            """,
+            connection);
+        command.Parameters.AddWithValue("@ContentHash", contentHash);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return null;
+        }
+
+        var registry = MapRecord(reader);
+        var queueStatus = reader.IsDBNull(19) ? null : reader.GetString(19);
+        var queueError = reader.IsDBNull(20) ? null : reader.GetString(20);
+        return new TtsStatusSnapshot(registry, queueStatus, queueError);
+    }
+
     public async Task<TtsAudioRecord> EnsureQueuedAsync(TtsAudioDescriptor descriptor, CancellationToken cancellationToken = default)
     {
         await using var connection = new SqlConnection(_connectionString);
@@ -52,7 +86,7 @@ public sealed class TtsAudioRegistry : ITtsAudioRegistry
             await ResetFailedRegistryAsync(connection, (SqlTransaction)transaction, descriptor.ContentHash, cancellationToken);
         }
 
-        await ReleaseStaleProcessingAsync(connection, (SqlTransaction)transaction, descriptor.ContentHash, cancellationToken);
+        await ForceReleaseProcessingForUserRequestAsync(connection, (SqlTransaction)transaction, descriptor.ContentHash, cancellationToken);
         await EnqueueIfNeededAsync(connection, (SqlTransaction)transaction, descriptor, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
 
@@ -120,7 +154,77 @@ public sealed class TtsAudioRegistry : ITtsAudioRegistry
                 reader.GetInt32(12)));
         }
 
+        if (items.Count > 0)
+        {
+            await MarkRegistryProcessingAsync(connection, items.Select(x => x.ContentHash), cancellationToken);
+        }
+
         return items;
+    }
+
+    public async Task<TtsQueueItem?> TryClaimByHashAsync(
+        string contentHash,
+        string workerId,
+        TimeSpan lockDuration,
+        CancellationToken cancellationToken = default)
+    {
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+
+        await ReleaseAbandonedProcessingAsync(connection, contentHash, cancellationToken);
+
+        await using var command = new SqlCommand(
+            """
+            UPDATE q
+               SET q.Status = 'processing',
+                   q.WorkerId = @WorkerId,
+                   q.LockedUntilUtc = DATEADD(second, @LockSeconds, SYSUTCDATETIME()),
+                   q.AttemptCount = q.AttemptCount + 1,
+                   q.UpdatedUtc = SYSUTCDATETIME()
+            OUTPUT inserted.Id, inserted.ContentHash, r.OriginalText, r.NormalizedText, r.Language, r.Voice,
+                   r.Model, r.Format, r.PipelineVersion, r.SourceType, r.CharacterCount, r.StorageKey,
+                   inserted.AttemptCount
+            FROM dbo.tts_generation_queue q
+            INNER JOIN dbo.tts_audio_registry r ON r.ContentHash = q.ContentHash
+            WHERE q.ContentHash = @ContentHash
+              AND r.Status <> 'completed'
+              AND (
+                    (q.Status = 'pending' AND (q.NextAttemptUtc IS NULL OR q.NextAttemptUtc <= SYSUTCDATETIME()))
+                    OR (q.Status = 'failed' AND q.NextAttemptUtc IS NOT NULL AND q.NextAttemptUtc <= SYSUTCDATETIME())
+                    OR (q.Status = 'processing' AND q.LockedUntilUtc IS NOT NULL AND q.LockedUntilUtc <= SYSUTCDATETIME())
+                  )
+              AND (q.LockedUntilUtc IS NULL OR q.LockedUntilUtc <= SYSUTCDATETIME());
+            """,
+            connection);
+
+        command.Parameters.AddWithValue("@ContentHash", contentHash);
+        command.Parameters.AddWithValue("@WorkerId", workerId);
+        command.Parameters.AddWithValue("@LockSeconds", Math.Max(30, (int)lockDuration.TotalSeconds));
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return null;
+        }
+
+        var item = new TtsQueueItem(
+            reader.GetInt64(0),
+            reader.GetString(1),
+            reader.GetString(2),
+            reader.GetString(3),
+            reader.GetString(4),
+            reader.GetString(5),
+            reader.GetString(6),
+            reader.GetString(7),
+            reader.GetString(8),
+            reader.GetString(9),
+            reader.GetInt32(10),
+            reader.GetString(11),
+            reader.GetInt32(12));
+
+        await reader.CloseAsync();
+        await MarkRegistryProcessingAsync(connection, [contentHash], cancellationToken);
+        return item;
     }
 
     public async Task MarkCompletedAsync(string contentHash, string storageKey, string cdnUrl, string? openAiRequestId, CancellationToken cancellationToken = default)
@@ -244,12 +348,118 @@ public sealed class TtsAudioRegistry : ITtsAudioRegistry
                    WorkerId = NULL,
                    UpdatedUtc = SYSUTCDATETIME()
              WHERE Status = 'processing'
-               AND LockedUntilUtc IS NOT NULL
-               AND LockedUntilUtc <= SYSUTCDATETIME();
+               AND (
+                    LockedUntilUtc IS NULL
+                    OR LockedUntilUtc <= SYSUTCDATETIME()
+                    OR UpdatedUtc <= DATEADD(second, -90, SYSUTCDATETIME())
+               );
+
+            UPDATE r
+               SET r.Status = 'pending',
+                   r.ErrorMessage = NULL,
+                   r.UpdatedUtc = SYSUTCDATETIME()
+              FROM dbo.tts_audio_registry r
+             INNER JOIN dbo.tts_generation_queue q ON q.ContentHash = r.ContentHash
+             WHERE q.Status = 'pending'
+               AND r.Status = 'processing';
             """,
             connection);
 
         return await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    public async Task<TtsBulkResetResult> ResetAllStuckAsync(bool includeFailed = false, CancellationToken cancellationToken = default)
+    {
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
+
+        var queueReleased = await ExecuteNonQueryCountAsync(
+            connection,
+            (SqlTransaction)transaction,
+            """
+            UPDATE dbo.tts_generation_queue
+               SET Status = 'pending',
+                   LockedUntilUtc = NULL,
+                   WorkerId = NULL,
+                   UpdatedUtc = SYSUTCDATETIME()
+             WHERE Status = 'processing';
+            """,
+            cancellationToken);
+
+        var registryReset = await ExecuteNonQueryCountAsync(
+            connection,
+            (SqlTransaction)transaction,
+            """
+            UPDATE dbo.tts_audio_registry
+               SET Status = 'pending',
+                   ErrorMessage = NULL,
+                   UpdatedUtc = SYSUTCDATETIME()
+             WHERE Status = 'processing';
+            """,
+            cancellationToken);
+
+        if (includeFailed)
+        {
+            await ExecuteNonQueryCountAsync(
+                connection,
+                (SqlTransaction)transaction,
+                """
+                UPDATE dbo.tts_generation_queue
+                   SET Status = 'pending',
+                       NextAttemptUtc = NULL,
+                       LockedUntilUtc = NULL,
+                       WorkerId = NULL,
+                       ErrorMessage = NULL,
+                       AttemptCount = 0,
+                       UpdatedUtc = SYSUTCDATETIME()
+                 WHERE Status = 'failed';
+
+                UPDATE dbo.tts_audio_registry
+                   SET Status = 'pending',
+                       ErrorMessage = NULL,
+                       UpdatedUtc = SYSUTCDATETIME()
+                 WHERE Status = 'failed';
+                """,
+                cancellationToken);
+        }
+
+        await transaction.CommitAsync(cancellationToken);
+        return new TtsBulkResetResult(queueReleased, registryReset);
+    }
+
+    public async Task ReleaseProcessingAsync(string contentHash, CancellationToken cancellationToken = default)
+    {
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+
+        await using var command = new SqlCommand(
+            """
+            UPDATE dbo.tts_generation_queue
+               SET Status = 'pending',
+                   AttemptCount = CASE WHEN AttemptCount > 0 THEN AttemptCount - 1 ELSE 0 END,
+                   LockedUntilUtc = NULL,
+                   WorkerId = NULL,
+                   UpdatedUtc = SYSUTCDATETIME()
+             WHERE ContentHash = @ContentHash
+               AND Status = 'processing';
+
+            UPDATE dbo.tts_audio_registry
+               SET Status = 'pending',
+                   UpdatedUtc = SYSUTCDATETIME()
+             WHERE ContentHash = @ContentHash
+               AND Status = 'processing';
+            """,
+            connection);
+        command.Parameters.AddWithValue("@ContentHash", contentHash);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    public async Task ReleaseAbandonedProcessingAsync(string contentHash, CancellationToken cancellationToken = default)
+    {
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+        await ReleaseAbandonedProcessingAsync(connection, contentHash, cancellationToken);
     }
 
     public async Task<int> ReplayFailedAsync(int maxItems, CancellationToken cancellationToken = default)
@@ -259,14 +469,24 @@ public sealed class TtsAudioRegistry : ITtsAudioRegistry
 
         await using var command = new SqlCommand(
             """
-            UPDATE TOP (@MaxItems) dbo.tts_generation_queue
-               SET Status = 'pending',
-                   NextAttemptUtc = NULL,
-                   LockedUntilUtc = NULL,
-                   WorkerId = NULL,
-                   ErrorMessage = NULL,
-                   UpdatedUtc = SYSUTCDATETIME()
-             WHERE Status = 'failed';
+            UPDATE TOP (@MaxItems) q
+               SET q.Status = 'pending',
+                   q.NextAttemptUtc = NULL,
+                   q.LockedUntilUtc = NULL,
+                   q.WorkerId = NULL,
+                   q.ErrorMessage = NULL,
+                   q.UpdatedUtc = SYSUTCDATETIME()
+              FROM dbo.tts_generation_queue q
+             WHERE q.Status = 'failed';
+
+            UPDATE r
+               SET r.Status = 'pending',
+                   r.ErrorMessage = NULL,
+                   r.UpdatedUtc = SYSUTCDATETIME()
+              FROM dbo.tts_audio_registry r
+             INNER JOIN dbo.tts_generation_queue q ON q.ContentHash = r.ContentHash
+             WHERE q.Status = 'pending'
+               AND r.Status = 'failed';
             """,
             connection);
         command.Parameters.AddWithValue("@MaxItems", Math.Clamp(maxItems, 1, 500));
@@ -355,6 +575,35 @@ public sealed class TtsAudioRegistry : ITtsAudioRegistry
             cancellationToken);
     }
 
+    private static async Task ForceReleaseProcessingForUserRequestAsync(
+        SqlConnection connection,
+        SqlTransaction transaction,
+        string contentHash,
+        CancellationToken cancellationToken)
+    {
+        await ExecuteNonQueryAsync(
+            connection,
+            transaction,
+            """
+            UPDATE dbo.tts_generation_queue
+               SET Status = 'pending',
+                   LockedUntilUtc = NULL,
+                   WorkerId = NULL,
+                   UpdatedUtc = SYSUTCDATETIME()
+             WHERE ContentHash = @ContentHash
+               AND Status = 'processing';
+
+            UPDATE dbo.tts_audio_registry
+               SET Status = 'pending',
+                   ErrorMessage = NULL,
+                   UpdatedUtc = SYSUTCDATETIME()
+             WHERE ContentHash = @ContentHash
+               AND Status = 'processing';
+            """,
+            command => command.Parameters.AddWithValue("@ContentHash", contentHash),
+            cancellationToken);
+    }
+
     private static async Task ReleaseStaleProcessingAsync(
         SqlConnection connection,
         SqlTransaction transaction,
@@ -372,11 +621,78 @@ public sealed class TtsAudioRegistry : ITtsAudioRegistry
                    UpdatedUtc = SYSUTCDATETIME()
              WHERE ContentHash = @ContentHash
                AND Status = 'processing'
-               AND LockedUntilUtc IS NOT NULL
-               AND LockedUntilUtc <= SYSUTCDATETIME();
+               AND (
+                    LockedUntilUtc IS NULL
+                    OR LockedUntilUtc <= SYSUTCDATETIME()
+                    OR UpdatedUtc <= DATEADD(second, -90, SYSUTCDATETIME())
+               );
             """,
             command => command.Parameters.AddWithValue("@ContentHash", contentHash),
             cancellationToken);
+    }
+
+    private static async Task ReleaseAbandonedProcessingAsync(
+        SqlConnection connection,
+        string contentHash,
+        CancellationToken cancellationToken)
+    {
+        await using var command = new SqlCommand(
+            """
+            UPDATE dbo.tts_generation_queue
+               SET Status = 'pending',
+                   LockedUntilUtc = NULL,
+                   WorkerId = NULL,
+                   UpdatedUtc = SYSUTCDATETIME()
+             WHERE ContentHash = @ContentHash
+               AND Status = 'processing'
+               AND (
+                    LockedUntilUtc IS NULL
+                    OR LockedUntilUtc <= SYSUTCDATETIME()
+                    OR UpdatedUtc <= DATEADD(second, -90, SYSUTCDATETIME())
+               );
+
+            UPDATE dbo.tts_audio_registry
+               SET Status = 'pending',
+                   ErrorMessage = NULL,
+                   UpdatedUtc = SYSUTCDATETIME()
+             WHERE ContentHash = @ContentHash
+               AND Status = 'processing'
+               AND UpdatedUtc <= DATEADD(second, -90, SYSUTCDATETIME());
+            """,
+            connection);
+        command.Parameters.AddWithValue("@ContentHash", contentHash);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    private static async Task MarkRegistryProcessingAsync(
+        SqlConnection connection,
+        IEnumerable<string> contentHashes,
+        CancellationToken cancellationToken)
+    {
+        var hashes = contentHashes.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        if (hashes.Length == 0)
+        {
+            return;
+        }
+
+        var parameterNames = hashes.Select((_, index) => $"@Hash{index}").ToArray();
+        await using var command = new SqlCommand(
+            $"""
+            UPDATE dbo.tts_audio_registry
+               SET Status = 'processing',
+                   ErrorMessage = NULL,
+                   UpdatedUtc = SYSUTCDATETIME()
+             WHERE ContentHash IN ({string.Join(", ", parameterNames)})
+               AND Status IN ('pending', 'failed');
+            """,
+            connection);
+
+        for (var i = 0; i < hashes.Length; i++)
+        {
+            command.Parameters.AddWithValue(parameterNames[i], hashes[i]);
+        }
+
+        await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
     private static async Task ResetFailedRegistryAsync(SqlConnection connection, SqlTransaction transaction, string contentHash, CancellationToken cancellationToken)
@@ -393,6 +709,16 @@ public sealed class TtsAudioRegistry : ITtsAudioRegistry
             """,
             command => command.Parameters.AddWithValue("@ContentHash", contentHash),
             cancellationToken);
+    }
+
+    private static async Task<int> ExecuteNonQueryCountAsync(
+        SqlConnection connection,
+        SqlTransaction transaction,
+        string sql,
+        CancellationToken cancellationToken)
+    {
+        await using var command = new SqlCommand(sql, connection, transaction);
+        return await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
     private static async Task ExecuteNonQueryAsync(
