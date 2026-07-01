@@ -1,10 +1,51 @@
+@using System.IO
+@using ClockworkUmbraco.Extensions
 @inherits UmbracoViewPage
+@inject IWebHostEnvironment WebHostEnvironment
 
-<aside class="site-ad-banner" role="complementary" aria-label="Reklam">
-    <div class="site-ad-banner__inner">
-        <div class="site-ad-banner__slot">
-            <span class="site-ad-banner__label">Reklam</span>
-            <p class="site-ad-banner__hint">Örn. yanıt veren geniş şerit (728 × 90) veya özel yükseklik</p>
+@{
+    var siteSettings = Model.GetSiteSettings();
+    var youtubeLink = siteSettings?.HeaderSocialLinks?
+        .FirstOrDefault(link => string.Equals(link?.Network, "youtube", StringComparison.OrdinalIgnoreCase));
+
+    var promoUrl = youtubeLink?.Url?.Trim();
+    var promoImageUrl = ResolvePromoImageUrl();
+}
+
+@if (!string.IsNullOrWhiteSpace(promoUrl) && !string.IsNullOrWhiteSpace(promoImageUrl))
+{
+    <aside class="site-promo-banner" role="complementary" aria-label="YouTube kanalı">
+        <div class="site-promo-banner__inner">
+            <a class="site-promo-banner__link"
+               href="@promoUrl"
+               target="_blank"
+               rel="noopener noreferrer">
+                <img class="site-promo-banner__image"
+                     src="@promoImageUrl"
+                     alt="YouTube kanalımızı ziyaret edin"
+                     width="728"
+                     height="90"
+                     loading="lazy"
+                     decoding="async" />
+            </a>
         </div>
-    </div>
-</aside>
+    </aside>
+}
+
+@functions {
+    private string? ResolvePromoImageUrl()
+    {
+        var imageNames = new[] { "youtube-promo.jpg", "youtube-promo.png", "youtube-promo.webp", "youtube-promo.svg" };
+
+        foreach (var imageName in imageNames)
+        {
+            var physicalPath = System.IO.Path.Combine(WebHostEnvironment.WebRootPath, "images", imageName);
+            if (System.IO.File.Exists(physicalPath))
+            {
+                return Url.Content($"~/images/{imageName}");
+            }
+        }
+
+        return null;
+    }
+}

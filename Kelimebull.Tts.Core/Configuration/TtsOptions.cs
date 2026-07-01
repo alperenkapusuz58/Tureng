@@ -4,7 +4,7 @@ public sealed class TtsOptions
 {
     public const string SectionName = "Tts";
 
-    public string PipelineVersion { get; set; } = "v1";
+    public string PipelineVersion { get; set; } = "v2";
 
     public string CdnBaseUrl { get; set; } = string.Empty;
 

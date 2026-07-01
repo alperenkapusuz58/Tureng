@@ -1117,6 +1117,21 @@ details.collapse summary::-webkit-details-marker {
   outline: 2px solid currentColor;
   outline-offset: 2px;
 }
+.loading {
+  pointer-events: none;
+  display: inline-block;
+  aspect-ratio: 1 / 1;
+  width: 1.5rem;
+  background-color: currentColor;
+  -webkit-mask-size: 100%;
+          mask-size: 100%;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+          mask-position: center;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='24' height='24' stroke='black' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cg transform-origin='center'%3E%3Ccircle cx='12' cy='12' r='9.5' fill='none' stroke-width='3' stroke-linecap='round'%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 12 12' to='360 12 12' dur='2s' repeatCount='indefinite'/%3E%3Canimate attributeName='stroke-dasharray' values='0,150;42,150;42,150' keyTimes='0;0.475;1' dur='1.5s' repeatCount='indefinite'/%3E%3Canimate attributeName='stroke-dashoffset' values='0;-16;-59' keyTimes='0;0.475;1' dur='1.5s' repeatCount='indefinite'/%3E%3C/circle%3E%3C/g%3E%3C/svg%3E");
+          mask-image: url("data:image/svg+xml,%3Csvg width='24' height='24' stroke='black' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cg transform-origin='center'%3E%3Ccircle cx='12' cy='12' r='9.5' fill='none' stroke-width='3' stroke-linecap='round'%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 12 12' to='360 12 12' dur='2s' repeatCount='indefinite'/%3E%3Canimate attributeName='stroke-dasharray' values='0,150;42,150;42,150' keyTimes='0;0.475;1' dur='1.5s' repeatCount='indefinite'/%3E%3Canimate attributeName='stroke-dashoffset' values='0;-16;-59' keyTimes='0;0.475;1' dur='1.5s' repeatCount='indefinite'/%3E%3C/circle%3E%3C/g%3E%3C/svg%3E");
+}
 .menu li > *:not(ul, .menu-title, details, .btn):active,
 .menu li > *:not(ul, .menu-title, details, .btn).active,
 .menu li > details > summary:active {
@@ -1810,6 +1825,9 @@ details.collapse summary::-webkit-details-marker {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
+.ease-in-out {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
 /* Özel utility sınıflarınız buraya */
 /**
  * KelimeBull / Clockwork — tek kaynak site stilleri.
@@ -2282,8 +2300,8 @@ body.site-menu--open {
     padding: 4px 10px 4px 12px;
     border: 0;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
+    background: rgba(36, 59, 122, 0.08);
+    color: var(--navy-deep);
     font-family: inherit;
     font-size: 12px;
     font-weight: 700;
@@ -2291,12 +2309,12 @@ body.site-menu--open {
     transition: background 0.15s ease;
 }
 .site-lang__toggle:hover {
-        background: rgba(255, 255, 255, 0.14);
+        background: rgba(36, 59, 122, 0.14);
     }
 .site-lang__toggle:focus-visible {
         outline: none;
-        box-shadow: none;
-        background: rgba(255, 255, 255, 0.2);
+        box-shadow: var(--ring);
+        background: rgba(36, 59, 122, 0.14);
     }
 .site-lang__current {
     line-height: 1;
@@ -2308,7 +2326,7 @@ body.site-menu--open {
     margin-left: 2px;
     border-left: 4px solid transparent;
     border-right: 4px solid transparent;
-    border-top: 5px solid rgba(255, 255, 255, 0.85);
+    border-top: 5px solid rgba(36, 59, 122, 0.75);
     transition: transform 0.18s ease;
 }
 .site-lang[open] .site-lang__caret {
@@ -2369,19 +2387,14 @@ body.site-menu--open {
     transform: translateY(-1px);
 }
 .site-social__icon {
-    display: inline-flex;
+    display: block;
     width: 14px;
     height: 14px;
-}
-/* Sosyal ikonların yalnızca beyaz SVG sürümü var; beyaz header üzerinde
-   görünür olması için koyu (siyah) renge çeviriyoruz. */
-.site-social__icon img {
-    display: block;
     filter: brightness(0) saturate(100%);
     opacity: 0.68;
     transition: opacity 0.15s ease;
 }
-.site-social__link:hover .site-social__icon img {
+.site-social__link:hover .site-social__icon {
     opacity: 1;
 }
 .site-brand {
@@ -2431,7 +2444,7 @@ body.site-menu--open {
     box-sizing: border-box;
     overflow-x: clip;
 }
-.site-ad-banner + .site-footer {
+.site-promo-banner + .site-footer {
     margin-top: 0;
 }
 .site-footer__top {
@@ -2573,46 +2586,46 @@ body.site-menu--open {
     padding: 28px 18px 36px;
     box-sizing: border-box;
 }
-/* Footer üstü — global reklam şeridi */
-.site-ad-banner {
+/* Footer üstü — tanıtım görseli (ör. YouTube yönlendirmesi) */
+.site-promo-banner {
     width: 100%;
     margin-top: 28px;
     box-sizing: border-box;
 }
-.site-ad-banner__inner {
+.site-promo-banner__inner {
     max-width: 1160px;
     margin: 0 auto;
     padding: 0 18px 20px;
     box-sizing: border-box;
 }
-.site-ad-banner__slot {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
+.site-promo-banner__link {
+    display: block;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 24px rgba(15, 34, 79, 0.08);
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        opacity 0.15s ease;
+}
+.site-promo-banner__link:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 28px rgba(15, 34, 79, 0.12);
+        opacity: 0.96;
+    }
+.site-promo-banner__link:focus-visible {
+        outline: none;
+        box-shadow: var(--ring);
+    }
+.site-promo-banner__image {
+    display: block;
     width: 100%;
-    min-height: 90px;
-    padding: 16px;
-    border: 1px dashed rgba(96, 116, 139, 0.45);
-    border-radius: 0;
-    background: rgba(255, 255, 255, 0.65);
-    text-align: center;
-    box-sizing: border-box;
-}
-.site-ad-banner__label {
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted);
-}
-.site-ad-banner__hint {
-    margin: 0;
-    font-size: 12px;
-    color: var(--muted);
-    max-width: 42rem;
-    line-height: 1.4;
+    height: auto;
+    max-height: 120px;
+    -o-object-fit: cover;
+       object-fit: cover;
 }
 .home-cards {
     display: grid;
@@ -2943,19 +2956,18 @@ body.site-menu--open {
         padding-bottom: 28px;
     }
 
-    .site-ad-banner {
+    .site-promo-banner {
         margin-top: 20px;
     }
 
-    .site-ad-banner__inner {
+    .site-promo-banner__inner {
         padding-left: 10px;
         padding-right: 10px;
         padding-bottom: 16px;
     }
 
-    .site-ad-banner__slot {
-        min-height: 80px;
-        padding: 12px;
+    .site-promo-banner__image {
+        max-height: 100px;
     }
 
     .home-ad {

@@ -44,6 +44,11 @@ public sealed class OpenAiTtsClient : IOpenAiTtsClient
             ["response_format"] = item.Format,
         };
 
+        if (IsHeadwordSource(item.SourceType))
+        {
+            body["speed"] = 0.88;
+        }
+
         var instructions = _options.Languages.Values.FirstOrDefault(x =>
             string.Equals(x.Language, item.Language, StringComparison.OrdinalIgnoreCase))?.Instructions;
         if (!string.IsNullOrWhiteSpace(instructions))
@@ -63,6 +68,12 @@ public sealed class OpenAiTtsClient : IOpenAiTtsClient
         var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
         var requestId = response.Headers.TryGetValues("x-request-id", out var values) ? values.FirstOrDefault() : null;
         return new OpenAiTtsResult(bytes, requestId);
+    }
+
+    private static bool IsHeadwordSource(string? sourceType)
+    {
+        var source = sourceType?.Trim().ToLowerInvariant();
+        return source is "word" or "word-of-the-day";
     }
 }
 

@@ -11,7 +11,7 @@
         searchDirection = "en-tr";
     }
 
-    var ttsLanguage = string.Equals(searchDirection, "tr-en", StringComparison.OrdinalIgnoreCase) ? "tr-TR" : "en-US";
+    const string headwordTtsLanguage = "en-US";
     var dictionaryAudioUrl = "/api/dictionary/audio";
 }
 
@@ -49,7 +49,7 @@
 
                             <span class="pos-tag">@category?.PartOfSpeech</span>
 
-                            <button class="ex-btn listen-btn pos-audio-btn" type="button" data-text="@Model.Word" data-language="@ttsLanguage" data-source-type="word" aria-label="@Model.Word kelimesini dinle">
+                            <button class="ex-btn listen-btn pos-audio-btn" type="button" data-text="@Model.Word" data-language="@headwordTtsLanguage" data-source-type="word" aria-label="@Model.Word kelimesini dinle">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                                     <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -86,7 +86,7 @@
                                             <div class="example-block">
                                                 @await Html.PartialAsync("IsolatedRte", sentenceHtml)
 
-                                                <button class="ex-btn listen-btn" type="button" data-text="@sentenceText" data-language="@ttsLanguage" data-source-type="sentence" aria-label="Dinle">
+                                                <button class="ex-btn listen-btn" type="button" data-text="@sentenceText" data-language="@headwordTtsLanguage" data-source-type="sentence" aria-label="Dinle">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                                                         <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -139,7 +139,7 @@
                                             <div class="phrase-example">
                                                 @await Html.PartialAsync("IsolatedRte", innerSentenceHtml)
 
-                                                <button class="ex-btn listen-btn" type="button" data-text="@innerSentenceText" data-language="@ttsLanguage" data-source-type="sentence" aria-label="Dinle">
+                                                <button class="ex-btn listen-btn" type="button" data-text="@innerSentenceText" data-language="@headwordTtsLanguage" data-source-type="sentence" aria-label="Dinle">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                                                         <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -191,7 +191,7 @@
                                             <div class="phrase-example">
                                                 @await Html.PartialAsync("IsolatedRte", innerSentenceHtml)
 
-                                                <button class="ex-btn listen-btn" type="button" data-text="@innerSentenceText" data-language="@ttsLanguage" data-source-type="sentence" aria-label="Dinle">
+                                                <button class="ex-btn listen-btn" type="button" data-text="@innerSentenceText" data-language="@headwordTtsLanguage" data-source-type="sentence" aria-label="Dinle">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                                                         <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -213,6 +213,7 @@
         </section>
     </div>
 </div>
+
 
 @section scripts {
     <script src="~/js/phrase-focus.js" asp-append-version="true"></script>

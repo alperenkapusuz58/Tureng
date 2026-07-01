@@ -2,6 +2,7 @@ using Microsoft.Extensions.Options;
 using Kelimebull.Tts.Core.Configuration;
 using Kelimebull.Tts.Core.Hashing;
 using Kelimebull.Tts.Core.Models;
+using Kelimebull.Tts.Core.Speech;
 using Kelimebull.Tts.Core.Voices;
 
 namespace ClockworkUmbraco.Services.Tts;
@@ -20,10 +21,13 @@ public sealed class TtsAudioUrlBuilder : ITtsAudioUrlBuilder
     public TtsAudioDescriptor CreateDescriptor(string text, string? language, string? sourceType)
     {
         var normalizedText = TtsTextNormalizer.Normalize(text);
-        var profile = _voiceResolver.Resolve(language);
+        var normalizedSourceType = string.IsNullOrWhiteSpace(sourceType) ? "unknown" : sourceType.Trim().ToLowerInvariant();
+        var resolvedLanguage = TtsSpeechLanguageResolver.Resolve(language, normalizedText, normalizedSourceType);
+        var speechInput = TtsHeadwordSpeechInput.Build(normalizedText, resolvedLanguage, normalizedSourceType);
+        var profile = _voiceResolver.Resolve(resolvedLanguage);
         var pipelineVersion = string.IsNullOrWhiteSpace(_options.PipelineVersion) ? "v1" : _options.PipelineVersion;
         var contentHash = TtsHashHelper.CreateHash(
-            normalizedText,
+            speechInput,
             profile.Language,
             profile.Voice,
             profile.Model,
@@ -34,14 +38,14 @@ public sealed class TtsAudioUrlBuilder : ITtsAudioUrlBuilder
         return new TtsAudioDescriptor(
             contentHash,
             text.Trim(),
-            normalizedText,
+            speechInput,
             profile.Language,
             profile.Voice,
             profile.Model,
             profile.Format,
             pipelineVersion,
-            string.IsNullOrWhiteSpace(sourceType) ? "unknown" : sourceType.Trim().ToLowerInvariant(),
-            normalizedText.Length,
+            normalizedSourceType,
+            speechInput.Length,
             storageKey);
     }
 
