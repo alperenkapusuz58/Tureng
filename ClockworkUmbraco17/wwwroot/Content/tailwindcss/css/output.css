@@ -2627,6 +2627,11 @@ body.site-menu--open {
     -o-object-fit: cover;
        object-fit: cover;
 }
+.home-page .site-promo-banner__image {
+    max-height: none;
+    -o-object-fit: contain;
+       object-fit: contain;
+}
 .home-cards {
     display: grid;
     grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);

@@ -1,11 +1,7 @@
 ﻿@inherits UmbracoViewPage<MainPage>
-
 @using ClockworkUmbraco.Helpers
-
 @using ClockworkUmbraco.Services.Interfaces
-
 @using Umbraco.Cms.Web.Common.PublishedModels
-
 @inject IWordOfTheDayService WordOfTheDayService
 
 @{
@@ -22,44 +18,30 @@
     var englishCulture = System.Globalization.CultureInfo.GetCultureInfo("en-GB");
 }
 
-
-
 <div class="home-page">
-
     <section class="home-content">
-
         <div class="home-cards">
-
             <article class="home-feature-card">
-
                 <div class="home-feature-card__body">
-
                     <h2 class="home-feature-card__title">
                         @Model.CardTitle
                     </h2>
-
                     <p class="home-feature-card__text">
                         @Model.CardDescription
                     </p>
-
                     @if (Model.CardUrl != null)
                     {
                         <a class="home-feature-card__url" href="@Model.CardUrl.Url" target="@Model.CardUrl.Target" rel="noopener noreferrer">@Model.CardUrl.Name</a>
                     }
-
                 </div>
-
                 <div class="home-feature-card__logo">
-
                     <div class="home-feature-card__logo-slot" aria-hidden="true">
                         @if (Model.CardImage != null)
                         {
                             <img src="@Model.CardImage.Url()" alt="@Model.CardImage.Name" />
                         }
                     </div>
-
                 </div>
-
             </article>
 
             @if (wordOfDay != null)
@@ -136,6 +118,28 @@
         </section>
     }
 
+    <section class="site-promo-banner" aria-label="YouTube kanalı">
+        <div class="site-promo-banner__inner">
+            @if (Model.Url != null)
+            {
+                <a class="site-promo-banner__link"
+                   href="@Model.Url.Url"
+                   target="@Model.Url.Target"
+                   rel="noopener noreferrer">
+                    @if (Model.Image != null)
+                    {
+                        <img class="site-promo-banner__image"
+                             src="@Model.Image.Url()"
+                             alt="@Model.Image.Name"
+                             width="1160"
+                             height="200"
+                             loading="lazy" />
+                    }
+                </a>
+            }
+
+        </div>
+    </section>
 
 </div>
 
