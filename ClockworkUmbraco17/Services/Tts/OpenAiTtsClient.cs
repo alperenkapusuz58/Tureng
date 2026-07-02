@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Kelimebull.Tts.Core.Configuration;
 using Kelimebull.Tts.Core.Models;
+using Kelimebull.Tts.Core.Speech;
 
 namespace ClockworkUmbraco.Services.Tts;
 
@@ -46,11 +47,10 @@ public sealed class OpenAiTtsClient : IOpenAiTtsClient
 
         if (IsHeadwordSource(item.SourceType))
         {
-            body["speed"] = 0.88;
+            body["speed"] = 0.85;
         }
 
-        var instructions = _options.Languages.Values.FirstOrDefault(x =>
-            string.Equals(x.Language, item.Language, StringComparison.OrdinalIgnoreCase))?.Instructions;
+        var instructions = ResolveInstructions(item);
         if (!string.IsNullOrWhiteSpace(instructions))
         {
             body["instructions"] = instructions;
@@ -70,10 +70,43 @@ public sealed class OpenAiTtsClient : IOpenAiTtsClient
         return new OpenAiTtsResult(bytes, requestId);
     }
 
+    private string? ResolveInstructions(TtsQueueItem item)
+    {
+        if (!OpenAiTtsModelCapabilities.SupportsInstructions(item.Model))
+        {
+            return null;
+        }
+
+        var languageInstructions = _options.Languages.Values.FirstOrDefault(x =>
+            string.Equals(x.Language, item.Language, StringComparison.OrdinalIgnoreCase))?.Instructions;
+
+        if (!IsHeadwordSource(item.SourceType))
+        {
+            return languageInstructions?.Trim();
+        }
+
+        return CombineInstructions(languageInstructions, _options.HeadwordInstructions);
+    }
+
     private static bool IsHeadwordSource(string? sourceType)
     {
         var source = sourceType?.Trim().ToLowerInvariant();
         return source is "word" or "word-of-the-day";
+    }
+
+    private static string? CombineInstructions(string? languageInstructions, string? headwordInstructions)
+    {
+        if (string.IsNullOrWhiteSpace(languageInstructions))
+        {
+            return string.IsNullOrWhiteSpace(headwordInstructions) ? null : headwordInstructions.Trim();
+        }
+
+        if (string.IsNullOrWhiteSpace(headwordInstructions))
+        {
+            return languageInstructions.Trim();
+        }
+
+        return $"{languageInstructions.Trim()} {headwordInstructions.Trim()}";
     }
 }
 

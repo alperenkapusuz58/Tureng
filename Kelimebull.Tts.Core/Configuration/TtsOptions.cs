@@ -4,13 +4,13 @@ public sealed class TtsOptions
 {
     public const string SectionName = "Tts";
 
-    public string PipelineVersion { get; set; } = "v2";
+    public string PipelineVersion { get; set; } = "v6";
 
     public string CdnBaseUrl { get; set; } = string.Empty;
 
     public string OpenAiApiKey { get; set; } = string.Empty;
 
-    public string DefaultModel { get; set; } = "tts-1";
+    public string DefaultModel { get; set; } = "tts-1-hd";
 
     public string DefaultFormat { get; set; } = "mp3";
 
@@ -30,12 +30,17 @@ public sealed class TtsOptions
 
     public int MaxRetryAttempts { get; set; } = 3;
 
+    public string HeadwordInstructions { get; set; } =
+        "Pronounce this single English dictionary headword with clear dictionary pronunciation. "
+        + "Articulate every syllable, including short unstressed initial vowels. "
+        + "Speak only the word itself; do not add extra words.";
+
     public Dictionary<string, TtsLanguageOptions> Languages { get; set; } = new(StringComparer.OrdinalIgnoreCase)
     {
         ["English"] = new()
         {
             Language = "en-US",
-            Model = "tts-1",
+            Model = "tts-1-hd",
             Voice = "nova",
         },
         ["Turkish"] = new()

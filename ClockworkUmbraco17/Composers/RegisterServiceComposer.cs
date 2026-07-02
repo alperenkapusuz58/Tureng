@@ -5,6 +5,7 @@ using ClockworkUmbraco.Services.Tts;
 using Microsoft.Extensions.Options;
 using Kelimebull.Tts.Core.Configuration;
 using Kelimebull.Tts.Core.Data;
+using Kelimebull.Tts.Core.Speech;
 using Kelimebull.Tts.Core.Voices;
 using Umbraco.Cms.Core.Composing;
 using PageNotFound = ClockworkUmbraco.Services.PageNotFound;
@@ -25,6 +26,8 @@ namespace ClockworkUmbraco.Composers
             builder.Services.AddScoped<IWordOfTheDayService, WordOfTheDayService>();
             builder.Services.AddScoped<HeadwordSearchMapper>();
             builder.Services.Configure<TtsOptions>(builder.Config.GetSection(TtsOptions.SectionName));
+            builder.Services.AddSingleton<ICmuPronunciationLookup, CmuPronunciationLookup>();
+            builder.Services.AddSingleton<ITtsHeadwordSpeechInputBuilder, TtsHeadwordSpeechInputBuilder>();
             builder.Services.AddScoped<TtsVoiceResolver>();
             builder.Services.AddScoped<ITtsAudioRegistry, TtsAudioRegistry>();
             builder.Services.AddScoped<ITtsAudioUrlBuilder, TtsAudioUrlBuilder>();

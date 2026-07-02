@@ -11,11 +11,16 @@ public sealed class TtsAudioUrlBuilder : ITtsAudioUrlBuilder
 {
     private readonly TtsOptions _options;
     private readonly TtsVoiceResolver _voiceResolver;
+    private readonly ITtsHeadwordSpeechInputBuilder _headwordSpeechInputBuilder;
 
-    public TtsAudioUrlBuilder(IOptions<TtsOptions> options, TtsVoiceResolver voiceResolver)
+    public TtsAudioUrlBuilder(
+        IOptions<TtsOptions> options,
+        TtsVoiceResolver voiceResolver,
+        ITtsHeadwordSpeechInputBuilder headwordSpeechInputBuilder)
     {
         _options = options.Value;
         _voiceResolver = voiceResolver;
+        _headwordSpeechInputBuilder = headwordSpeechInputBuilder;
     }
 
     public TtsAudioDescriptor CreateDescriptor(string text, string? language, string? sourceType)
@@ -23,7 +28,7 @@ public sealed class TtsAudioUrlBuilder : ITtsAudioUrlBuilder
         var normalizedText = TtsTextNormalizer.Normalize(text);
         var normalizedSourceType = string.IsNullOrWhiteSpace(sourceType) ? "unknown" : sourceType.Trim().ToLowerInvariant();
         var resolvedLanguage = TtsSpeechLanguageResolver.Resolve(language, normalizedText, normalizedSourceType);
-        var speechInput = TtsHeadwordSpeechInput.Build(normalizedText, resolvedLanguage, normalizedSourceType);
+        var speechInput = _headwordSpeechInputBuilder.Build(normalizedText, resolvedLanguage, normalizedSourceType);
         var profile = _voiceResolver.Resolve(resolvedLanguage);
         var pipelineVersion = string.IsNullOrWhiteSpace(_options.PipelineVersion) ? "v1" : _options.PipelineVersion;
         var contentHash = TtsHashHelper.CreateHash(
