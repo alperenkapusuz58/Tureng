@@ -102,6 +102,7 @@
             var dirForLinks = directionInput ? directionInput.value || 'en-tr' : 'en-tr';
             var renderedCount = 0;
             var renderedPhraseCount = 0;
+
             for (var i = 0; i < results.length; i++) {
                 var item = results[i];
                 var href = item.url || item.Url || '';
@@ -110,26 +111,22 @@
                 var lemma = pickDisplayLemma(item, href);
                 if (!lemma) lemma = href;
 
-                var translation = item.translation != null ? item.translation : item.Translation;
                 var kind = (item.kind || item.Kind || 'word').toLowerCase();
                 var node = tpl.content.cloneNode(true);
                 var li = node.querySelector('li');
                 var a = node.querySelector('a');
                 if (!a || !li) continue;
+
                 a.href = withSearchQuery(href, qForLinks, dirForLinks);
-                a.setAttribute('aria-label', lemma + (translation ? ' — ' + translation : ''));
+                // Değişiklik 1: aria-label içerisinden çeviri metni kaldırıldı
+                a.setAttribute('aria-label', lemma);
 
                 var main = document.createElement('span');
                 main.className = 'suggestion-main';
                 main.textContent = lemma;
                 a.appendChild(main);
 
-                if (translation && translation !== lemma) {
-                    var meta = document.createElement('span');
-                    meta.className = 'suggestion-meta';
-                    meta.textContent = translation;
-                    a.appendChild(meta);
-                }
+                // Değişiklik 2: suggestion-meta oluşturan 'if (translation ...)' bloğu tamamen kaldırıldı
 
                 if (kind === 'phrase') {
                     a.setAttribute('data-result-kind', 'phrase');

@@ -18,11 +18,8 @@
 
     @RenderSection("styles", required: false)
 
-    <meta-fields></meta-fields>
-    <render-script position="HeadBottom"></render-script>
 </head>
 <body>
-    <render-script position="BodyTop"></render-script>
 
     <div class="app-shell">
         @await Html.PartialAsync("Partials/Header")

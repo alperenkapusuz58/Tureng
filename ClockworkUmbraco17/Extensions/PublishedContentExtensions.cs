@@ -57,6 +57,24 @@ namespace ClockworkUmbraco.Extensions
             return new FormIdModel();
         }
 
+
+        public static string Duzenle(string metin)
+        {
+            if (string.IsNullOrWhiteSpace(metin))
+                return metin;
+
+            metin = metin.Trim();
+
+            // İlk harfi büyük yap
+            metin = char.ToUpper(metin[0], new System.Globalization.CultureInfo("tr-TR")) + metin.Substring(1);
+
+            // Sonunda nokta yoksa ekle
+            if (!metin.EndsWith("."))
+                metin += ".";
+
+            return metin;
+        }
+
     }
 }
 

@@ -13,6 +13,8 @@
 
     const string headwordTtsLanguage = "en-US";
     var dictionaryAudioUrl = "/api/dictionary/audio";
+
+
 }
 
 @section styles {
@@ -42,6 +44,8 @@
                 {
 
                     var category = Model.PartofSpeech.ElementAt(i).Content as SenseCategoryItem;
+                    var dataText = Model.Word.Length > 0 ? char.ToUpper(Model.Word[0], new System.Globalization.CultureInfo("tr-TR")) + Model.Word.Substring(1).TrimEnd('.') + "." : Model.Word;
+
 
                     <div class="pos-group">
                         <div class="pos-group-header">
@@ -49,7 +53,7 @@
 
                             <span class="pos-tag">@category?.PartOfSpeech</span>
 
-                            <button class="ex-btn listen-btn pos-audio-btn" type="button" data-text="@Model.Word" data-language="@headwordTtsLanguage" data-source-type="word" aria-label="@Model.Word kelimesini dinle">
+                            <button class="ex-btn listen-btn pos-audio-btn" type="button" data-text="@dataText" data-language="@headwordTtsLanguage" data-source-type="word" aria-label="@Model.Word kelimesini dinle">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                                     <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -85,15 +89,6 @@
 
                                             <div class="example-block">
                                                 @await Html.PartialAsync("IsolatedRte", sentenceHtml)
-
-                                                <button class="ex-btn listen-btn" type="button" data-text="@sentenceText" data-language="@headwordTtsLanguage" data-source-type="sentence" aria-label="Dinle">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                                                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                                                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-                                                    </svg>
-                                                </button>
-
                                             </div>
 
                                         </div>
@@ -138,14 +133,6 @@
                                             <div class="phrase-tr">@itemContent?.Translation</div>
                                             <div class="phrase-example">
                                                 @await Html.PartialAsync("IsolatedRte", innerSentenceHtml)
-
-                                                <button class="ex-btn listen-btn" type="button" data-text="@innerSentenceText" data-language="@headwordTtsLanguage" data-source-type="sentence" aria-label="Dinle">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                                                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                                                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-                                                    </svg>
-                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -190,14 +177,6 @@
                                             <div class="phrase-tr">@itemContent?.Translation</div>
                                             <div class="phrase-example">
                                                 @await Html.PartialAsync("IsolatedRte", innerSentenceHtml)
-
-                                                <button class="ex-btn listen-btn" type="button" data-text="@innerSentenceText" data-language="@headwordTtsLanguage" data-source-type="sentence" aria-label="Dinle">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                                                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                                                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-                                                    </svg>
-                                                </button>
                                             </div>
                                         </div>
                                     </div>
