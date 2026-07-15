@@ -18,6 +18,26 @@
     var englishCulture = System.Globalization.CultureInfo.GetCultureInfo("en-GB");
 }
 
+<style>
+    .home-feature-card__text,
+    .home-spotlight-card__text {
+        text-align: justify;
+        text-justify: inter-word;
+        overflow-wrap: break-word;
+        hyphens: auto; /* varsa bonus, yoksa zarar vermez */
+    }
+
+    /* Kitaplarım gibi dar sütunlarda hala kötü görünüyorsa: */
+    @@media (max-width: 400px) {
+        .home-spotlight-card__text
+
+    {
+        text-align: left; /* hecelemesiz justify dar sütunda hep kötü görünür */
+    }
+
+    }
+</style>
+
 <div class="home-page">
     <section class="home-content">
         <div class="home-cards">
@@ -26,9 +46,9 @@
                     <h2 class="home-feature-card__title">
                         @Model.CardTitle
                     </h2>
-                    <p class="home-feature-card__text">
-                        @Model.CardDescription
-                    </p>
+                    <div class="home-feature-card__text">
+                        @Html.Raw(Model.CardDescription)
+                    </div>
                     @if (Model.CardUrl != null)
                     {
                         <a class="home-feature-card__url" href="@Model.CardUrl.Url" target="@Model.CardUrl.Target" rel="noopener noreferrer">@Model.CardUrl.Name</a>
@@ -63,7 +83,7 @@
                         <p class="home-wotd-card__translation">@firstTranslation</p>
                     }
 
-                    <span class="home-wotd-card__cta">Detaya git →</span>
+                    <span class="home-wotd-card__cta">@Umbraco.GetDictionaryValue("Common.DetayaGit") →</span>
                 </a>
             }
             else
@@ -101,9 +121,9 @@
 
                         <div class="home-spotlight-card__body">
                             <h2 class="home-spotlight-card__title">@spotlight?.Title</h2>
-                            <p class="home-spotlight-card__text">
+                            <div class="home-spotlight-card__text">
                                 @Html.Raw(spotlight?.Description)
-                            </p>
+                            </div>
                             @if (spotlight?.Url != null)
                             {
                                 <a class="home-spotlight-card__link" href="@spotlight.Url.Url" target="@spotlight.Url.Target" rel="noopener noreferrer">@spotlight.Url.Name</a>

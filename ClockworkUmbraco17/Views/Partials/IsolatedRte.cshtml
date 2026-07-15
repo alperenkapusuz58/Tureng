@@ -11,7 +11,12 @@
                     font-size: 14px;
                 }
                 b, strong { font-size: 14px; font-weight: 700; }
-                p { margin: 0; }
+                p { 
+                    margin: 0;
+                    text-align: justify;
+                    overflow-wrap: break-word;
+                    hyphens: auto;
+                }
                 p + p { margin-top: 2px; }
             </style>
             @Html.Raw(Model)

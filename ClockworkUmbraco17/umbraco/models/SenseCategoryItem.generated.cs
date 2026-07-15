@@ -72,5 +72,21 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
 		[ImplementPropertyType("partOfSpeech")]
 		public virtual string PartOfSpeech => this.Value<string>(_publishedValueFallback, "partOfSpeech");
+
+		///<summary>
+		/// Phonetic
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("phonetic")]
+		public virtual string Phonetic => this.Value<string>(_publishedValueFallback, "phonetic");
+
+		///<summary>
+		/// Phonetic 2
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.3.4+87e12b9")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("phonetic2")]
+		public virtual string Phonetic2 => this.Value<string>(_publishedValueFallback, "phonetic2");
 	}
 }
