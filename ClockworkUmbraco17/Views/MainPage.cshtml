@@ -1,21 +1,44 @@
 ﻿@inherits UmbracoViewPage<MainPage>
 @using ClockworkUmbraco.Helpers
 @using ClockworkUmbraco.Services.Interfaces
+@using Umbraco.Cms.Core
 @using Umbraco.Cms.Web.Common.PublishedModels
 @inject IWordOfTheDayService WordOfTheDayService
+@inject IVariationContextAccessor VariationContextAccessor
 
 @{
-
     Layout = "Layout.cshtml";
 
-
     var today = DateTime.Now;
-
-    var wordOfDay = WordOfTheDayService.GetWordOfTheDay(today);
-
     var wotdLabel = Umbraco.GetDictionaryValue("Common.GununKelimesi");
+    var englishCulture = System.Globalization.CultureInfo.GetCultureInfo("en");
 
-    var englishCulture = System.Globalization.CultureInfo.GetCultureInfo("en-GB");
+    string? wordOfDayWord = null;
+    string? wordOfDayUrl = null;
+    string? wordOfDayTranslation = null;
+    bool hasWordOfDay = false;
+
+    // Bağlamı en baştan "en" olarak değiştiriyoruz ki servis de İngilizce arasın.
+    var originalVariationContext = VariationContextAccessor.VariationContext;
+    VariationContextAccessor.VariationContext = new VariationContext("en");
+
+    try
+    {
+        var wordOfDay = WordOfTheDayService.GetWordOfTheDay(today);
+
+        if (wordOfDay != null)
+        {
+            hasWordOfDay = true;
+            wordOfDayWord = wordOfDay.Word;
+            wordOfDayUrl = wordOfDay.Url();
+            wordOfDayTranslation = HeadwordDisplay.FirstTranslation(wordOfDay);
+        }
+    }
+    finally
+    {
+        // İşlem bitince bağlamı orijinal (kullanıcının o anki) kültürüne geri döndürüyoruz.
+        VariationContextAccessor.VariationContext = originalVariationContext;
+    }
 }
 
 <style>
@@ -29,12 +52,9 @@
 
     /* Kitaplarım gibi dar sütunlarda hala kötü görünüyorsa: */
     @@media (max-width: 400px) {
-        .home-spotlight-card__text
-
-    {
-        text-align: left; /* hecelemesiz justify dar sütunda hep kötü görünür */
-    }
-
+        .home-spotlight-card__text {
+            text-align: left; /* hecelemesiz justify dar sütunda hep kötü görünür */
+        }
     }
 </style>
 
@@ -64,23 +84,21 @@
                 </div>
             </article>
 
-            @if (wordOfDay != null)
+            @if (hasWordOfDay)
             {
-                var firstTranslation = HeadwordDisplay.FirstTranslation(wordOfDay);
-
-                <a class="home-wotd-card home-wotd-card--link" href="@wordOfDay.Url()" aria-label="@($"{wotdLabel}: {wordOfDay.Word}")">
+                <a class="home-wotd-card home-wotd-card--link" href="@wordOfDayUrl" aria-label="@($"{wotdLabel}: {wordOfDayWord}")">
                     <div class="home-wotd-card__top">
                         <time class="home-wotd-card__date" datetime="@today.ToString("yyyy-MM-dd")">@today.ToString("d MMMM yyyy", englishCulture)</time>
                         <span class="home-wotd-card__tag">@wotdLabel</span>
                     </div>
 
                     <div class="home-wotd-card__word-row">
-                        <span class="home-wotd-card__word">@wordOfDay.Word</span>
+                        <span class="home-wotd-card__word">@wordOfDayWord</span>
                     </div>
 
-                    @if (!string.IsNullOrWhiteSpace(firstTranslation))
+                    @if (!string.IsNullOrWhiteSpace(wordOfDayTranslation))
                     {
-                        <p class="home-wotd-card__translation">@firstTranslation</p>
+                        <p class="home-wotd-card__translation">@wordOfDayTranslation</p>
                     }
 
                     <span class="home-wotd-card__cta">@Umbraco.GetDictionaryValue("Common.DetayaGit") →</span>
@@ -100,13 +118,10 @@
 
     </section>
 
-
     @if (Model.Spotlights != null && Model.Spotlights.Any())
     {
         <section class="home-spotlights" aria-label="Keşfet">
-
             <div class="home-spotlights__inner">
-
                 @for (var i = 0; i < Model.Spotlights.Count; i++)
                 {
                     var spotlight = Model.Spotlights.ElementAt(i).Content as ImageTitleDescriptionUrlItem;
@@ -131,10 +146,7 @@
                         </div>
                     </article>
                 }
-
-
             </div>
-
         </section>
     }
 
@@ -157,7 +169,6 @@
                     }
                 </a>
             }
-
         </div>
     </section>
 

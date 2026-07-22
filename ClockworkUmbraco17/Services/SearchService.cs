@@ -109,7 +109,26 @@ namespace ClockworkUmbraco.Services
                     var contentItem = _publishedContentQuery.Content(result.Id);
                     return contentItem?.TemplateId != null;
                 })
+                // Lucene skorlaması, tokenize edilmiş alanlarda "and" ile "and all" gibi
+                // maddeleri aynı clause'dan eşleştirdiği için tam eşleşmeyi garanti etmiyor.
+                // Bu yüzden tam eşleşen madde başını (case-insensitive) her zaman öne alıyoruz.
+                .OrderByDescending(result => IsExactHeadwordMatch(result, trimmed))
+                .ThenByDescending(result => result.Score)
                 .ToList();
+
+            // Examine sonuçları arasında sorguyla birebir eşleşen bir madde başı yoksa,
+            // en olası neden Lucene analizörünün "and", "the", "of" gibi İngilizce stop
+            // word'leri indeksleme sırasında tamamen filtrelemesidir — bu durumda Examine
+            // o kelimeyi asla bulamaz. Bunu telafi etmek için yayındaki içerik üzerinden
+            // doğrudan (case-insensitive) bir kontrol yapıp, varsa listenin başına ekliyoruz.
+            if (!filteredResults.Any(r => IsExactHeadwordMatch(r, trimmed)))
+            {
+                var exactFallback = FindFirstExactCaseInsensitiveHeadword(trimmed);
+                if (exactFallback != null && !filteredResults.Any(r => r.Id == exactFallback.Id.ToString()))
+                {
+                    filteredResults.Insert(0, new NodeIdSearchResult(exactFallback.Id.ToString()));
+                }
+            }
 
             var phraseResults = SearchPhrases(trimmed);
 
@@ -228,6 +247,64 @@ namespace ClockworkUmbraco.Services
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Yayındaki içerik ağacında, sorguyla (case-insensitive) birebir eşleşen İLK madde başını
+        /// bulur. Examine'ın "and" gibi İngilizce stop word'leri indeksleme sırasında filtrelemesi
+        /// nedeniyle bulamadığı tam eşleşmeleri telafi etmek için kullanılır.
+        /// </summary>
+        private IPublishedContent? FindFirstExactCaseInsensitiveHeadword(string term)
+        {
+            foreach (var root in _publishedContentQuery.ContentAtRoot())
+            {
+                foreach (var content in root.DescendantsOrSelfOfType(Headword.ModelTypeAlias))
+                {
+                    if (content.TemplateId == null || content.ContentType.Alias != Headword.ModelTypeAlias)
+                    {
+                        continue;
+                    }
+
+                    var headword = new Headword(content, _publishedValueFallback);
+                    var lemma = headword.Word?.Trim();
+                    if (string.IsNullOrEmpty(lemma))
+                    {
+                        lemma = content.Name?.Trim();
+                    }
+
+                    if (string.IsNullOrEmpty(lemma))
+                    {
+                        continue;
+                    }
+
+                    if (string.Equals(lemma, term, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return content;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Bir Examine sonucunun, madde başı metniyle (word/lemma veya nodeName) birebir
+        /// (case-insensitive) eşleşip eşleşmediğini kontrol eder. Örn. "and" aratıldığında
+        /// "and all" gibi kısmi/token eşleşmelerin önüne geçmemesi için kullanılır; skorlama
+        /// bazı durumlarda tokenize edilmiş alanlardaki tam eşleşmeyi garanti etmediğinden
+        /// bu ek sıralama katmanı gereklidir.
+        /// </summary>
+        private static bool IsExactHeadwordMatch(ISearchResult result, string term)
+        {
+            foreach (var field in HeadwordTextFields)
+            {
+                if (string.Equals(result[field], term, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return string.Equals(result["nodeName"], term, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>Examine sonuçları yerine yalnızca node kimliği taşıyan hafif ISearchResult uygulaması.</summary>

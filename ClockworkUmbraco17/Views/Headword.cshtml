@@ -30,6 +30,22 @@
             margin-left: auto;
             flex: 0 0 auto;
         }
+
+        .pos-group-header {
+            display: flex;
+            align-items: center;
+        }
+
+        .pos-audio-btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-left: auto;
+        }
+
+        .pos-audio-btn {
+            flex-basis: 100%;
+        }
     </style>
 }
 
@@ -43,26 +59,37 @@
                 {
                     var category = Model.PartofSpeech.ElementAt(i).Content as SenseCategoryItem;
 
-                    var defaultDataText = "__" + (Model.Word.Length > 0
-                    ? char.ToUpper(Model.Word[0], new System.Globalization.CultureInfo("tr-TR")) + Model.Word.Substring(1).TrimEnd('.') + "."
-                    : Model.Word);
-
-                    var dataText = "__" + HeteronymPronunciation.ResolveIpa(Model.Word, category?.PartOfSpeech);
+                    var dataText = "___" + (!string.IsNullOrWhiteSpace(category?.Phonetic) ? category?.Phonetic : Model.Word);
 
 
                     <div class="pos-group">
                         <div class="pos-group-header">
                             <span class="pos-lemma">@Model.Word</span>
-
                             <span class="pos-tag">@category?.PartOfSpeech</span>
 
-                            <button class="ex-btn listen-btn pos-audio-btn" type="button" data-text="@dataText" data-language="@headwordTtsLanguage" data-source-type="word" aria-label="@Model.Word kelimesini dinle">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-                                </svg>
-                            </button>
+                            @* <div class="pos-audio-btn-group">
+                                @if (!string.IsNullOrWhiteSpace(dataText))
+                                {
+                                    <button class="ex-btn listen-btn pos-audio-btn" type="button" data-text="@dataText" data-language="@headwordTtsLanguage" data-source-type="word" aria-label="@Model.Word kelimesini dinle">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                                        </svg>
+                                    </button>
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(category.Phonetic2))
+                                {
+                                    <button class="ex-btn listen-btn pos-audio-btn" type="button" data-text="@("___" + category.Phonetic2)" data-language="@headwordTtsLanguage" data-source-type="word" aria-label="@Model.Word kelimesini dinle">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                                        </svg>
+                                    </button>
+                                }
+                            </div> *@
                         </div>
 
                         @if (!string.IsNullOrWhiteSpace(category?.IrregularForms))
