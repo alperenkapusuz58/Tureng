@@ -46,6 +46,29 @@
         .pos-audio-btn {
             flex-basis: 100%;
         }
+
+        .irregular-forms ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .irregular-forms li {
+            margin-bottom: 6px;
+        }
+
+        .word-link {
+            text-decoration: none;
+            color: inherit;
+            font: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+            .word-link::before {
+                content: "→";
+            }
     </style>
 }
 
@@ -66,31 +89,19 @@
                         <div class="pos-group-header">
                             <span class="pos-lemma">@Model.Word</span>
                             <span class="pos-tag">@category?.PartOfSpeech</span>
-
-                            @* <div class="pos-audio-btn-group">
-                                @if (!string.IsNullOrWhiteSpace(dataText))
-                                {
-                                    <button class="ex-btn listen-btn pos-audio-btn" type="button" data-text="@dataText" data-language="@headwordTtsLanguage" data-source-type="word" aria-label="@Model.Word kelimesini dinle">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-                                        </svg>
-                                    </button>
-                                }
-
-                                @if (!string.IsNullOrWhiteSpace(category.Phonetic2))
-                                {
-                                    <button class="ex-btn listen-btn pos-audio-btn" type="button" data-text="@("___" + category.Phonetic2)" data-language="@headwordTtsLanguage" data-source-type="word" aria-label="@Model.Word kelimesini dinle">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-                                        </svg>
-                                    </button>
-                                }
-                            </div> *@
                         </div>
+
+                        @if (Model.OtherWords != null)
+                        {
+                            <div class="irregular-forms">
+                                <ul>
+                                    @foreach (var word in Model.OtherWords)
+                                    {
+                                        <li><a href="@word.Url" target="@word.Target" class="word-link">@word.Name</a></li>
+                                    }
+                                </ul>
+                            </div>
+                        }
 
                         @if (!string.IsNullOrWhiteSpace(category?.IrregularForms))
                         {
@@ -126,6 +137,8 @@
                                 }
                             </ol>
                         }
+
+
                     </div>
                 }
             }

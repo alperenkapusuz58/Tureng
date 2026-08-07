@@ -44,17 +44,9 @@
 <style>
     .home-feature-card__text,
     .home-spotlight-card__text {
-        text-align: justify;
-        text-justify: inter-word;
+        text-align: left;
         overflow-wrap: break-word;
-        hyphens: auto; /* varsa bonus, yoksa zarar vermez */
-    }
-
-    /* Kitaplarım gibi dar sütunlarda hala kötü görünüyorsa: */
-    @@media (max-width: 400px) {
-        .home-spotlight-card__text {
-            text-align: left; /* hecelemesiz justify dar sütunda hep kötü görünür */
-        }
+        hyphens: auto;
     }
 </style>
 
@@ -66,7 +58,7 @@
                     <h2 class="home-feature-card__title">
                         @Model.CardTitle
                     </h2>
-                    <div class="home-feature-card__text">
+                    <div class="home-feature-card__text" lang="tr">
                         @Html.Raw(Model.CardDescription)
                     </div>
                     @if (Model.CardUrl != null)
@@ -136,7 +128,7 @@
 
                         <div class="home-spotlight-card__body">
                             <h2 class="home-spotlight-card__title">@spotlight?.Title</h2>
-                            <div class="home-spotlight-card__text">
+                            <div class="home-spotlight-card__text" lang="tr">
                                 @Html.Raw(spotlight?.Description)
                             </div>
                             @if (spotlight?.Url != null)

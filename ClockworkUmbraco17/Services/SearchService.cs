@@ -34,6 +34,7 @@ namespace ClockworkUmbraco.Services
         private readonly IVariationContextAccessor _variationContextAccessor;
         private readonly IPublishedValueFallback _publishedValueFallback;
         private readonly AppCaches _appCaches;
+        private const float MainSearchFuzzySimilarity = 0.8f;
 
         /// <summary>Yönlendirme dışı içerik tipleri (headword hariç — madde araması headword ile pozitif filtrelenir).</summary>
         private readonly string[] _docTypesToExclude =
@@ -91,11 +92,11 @@ namespace ClockworkUmbraco.Services
                     .Or()
                     .GroupedOr(["nodeName"], terms.Boost(70))
                     .Or()
-                    .GroupedOr(HeadwordTextFields, terms.Fuzzy())
+                    .GroupedOr(HeadwordTextFields, terms.Fuzzy(MainSearchFuzzySimilarity))
                     .Or()
                     .GroupedOr(HeadwordTextFields, terms.MultipleCharacterWildcard())
                     .Or()
-                    .GroupedOr(["nodeName"], terms.Fuzzy())
+                    .GroupedOr(["nodeName"], terms.Fuzzy(MainSearchFuzzySimilarity))
                     .Or()
                     .GroupedOr(["nodeName"], terms.MultipleCharacterWildcard()),
                 BooleanOperation.Or);
